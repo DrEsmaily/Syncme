@@ -78,6 +78,32 @@ jobs:
           -keep class org.rustls.platformverifier.VerificationResult { *; }
           -keep class org.rustls.platformverifier.StatusCode { *; }
           EOF
+      - name: Enforce Android JNI compatibility and fail-safe verification
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("/tmp/syncme-verifier/android/rustls-platform-verifier/src/main/java/org/rustls/platformverifier/CertificateVerifier.kt")
+          s=p.read_text()
+          needle='''        val validChain = try {
+                      trustManager.checkServerTrusted'''
+          assert s.count(needle)==1
+          s=s.replace(needle,'''        val validChain = try {
+                      trustManager.checkServerTrusted''')
+          # Prevent verifier crashes from leaking across JNI; fail closed on unexpected runtime errors.
+          old='''            return VerificationResult(StatusCode.UnknownCert, e.toString())
+                  }
+
+                  // TEST ONLY:'''
+          assert s.count(old)==1
+          s=s.replace(old,'''            return VerificationResult(StatusCode.UnknownCert, e.toString())
+                  } catch (e: RuntimeException) {
+                      android.util.Log.e(TAG, "Native TLS trust verification failed", e)
+                      return VerificationResult(StatusCode.Unavailable, "Android trust verifier failed")
+                  }
+
+                  // TEST ONLY:''')
+          p.write_text(s)
+          PY
       - name: Build patched verifier AAR
         run: |
           cd /tmp/syncme-verifier/android
