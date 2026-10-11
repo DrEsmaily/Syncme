@@ -73,7 +73,7 @@ jobs:
           PY
       - name: Preserve JNI entrypoint and result fields
         run: |
-          cat >> /tmp/syncme-verifier/android/rustls-platform-verifier/consumer-rules.pro <<'EOF'
+          cat >> /tmp/syncme-verifier/android/rustls-platform-verifier/proguard-rules.pro <<'EOF'
           -keep class org.rustls.platformverifier.CertificateVerifier { *; }
           -keep class org.rustls.platformverifier.VerificationResult { *; }
           -keep class org.rustls.platformverifier.StatusCode { *; }
@@ -120,6 +120,15 @@ jobs:
           s=s.replace(old,'url = uri(file("offline-maven"))')
           p.write_text(s)
           PY
+      - name: Verify patched verifier is selected for app runtime
+        run: |
+          ./gradlew :app:dependencyInsight --configuration gplayReleaseRuntimeClasspath --dependency rustls-platform-verifier --no-daemon > /tmp/syncme-dependency-insight.txt
+          cat /tmp/syncme-dependency-insight.txt
+          grep -q 'org.rustls:rustls-platform-verifier:0.2.0' /tmp/syncme-dependency-insight.txt || { echo 'ERROR: Patched verifier not selected'; exit 1; }
+      - name: Keep JNI entrypoint in app
+        run: |
+          mkdir -p app/proguard/common
+          printf '%s\n' '-keep class org.rustls.platformverifier.CertificateVerifier { *; }' '-keep class org.rustls.platformverifier.VerificationResult { *; }' '-keep class org.rustls.platformverifier.StatusCode { *; }' > app/proguard/common/syncme-rustls-jni.pro
       - name: Build app ARM64 parity settings
         run: |
           sed -i '/optimization {/{n;s/enable = true/enable = false/;}' app/build.gradle.kts
