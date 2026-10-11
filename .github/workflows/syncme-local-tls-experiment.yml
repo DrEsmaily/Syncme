@@ -133,6 +133,41 @@ jobs:
         run: |
           sed -i '/optimization {/{n;s/enable = true/enable = false/;}' app/build.gradle.kts
           ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=false -x lintVitalGplayRelease --stacktrace --no-configuration-cache
+      - name: Validate verifier class and offline revocation patch in APK
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import glob, subprocess, zipfile, hashlib
+          aar=Path("/tmp/syncme-verifier/android/rustls-platform-verifier/build/outputs/aar/rustls-platform-verifier-debug.aar")
+          assert aar.exists()
+          with zipfile.ZipFile(aar) as z:
+              jar=z.read("classes.jar")
+          Path("/tmp/syncme-verifier-classes.jar").write_bytes(jar)
+          out=subprocess.check_output(["javap","-p","-classpath","/tmp/syncme-verifier-classes.jar","org.rustls.platformverifier.CertificateVerifier"],text=True)
+          assert "verifyCertificateChain" in out, out
+          for cls in ["org.rustls.platformverifier.VerificationResult","org.rustls.platformverifier.StatusCode"]:
+              subprocess.check_call(["javap","-p","-classpath","/tmp/syncme-verifier-classes.jar",cls],stdout=subprocess.DEVNULL)
+          apk=glob.glob("app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk")
+          assert apk
+          sdk=Path(__import__("os").environ["ANDROID_HOME"])/"build-tools"
+          tool=sorted(sdk.glob("*/dexdump"))[-1]
+          with zipfile.ZipFile(apk[0]) as z:
+              dexfiles=[n for n in z.namelist() if n.startswith("classes") and n.endswith(".dex")]
+              found=False
+              for n in dexfiles:
+                  dex=Path("/tmp")/n
+                  dex.write_bytes(z.read(n))
+                  p=subprocess.run([str(tool),"-f",str(dex)],capture_output=True,text=True)
+                  if "Lorg/rustls/platformverifier/CertificateVerifier;" in p.stdout:
+                      found=True
+                      assert "verifyCertificateChain" in p.stdout
+                      break
+              assert found, "JNI CertificateVerifier missing from packaged APK DEX"
+          source=Path("/tmp/syncme-verifier/android/rustls-platform-verifier/src/main/java/org/rustls/platformverifier/CertificateVerifier.kt").read_text()
+          assert 'syncMeTlsTrace("tls_chain_valid_revocation_offline_skipped")' in source
+          assert "trustManager.checkServerTrusted" in source
+          print("PASS: patched AAR class, JNI method and packaged APK DEX found; offline revocation source patch present")
+          PY
       - name: Verify contents and publish diagnostic artifact
         run: |
           python3 - <<'PY'
