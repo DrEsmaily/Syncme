@@ -157,10 +157,11 @@ jobs:
               for n in dexfiles:
                   dex=Path("/tmp")/n
                   dex.write_bytes(z.read(n))
-                  p=subprocess.run([str(tool),"-f",str(dex)],capture_output=True,text=True)
-                  if "Lorg/rustls/platformverifier/CertificateVerifier;" in p.stdout:
+                  p=subprocess.run([str(tool),"-f",str(dex)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True)
+                  output=p.stdout.decode("utf-8",errors="replace")
+                  if "Lorg/rustls/platformverifier/CertificateVerifier;" in output:
                       found=True
-                      assert "verifyCertificateChain" in p.stdout
+                      assert "verifyCertificateChain" in output
                       break
               assert found, "JNI CertificateVerifier missing from packaged APK DEX"
           source=Path("/tmp/syncme-verifier/android/rustls-platform-verifier/src/main/java/org/rustls/platformverifier/CertificateVerifier.kt").read_text()
