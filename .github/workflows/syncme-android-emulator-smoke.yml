@@ -144,7 +144,7 @@ jobs:
           target: google_apis
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           script: |
-            set -euxo pipefail
+            set -eu
             adb wait-for-device
             adb shell getprop sys.boot_completed
             find app/build/outputs/apk/gplay/release -name '*.apk' -print
