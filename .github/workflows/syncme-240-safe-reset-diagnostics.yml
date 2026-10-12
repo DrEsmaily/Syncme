@@ -1,9 +1,9 @@
-name: SyncMe 243 Reset Rust Crypto Diagnostics ARM64 APK
+name: SyncMe 244 Reset Rust Crypto Diagnostics ARM64 APK
 
 on:
   push:
     branches:
-      - syncme-243-reset-rust-trace-20261012
+      - syncme-244-fcm-registration-race-20261012
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ env:
 
 jobs:
   build:
-    name: Build isolated SyncMe 243 ARM64
+    name: Build isolated SyncMe 244 ARM64
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -104,7 +104,7 @@ jobs:
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
 
-      - name: Build SyncMe 243 ARM64 with opt-in diagnostics
+      - name: Build SyncMe 244 ARM64 with opt-in diagnostics
         env:
           SYNCME_BUILD_NUMBER: '243'
           SYNCME_VERSION_CODE: '20260910'
