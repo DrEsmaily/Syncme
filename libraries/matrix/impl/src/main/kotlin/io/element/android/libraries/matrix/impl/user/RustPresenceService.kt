@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
@@ -71,7 +72,14 @@ internal class RustPresenceService(
             }
         }
         scope.launch {
-            combine(syncState, visibility) { sync, foreground -> (sync == SyncState.Running && foreground != null) to foreground }
+            val stableVisibility = channelFlow {
+                visibility.collectLatest { foreground ->
+                    // Rotation and short Activity switches must not briefly publish Away.
+                    if (foreground == false) delay(1_000)
+                    send(foreground)
+                }
+            }
+            combine(syncState, stableVisibility) { sync, foreground -> (sync == SyncState.Running && foreground != null) to foreground }
                 .collectLatest { (enabled, foreground) ->
                     synchronized(registrations) {
                         generation++
@@ -79,7 +87,17 @@ internal class RustPresenceService(
                         mutableStates.value = emptyMap()
                         if (enabled) registrations.keys.forEach { snapshots.trySend(it to generation) }
                     }
-                    if (enabled) observe(if (foreground == true) "online" else "unavailable")
+                    if (enabled) {
+                        try {
+                            observe(if (foreground == true) "online" else "unavailable")
+                        } finally {
+                            synchronized(registrations) {
+                                generation++
+                                running = false
+                                mutableStates.value = emptyMap()
+                            }
+                        }
+                    }
                 }
         }
     }
