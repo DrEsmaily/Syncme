@@ -23,9 +23,23 @@ object StartupTrace {
     private const val RUN_LIMIT_BYTES = 256_000L
     private val processStart = SystemClock.elapsedRealtime()
     private val watchdogStarted = AtomicBoolean(false)
+    @Volatile private var enabled = false
     private val processMarker = System.currentTimeMillis().toString(36)
 
+    fun setEnabled(context: Context, value: Boolean) {
+        directory = File(context.filesDir, "syncme-startup-runs")
+        if (!value) {
+            enabled = false
+            target = null
+            return
+        }
+        if (enabled && target != null) return
+        enabled = true
+        initialize(context)
+    }
+
     fun initialize(context: Context) {
+        if (!enabled) return
         val folder = File(context.filesDir, "syncme-startup-runs")
         folder.mkdirs()
         directory = folder
@@ -40,7 +54,7 @@ object StartupTrace {
         if (!watchdogStarted.compareAndSet(false, true)) return
         val handler = Handler(Looper.getMainLooper())
         Thread({
-            while (true) {
+            while (enabled) {
                 val acknowledged = AtomicBoolean(false)
                 val postedAt = SystemClock.elapsedRealtime()
                 handler.post { acknowledged.set(true) }
@@ -48,7 +62,7 @@ object StartupTrace {
                 if (!acknowledged.get()) {
                     mark("main_thread_stall_detected_ms_" + (SystemClock.elapsedRealtime() - postedAt))
                     var samples = 0
-                    while (!acknowledged.get()) {
+                    while (enabled && !acknowledged.get()) {
                         // Always retain the full Java call chain, including the application SDK
                         // frames BELOW Socket.connect; 12 frames were insufficient previously.
                         if (samples < 8 || samples % 5 == 0) {
@@ -66,6 +80,8 @@ object StartupTrace {
                 }
                 Thread.sleep(150L)
             }
+            watchdogStarted.set(false)
+            if (enabled) startWatchdog()
         }, "syncme-startup-watchdog").apply { isDaemon = true }.start()
     }
 
@@ -114,6 +130,7 @@ object StartupTrace {
     }
 
     fun mark(event: String) {
+        if (!enabled) return
         val file = target ?: return
         val safe = event.replace(Regex("[^a-zA-Z0-9_.:-]"), "_").take(240)
         val elapsed = SystemClock.elapsedRealtime() - processStart
