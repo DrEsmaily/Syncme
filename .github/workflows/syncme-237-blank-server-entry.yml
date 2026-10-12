@@ -1,0 +1,174 @@
+name: SyncMe 237 Blank Server Optional Diagnostics ARM64 APK
+
+on:
+  push:
+    branches:
+      - syncme-237-blank-server-entry-20261012
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: syncme-237-blank-server-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+UseG1GC
+  CI_GRADLE_ARG_PROPERTIES: --stacktrace --no-configuration-cache
+
+jobs:
+  build:
+    name: Build isolated SyncMe 237 ARM64
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      - name: Checkout experimental branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Confirm SSL bypass is configured on both client stacks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'return ClientBuilder().disableSslVerification()' libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/ClientBuilderProvider.kt
+          grep -F 'sslSocketFactory(sslContext.socketFactory, permissiveTrustManager)' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
+          grep -F 'hostnameVerifier { hostname, _ ->' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
+          grep -F '26.10.05-nightly' gradle/libs.versions.toml
+          grep -F 'object TlsAudit' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
+          grep -F 'TlsAudit.setEnabled(this, tlsEnabled)' app/src/main/kotlin/io/element/android/x/ElementXApplication.kt
+          grep -F 'eventListenerFactory' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
+          grep -F 'SSL / TLS audit log' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/developer/DeveloperSettingsView.kt
+          grep -F 'private fun exportTlsAudit()' app/src/main/kotlin/io/element/android/x/MainActivity.kt
+          grep -F 'Startup diagnostics' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/developer/DeveloperSettingsView.kt
+          if grep -Fq 'View startup diagnostics' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/root/PreferencesRootView.kt; then
+            echo "Old startup diagnostics menu item is still present" >&2
+            exit 1
+          fi
+          grep -F 'RUST_NATIVE_NETWORK_TRACING' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
+          grep -F 'auditTargets' app/src/main/kotlin/io/element/android/x/initializer/PlatformInitializer.kt
+          grep -F 'candidate_trace_lines=' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
+          grep -F 'RUST_REPORTED_NETWORK_ERROR' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
+          grep -F 'native-clear-cutoff.txt' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
+          grep -F 'Build ${buildMeta.versionName} • Optional Diagnostics' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/root/VersionFormatter.kt
+          grep -F 'SYNCME_VERSION_CODE' app/build.gradle.kts
+          grep -F 'SyncMe 237: no trailing chevron' features/home/impl/src/main/kotlin/io/element/android/features/home/impl/filters/RoomListFiltersView.kt
+          if grep -Fq 'androidx.compose.material3.Text("›")' features/home/impl/src/main/kotlin/io/element/android/features/home/impl/filters/RoomListFiltersView.kt; then
+            echo "Tag manager trailing chevron remains" >&2
+            exit 1
+          fi
+          # Confirm provider is blank even after syncme.ir was saved in login history.
+          grep -F 'if (server.equals("syncme.ir", ignoreCase = true)) "" else server' features/login/impl/src/main/kotlin/io/element/android/features/login/impl/screens/confirmaccountprovider/ConfirmAccountProviderPresenter.kt
+          if grep -Fq 'homeserverHistory.isEmpty() && server.equals' features/login/impl/src/main/kotlin/io/element/android/features/login/impl/screens/confirmaccountprovider/ConfirmAccountProviderPresenter.kt; then
+            echo "Old conditional: a saved syncme.ir provider would still prefill the field" >&2
+            exit 1
+          fi
+          grep -F 'present - syncme default is blank even when saved in history' features/login/impl/src/test/kotlin/io/element/android/features/login/impl/screens/confirmaccountprovider/ConfirmAccountProviderPresenterTest.kt
+          grep -F 'Enable startup logs' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/developer/DeveloperSettingsView.kt
+          grep -F 'Enable SSL / TLS logs' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/developer/DeveloperSettingsView.kt
+          grep -F 'getBoolean(STARTUP, false)' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/SyncMeDiagnosticsControl.kt
+          grep -F 'getBoolean(TLS, false)' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/SyncMeDiagnosticsControl.kt
+          grep -F 'WriteToFilesConfiguration.Disabled' app/src/main/kotlin/io/element/android/x/initializer/PlatformInitializer.kt
+          grep -F 'StartupTrace.setEnabled(this' app/src/main/kotlin/io/element/android/x/ElementXApplication.kt
+          test -s .github/SYNCME_BUILD_NOTES_237.md
+          git diff --check
+
+      - name: Set separate Android application ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(grep -c 'getByName("release") {' app/build.gradle.kts)" -eq 1
+          sed -i '/getByName("release") {/a\            applicationIdSuffix = ".syncmerelease"' app/build.gradle.kts
+          grep -F 'applicationIdSuffix = ".syncmerelease"' app/build.gradle.kts
+
+      - name: Use JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configure Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+
+      - name: Build SyncMe 237 ARM64 with blank provider fix
+        env:
+          SYNCME_BUILD_NUMBER: '237'
+          SYNCME_VERSION_CODE: '20260907'
+        run: ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease $CI_GRADLE_ARG_PROPERTIES
+
+      - name: Run account provider regression test
+        run: ./gradlew :features:login:impl:testReleaseUnitTest --tests '*ConfirmAccountProviderPresenterTest*' $CI_GRADLE_ARG_PROPERTIES
+
+      - name: Package named Build 237 ARM64 APK, full notes and SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk)
+          test "${#apks[@]}" -eq 1
+          source_apk="${apks[0]}"
+          unzip -t "$source_apk" | tail -1
+          # Validate actual signed APK manifest metadata, not just CI env labels.
+          aapt_bin="$(find "${ANDROID_HOME}/build-tools" -type f -name aapt | sort -V | tail -1)"
+          test -x "$aapt_bin"
+          package_line="$("$aapt_bin" dump badging "$source_apk" | grep '^package:')"
+          echo "$package_line"
+          echo "$package_line" | grep -F "versionName='237'"
+          echo "$package_line" | grep -F "versionCode='202609072'"
+          mkdir -p build-checkpoint
+          cp "$source_apk" build-checkpoint/SyncMe-237-ARM64-Blank-Server-Optional-Diagnostics.apk
+          target_apk=build-checkpoint/SyncMe-237-ARM64-Blank-Server-Optional-Diagnostics.apk
+          sha256sum "$target_apk" > build-checkpoint/SyncMe-237-SHA256.txt
+          {
+            echo "Build 237 expected Android versionName: 237"
+            echo "Build 237 expected ARM64 versionCode: 202609072"
+            echo "Source APK: $source_apk"
+            ls -lh "$target_apk"
+            cat build-checkpoint/SyncMe-237-SHA256.txt
+          } | tee build-checkpoint/SyncMe-237-APK-Validation.txt
+          cp .github/SYNCME_BUILD_NOTES_237.md build-checkpoint/SyncMe-237-Build-Notes.md
+          {
+            echo
+            echo "## Build-specific provenance and results"
+            echo
+            echo "- UTC date: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            echo "- GitHub run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "- Run attempt: ${GITHUB_RUN_ATTEMPT}"
+            echo "- Branch: ${GITHUB_REF_NAME}"
+            echo "- Exact source commit: ${GITHUB_SHA}"
+            echo "- CI verification: Gradle compilation, targeted login presenter unit test and APK ZIP container passed"
+            echo "- Device runtime verification: NOT PERFORMED in this workflow"
+            echo
+            echo "### APK hash and size"
+            echo
+            cat build-checkpoint/SyncMe-237-APK-Validation.txt
+            echo
+            echo "### Recent source changes"
+            echo
+            git log -n 20 --format='- %h %s'
+          } >> build-checkpoint/SyncMe-237-Build-Notes.md
+          cat build-checkpoint/SyncMe-237-Build-Notes.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Build 237 named APK and documentation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-237-ARM64-Blank-Server-Optional-Diagnostics
+          if-no-files-found: error
+          retention-days: 90
+          path: |
+            build-checkpoint/SyncMe-237-ARM64-Blank-Server-Optional-Diagnostics.apk
+            build-checkpoint/SyncMe-237-Build-Notes.md
+            build-checkpoint/SyncMe-237-SHA256.txt
+            build-checkpoint/SyncMe-237-APK-Validation.txt
