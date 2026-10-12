@@ -84,13 +84,24 @@ fun DeveloperSettingsView(
         // Only present in the existing (five-tap) developer settings.
         PreferenceCategory(title = "SyncMe diagnostics") {
             ListItem(
+                content = { Text("Startup diagnostics") },
+                supportingContent = { Text("Startup, main-thread stalls and timing · Copy All / Clear") },
+                onClick = {
+                    context.startActivity(
+                        Intent("io.syncme.EXPORT_STARTUP_TRACE")
+                            .setClassName(context.packageName, "io.element.android.x.MainActivity")
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    )
+                },
+            )
+            ListItem(
                 content = { Text("SSL / TLS audit log") },
                 supportingContent = { Text("Separate request and certificate diagnostics · Copy All / Clear") },
                 onClick = {
                     context.startActivity(
                         Intent("io.syncme.EXPORT_TLS_AUDIT")
                             .setClassName(context.packageName, "io.element.android.x.MainActivity")
-                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     )
                 },
             )
