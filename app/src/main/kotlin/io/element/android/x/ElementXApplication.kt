@@ -10,6 +10,9 @@ package io.element.android.x
 
 import android.app.Application
 import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
+import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
+import android.os.Build
+import java.util.concurrent.Executors
 import android.os.StrictMode
 import androidx.compose.material3.ComposeMaterial3Flags.isAnchoredDraggableComponentsStrictOffsetCheckEnabled
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +44,8 @@ class ElementXApplication : Application(), DependencyInjectionGraphOwner, Config
     override fun onCreate() {
         super.onCreate()
         StartupTrace.initialize(this)
+        TlsAudit.initialize(this)
+        enableTlsAuditCleartextHints()
 
         enableStrictMode()
 
@@ -56,6 +61,32 @@ class ElementXApplication : Application(), DependencyInjectionGraphOwner, Config
         // Disable the strict offset check for anchored draggable components, as it can cause issues with bottom sheets.
         // Remove once https://issuetracker.google.com/issues/477038695 is fixed.
         isAnchoredDraggableComponentsStrictOffsetCheckEnabled = false
+    }
+
+    /**
+     * Observe cleartext requests (including possible HTTP OCSP/CRL endpoints)
+     * without blocking them. This is a VM-wide Android hint, not a native
+     * packet capture: it may miss requests from Rust or WebView.
+     */
+    private fun enableTlsAuditCleartextHints() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val listenerExecutor = Executors.newSingleThreadExecutor { task ->
+                Thread(task, "syncme-cleartext-detector").apply { isDaemon = true }
+            }
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy.Builder()
+                    .detectCleartextNetwork()
+                    .penaltyListener(listenerExecutor) { violation ->
+                        val frames = violation.stackTrace.take(12)
+                            .joinToString("|") { it.className + "." + it.methodName + ":" + it.lineNumber }
+                        TlsAudit.record("ANDROID_CLEARTEXT_NETWORK", "origin_stack=" + frames)
+                    }
+                    .build()
+            )
+            TlsAudit.record("ANDROID_CLEARTEXT_MONITOR_ENABLED", "vm_strictmode_available=true")
+        } else {
+            TlsAudit.record("ANDROID_CLEARTEXT_MONITOR_UNAVAILABLE", "requires_API_28")
+        }
     }
 
     private fun enableStrictMode() {
