@@ -109,7 +109,7 @@ jobs:
         run: ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease $CI_GRADLE_ARG_PROPERTIES
 
       - name: Run account provider regression test
-        run: ./gradlew :features:login:impl:testReleaseUnitTest --tests '*ConfirmAccountProviderPresenterTest*' $CI_GRADLE_ARG_PROPERTIES
+        run: ./gradlew :features:login:impl:testDebugUnitTest --tests '*ConfirmAccountProviderPresenterTest*' $CI_GRADLE_ARG_PROPERTIES
 
       - name: Package named Build 237 ARM64 APK, full notes and SHA-256
         shell: bash
