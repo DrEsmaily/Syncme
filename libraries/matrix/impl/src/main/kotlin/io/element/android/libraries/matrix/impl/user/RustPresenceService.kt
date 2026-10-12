@@ -64,7 +64,7 @@ internal class RustPresenceService(
                 for ((user, epoch) in snapshots) {
                     try {
                         if (!isCurrent(user, epoch)) continue
-                        val content = request("presence", user.value, "status") ?: continue
+                        val content = request(user, epoch) ?: continue
                         synchronized(registrations) {
                             if (isCurrent(user, epoch)) {
                                 mutableStates.value += user to presenceFromJson(content, System.currentTimeMillis())
@@ -165,15 +165,16 @@ internal class RustPresenceService(
         running && epoch == generation && user in registrations
     }
 
-    private suspend fun request(vararg path: String): JSONObject? {
+    private suspend fun request(user: UserId, epoch: Long): JSONObject? {
         delay(((cooldownUntilNanos.get() - System.nanoTime()) / 1_000_000).coerceAtLeast(0))
+        if (!isCurrent(user, epoch)) return null
         val session = sessionStore.getSession(sessionId.value) ?: return null
-        val url = base.newBuilder().addPathSegments("_matrix/client/v3").apply {
-            path.forEach(::addPathSegment)
-        }.build()
+        if (!isCurrent(user, epoch)) return null
+        val url = base.newBuilder().addPathSegments("_matrix/client/v3/presence")
+            .addPathSegment(user.value).addPathSegment("status").build()
         return suspendCancellableCoroutine { continuation ->
             val call = http.newCall(Request.Builder().url(url).header("Authorization", "Bearer ${session.accessToken}").build())
-            if (path.firstOrNull() == "presence") call.timeout().timeout(5, TimeUnit.SECONDS)
+            call.timeout().timeout(5, TimeUnit.SECONDS)
             continuation.invokeOnCancellation { call.cancel() }
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {

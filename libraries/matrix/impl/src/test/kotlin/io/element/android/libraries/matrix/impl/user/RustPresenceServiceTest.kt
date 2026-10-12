@@ -55,11 +55,13 @@ class RustPresenceServiceTest : RobolectricTest() {
         server.start()
         service = RustPresenceService(
             server.url("/").toString(),
-            UserId("@alice:example.org"),
+            UserId("@alice:server.org"),
             InMemorySessionStore(listOf(aSessionData())),
             sync,
             visibility,
             scope,
+            publishOwnPresence = { published.add(it) },
+            refreshIntervalMillis = { 200 },
         )
     }
 

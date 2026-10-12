@@ -87,7 +87,7 @@ interface MatrixClient : ClientUrlContentFetcher {
     /** Controls the sync loop of this session and exposes its state. */
     val syncService: SyncService
 
-    /** Shared event-driven presence state, scoped to this session. */
+    /** Shared server-reported presence state, scoped to this session. */
     val presenceStates: kotlinx.coroutines.flow.StateFlow<Map<UserId, UserPresence>>
         get() = kotlinx.coroutines.flow.MutableStateFlow(emptyMap())
 
