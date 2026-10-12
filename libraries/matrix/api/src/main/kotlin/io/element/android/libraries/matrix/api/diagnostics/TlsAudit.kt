@@ -216,6 +216,13 @@ object TlsAudit {
         """(?:https?://|wss?://)([A-Za-z0-9.-]+)(?::([0-9]{1,5}))?""",
         RegexOption.IGNORE_CASE,
     )
+    private val rustTimeRegex = Regex(
+        """\b20[0-9]{2}-[0-9]{2}-[0-9]{2}[T ][0-9:.Z+_-]{8,28}""",
+    )
+    private val rustIpRegex = Regex(
+        """(?:ip|peer|remote|socket|addr)=([0-9a-fA-F:.]{3,45})(?::([0-9]{2,5}))?""",
+        RegexOption.IGNORE_CASE,
+    )
     private val hostLabelRegex = Regex(
         """(?:host|hostname|server_name|server|domain)=([A-Za-z0-9.-]+)""",
         RegexOption.IGNORE_CASE,
@@ -228,6 +235,10 @@ object TlsAudit {
     private fun classifyRustLine(line: String): String? {
         val target = traceTargetRegex.find(line)?.value ?: return null
         val lc = line.lowercase()
+        if (target.equals("matrix_sdk::client", ignoreCase = true) &&
+            listOf("http", "request", "response", "connect", "host", "tls", "cert", "dns", "proxy")
+                .none { lc.contains(it) }
+        ) return null
         val event = when {
             lc.contains("ocsp") -> "RUST_OCSP_CANDIDATE"
             lc.contains("crl") -> "RUST_CRL_CANDIDATE"
@@ -244,6 +255,8 @@ object TlsAudit {
         val host = hostMatch?.groupValues?.getOrNull(1)?.take(200).orEmpty()
         val port = if (hostMatch?.value?.contains("://") == true)
             hostMatch.groupValues.getOrNull(2).orEmpty() else ""
+        val ip = rustIpRegex.find(line)?.groupValues?.getOrNull(1).orEmpty()
+        val timestamp = rustTimeRegex.find(line)?.value.orEmpty()
         val category = when {
             host.isEmpty() -> "UNKNOWN_TARGET"
             isPossibleCertificateEndpoint(host) -> "SUSPECT_CERT_ENDPOINT"
@@ -252,8 +265,10 @@ object TlsAudit {
         }
         // Deliberately do NOT append original log lines: raw Rust logs can
         // include bearer tokens, request paths, access credentials, or IDs.
-        return "event=" + event + " target=" + safe(target, 50) +
-            " category=" + category + " host=" + (if (host.isEmpty()) "unknown" else safe(host, 200)) +
+        return "time=" + (if (timestamp.isEmpty()) "not_emitted" else safe(timestamp, 45)) +
+            " event=" + event + " target=" + safe(target, 50) +
+            " category=" + category + " ip=" + (if (ip.isEmpty()) "unknown" else safe(ip, 50)) +
+            " host=" + (if (host.isEmpty()) "unknown" else safe(host, 200)) +
             (if (port.isNotEmpty()) " port=" + safe(port, 5) else "")
     }
 
