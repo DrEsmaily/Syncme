@@ -18,6 +18,8 @@ import io.element.android.libraries.architecture.bindings
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.tracing.TracingConfiguration
+import io.element.android.libraries.matrix.api.tracing.LogLevel
+import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
 import io.element.android.x.di.AppBindings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -44,15 +46,31 @@ class PlatformInitializer : Initializer<Unit> {
         val preferencesStore = appBindings.preferencesStore()
         val featureFlagService = appBindings.featureFlagService()
         val logLevel = runBlocking { preferencesStore.getTracingLogLevelFlow().first() }
+        // Dedicated connectivity diagnostic build: enable supported Rust networking
+        // tracing targets in the SDK's local file writer. Never raise to TRACE:
+        // TRACE may include sensitive metadata and causes significant log volume.
+        val auditTargets = listOf(
+            "matrix_sdk::http_client",
+            "matrix_sdk::client",
+            "reqwest",
+            "hyper",
+            "rustls",
+            "hickory_resolver",
+        )
+        TlsAudit.record(
+            "RUST_TRACING_CONFIG",
+            "network_targets=" + auditTargets.joinToString(",") +
+                " level=DEBUG native_log_files=cache/logs",
+        )
         val tracingConfiguration = TracingConfiguration(
             writesToLogcat = runBlocking { featureFlagService.isFeatureEnabled(FeatureFlags.PrintLogsToLogcat) },
             writesToFilesConfiguration = bugReporter.createWriteToFilesConfiguration(),
-            logLevel = logLevel,
-            extraTargets = listOf(ELEMENT_X_TARGET),
+            logLevel = LogLevel.DEBUG,
+            extraTargets = listOf(ELEMENT_X_TARGET) + auditTargets,
             traceLogPacks = runBlocking { preferencesStore.getTracingLogPacksFlow().first() },
             sdkSentryDsn = appBindings.sentrySdkDsn()?.value?.takeIf { it.isNotBlank() },
         )
-        bugReporter.setCurrentTracingLogLevel(logLevel.name)
+        bugReporter.setCurrentTracingLogLevel(LogLevel.DEBUG.name)
 
         // Init the tracing service with the configuration so we have logging enabled as soon as possible
         platformService.init(tracingConfiguration)
