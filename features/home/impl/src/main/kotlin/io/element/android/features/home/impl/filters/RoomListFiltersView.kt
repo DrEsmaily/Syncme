@@ -393,7 +393,7 @@ private fun TagManagerRow(symbol: String, title: String, subtitle: String, onCli
                 androidx.compose.material3.Text(title)
                 if (subtitle.isNotEmpty()) androidx.compose.material3.Text(subtitle, color = ElementTheme.colors.textSecondary)
             }
-            androidx.compose.material3.Text("›")
+            // SyncMe 236: no trailing chevron in tag manager rows or previews.
         }
     }
 }
