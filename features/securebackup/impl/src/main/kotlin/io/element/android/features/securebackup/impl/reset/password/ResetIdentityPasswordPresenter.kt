@@ -54,7 +54,7 @@ class ResetIdentityPasswordPresenter(
             StartupTrace.markReset("reset_password_sdk_success")
             // A read-only server query distinguishes "no backup exists" from
             // "backup exists but local SDK never observes ENABLED".
-            launch(dispatchers.io) {
+            this@reset.launch(dispatchers.io) {
                 StartupTrace.markReset("reset_post_success_backup_state_" + encryptionService.backupStateStateFlow.value)
                 encryptionService.doesBackupExistOnServer().fold(
                     onSuccess = { StartupTrace.markReset("reset_post_success_server_backup_exists_" + it) },
