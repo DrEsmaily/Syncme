@@ -82,6 +82,7 @@ jobs:
       - name: Verify complete reset trace hooks
         run: |
           grep -F 'reset_post_success_server_backup_exists_' features/securebackup/impl/src/main/kotlin/io/element/android/features/securebackup/impl/reset/password/ResetIdentityPasswordPresenter.kt
+          grep -F 'session_factory_client_ready' libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/RustMatrixClientFactory.kt
           grep -F 'reset_password_sdk_success' features/securebackup/impl/src/main/kotlin/io/element/android/features/securebackup/impl/reset/password/ResetIdentityPasswordPresenter.kt
           grep -F 'reset_wait_observed_' features/securebackup/impl/src/main/kotlin/io/element/android/features/securebackup/impl/reset/ResetIdentityFlowManager.kt
           grep -F 'reset_combined_raw_' libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/encryption/RustEncryptionService.kt
