@@ -10,6 +10,7 @@ package io.element.android.features.securebackup.impl.reset
 
 import dev.zacsweers.metro.Inject
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.encryption.BackupState
 import io.element.android.libraries.matrix.api.encryption.EncryptionService
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 @Inject
@@ -31,8 +33,11 @@ class ResetIdentityFlowManager(
     private var whenResetIsDoneWaitingJob: Job? = null
 
     fun whenResetIsDone(block: () -> Unit) {
+        StartupTrace.mark("reset_wait_registered_state_" + encryptionService.backupStateStateFlow.value)
         whenResetIsDoneWaitingJob = sessionCoroutineScope.launch {
-            encryptionService.backupStateStateFlow.first { it == BackupState.ENABLED }
+            StartupTrace.mark("reset_wait_started")
+            encryptionService.backupStateStateFlow.onEach { StartupTrace.mark("reset_wait_observed_" + it) }.first { it == BackupState.ENABLED }
+            StartupTrace.mark("reset_wait_enabled_callback")
             block()
         }
     }
@@ -44,11 +49,14 @@ class ResetIdentityFlowManager(
             resetHandleFlow.value = AsyncData.Loading()
 
             sessionCoroutineScope.launch {
+                StartupTrace.mark("reset_start_identity_request")
                 encryptionService.startIdentityReset()
                     .onSuccess { handle ->
+                        StartupTrace.mark("reset_start_identity_success_handle_" + (handle != null))
                         resetHandleFlow.value = AsyncData.Success(handle)
                     }
                     .onFailure {
+                        StartupTrace.mark("reset_start_identity_failure_" + it.javaClass.simpleName)
                         resetHandleFlow.value = AsyncData.Failure(it)
                     }
             }
@@ -58,6 +66,7 @@ class ResetIdentityFlowManager(
     }
 
     suspend fun cancel() {
+        StartupTrace.mark("reset_flow_cancel")
         currentHandleFlow.value.dataOrNull()?.cancel()
         resetHandleFlow.value = AsyncData.Uninitialized
 
