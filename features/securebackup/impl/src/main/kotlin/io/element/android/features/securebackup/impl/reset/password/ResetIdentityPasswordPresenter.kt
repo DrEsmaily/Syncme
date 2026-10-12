@@ -52,17 +52,17 @@ class ResetIdentityPasswordPresenter(
         suspend {
             identityPasswordResetHandle.resetPassword(password).getOrThrow()
             StartupTrace.markReset("reset_password_sdk_success")
-            // A read-only server query distinguishes "no backup exists" from
-            // "backup exists but local SDK never observes ENABLED".
-            this@reset.launch(dispatchers.io) {
+            Unit
+        }.runCatchingUpdatingState(action)
+        StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
+        if (action.value is AsyncAction.Success) {
+            launch(dispatchers.io) {
                 StartupTrace.markReset("reset_post_success_backup_state_" + encryptionService.backupStateStateFlow.value)
                 encryptionService.doesBackupExistOnServer().fold(
                     onSuccess = { StartupTrace.markReset("reset_post_success_server_backup_exists_" + it) },
                     onFailure = { StartupTrace.markReset("reset_post_success_server_backup_query_error_" + it.javaClass.simpleName) },
                 )
             }
-            Unit
-        }.runCatchingUpdatingState(action)
-        StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
+        }
     }
 }
