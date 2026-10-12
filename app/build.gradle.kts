@@ -45,7 +45,7 @@ android {
     defaultConfig {
         applicationId = BuildTimeConfig.APPLICATION_ID
         targetSdk = Versions.TARGET_SDK
-        versionCode = Versions.VERSION_CODE
+        versionCode = System.getenv("SYNCME_VERSION_CODE")?.toIntOrNull() ?: Versions.VERSION_CODE
         versionName = System.getenv("SYNCME_BUILD_NUMBER") ?: Versions.VERSION_NAME
 
         // Keep abiFilter for the universalApk
