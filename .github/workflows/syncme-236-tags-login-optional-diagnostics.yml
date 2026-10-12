@@ -48,7 +48,7 @@ jobs:
           grep -F 'hostnameVerifier { hostname, _ ->' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
           grep -F '26.10.05-nightly' gradle/libs.versions.toml
           grep -F 'object TlsAudit' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
-          grep -F 'TlsAudit.initialize(this)' app/src/main/kotlin/io/element/android/x/ElementXApplication.kt
+          grep -F 'TlsAudit.setEnabled(this, tlsEnabled)' app/src/main/kotlin/io/element/android/x/ElementXApplication.kt
           grep -F 'eventListenerFactory' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
           grep -F 'SSL / TLS audit log' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/developer/DeveloperSettingsView.kt
           grep -F 'private fun exportTlsAudit()' app/src/main/kotlin/io/element/android/x/MainActivity.kt
