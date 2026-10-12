@@ -9,6 +9,7 @@
 package io.element.android.libraries.matrix.impl.encryption
 
 import io.element.android.libraries.core.extensions.runCatchingExceptions
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.encryption.IdentityOAuthResetHandle
 import io.element.android.libraries.matrix.api.encryption.IdentityPasswordResetHandle
@@ -39,11 +40,18 @@ class RustPasswordIdentityResetHandle(
     private val identityResetHandle: org.matrix.rustcomponents.sdk.IdentityResetHandle,
 ) : IdentityPasswordResetHandle {
     override suspend fun resetPassword(password: String): Result<Unit> {
-        return runCatchingExceptions { identityResetHandle.reset(AuthData.Password(AuthDataPasswordDetails(userId.value, password))) }
+        StartupTrace.markReset("rust_handle_reset_password_begin")
+        return runCatchingExceptions {
+            identityResetHandle.reset(AuthData.Password(AuthDataPasswordDetails(userId.value, password)))
+        }.also { result ->
+            StartupTrace.markReset("rust_handle_reset_password_" + if (result.isSuccess) "success" else "failure_" + result.exceptionOrNull()?.javaClass?.simpleName)
+        }
     }
 
     override suspend fun cancel() {
+        StartupTrace.markReset("rust_handle_cancel_begin")
         identityResetHandle.cancelAndDestroy()
+        StartupTrace.markReset("rust_handle_cancel_end")
     }
 }
 
