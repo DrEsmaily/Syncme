@@ -144,5 +144,5 @@ fun aJoinedRoom(
         activeMemberCount = activeMemberCount,
         invitedMemberCount = invitedMemberCount,
         markAsReadResult = markAsReadResult,
-    )
+    ).apply { givenUpdateMembersResult { } }
 )

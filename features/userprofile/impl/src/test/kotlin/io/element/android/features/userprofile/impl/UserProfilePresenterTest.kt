@@ -60,6 +60,21 @@ class UserProfilePresenterTest {
     val warmUpRule = WarmUpRule()
 
     @Test
+    fun `presence changes from online to away and clears on disconnect`() = runTest {
+        val client = createFakeMatrixClient()
+        val presenter = createUserProfilePresenter(client = client, userId = A_USER_ID)
+        presenter.test {
+            awaitFirstItem()
+            client.presenceStates.value = mapOf(A_USER_ID to io.element.android.libraries.matrix.api.user.UserPresence.Online)
+            assertThat(awaitItem().presence).isEqualTo(io.element.android.libraries.matrix.api.user.UserPresence.Online)
+            client.presenceStates.value = mapOf(A_USER_ID to io.element.android.libraries.matrix.api.user.UserPresence.Away)
+            assertThat(awaitItem().presence).isEqualTo(io.element.android.libraries.matrix.api.user.UserPresence.Away)
+            client.presenceStates.value = emptyMap()
+            assertThat(awaitItem().presence).isEqualTo(io.element.android.libraries.matrix.api.user.UserPresence.Unknown)
+        }
+    }
+
+    @Test
     fun `present - returns the user profile data`() = runTest {
         val matrixUser = aMatrixUser(A_USER_ID.value, "Alice", "anAvatarUrl")
         val client = createFakeMatrixClient().apply {

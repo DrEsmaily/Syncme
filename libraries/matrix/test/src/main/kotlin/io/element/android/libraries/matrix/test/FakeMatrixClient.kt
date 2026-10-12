@@ -139,6 +139,7 @@ class FakeMatrixClient(
     private val enableAutomaticCallStatusLambda: (Boolean) -> Unit = { },
     override val contentScanner: ContentScanner? = null,
     private val isShuttingDownResult: () -> Boolean = { false },
+    override val presenceStates: MutableStateFlow<Map<UserId, io.element.android.libraries.matrix.api.user.UserPresence>> = MutableStateFlow(emptyMap()),
 ) : MatrixClient {
     var setDisplayNameCalled: Boolean = false
         private set
