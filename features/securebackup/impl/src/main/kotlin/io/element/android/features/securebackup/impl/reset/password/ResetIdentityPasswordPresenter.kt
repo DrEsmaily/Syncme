@@ -19,12 +19,14 @@ import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runCatchingUpdatingState
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.matrix.api.encryption.IdentityPasswordResetHandle
+import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class ResetIdentityPasswordPresenter(
     private val identityPasswordResetHandle: IdentityPasswordResetHandle,
     private val dispatchers: CoroutineDispatchers,
+    private val encryptionService: EncryptionService,
 ) : Presenter<ResetIdentityPasswordState> {
     @Composable
     override fun present(): ResetIdentityPasswordState {
@@ -50,6 +52,15 @@ class ResetIdentityPasswordPresenter(
         suspend {
             identityPasswordResetHandle.resetPassword(password).getOrThrow()
             StartupTrace.markReset("reset_password_sdk_success")
+            // A read-only server query distinguishes "no backup exists" from
+            // "backup exists but local SDK never observes ENABLED".
+            launch(dispatchers.io) {
+                StartupTrace.markReset("reset_post_success_backup_state_" + encryptionService.backupStateStateFlow.value)
+                encryptionService.doesBackupExistOnServer().fold(
+                    onSuccess = { StartupTrace.markReset("reset_post_success_server_backup_exists_" + it) },
+                    onFailure = { StartupTrace.markReset("reset_post_success_server_backup_query_error_" + it.javaClass.simpleName) },
+                )
+            }
         }.runCatchingUpdatingState(action)
         StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
     }
