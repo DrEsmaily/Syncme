@@ -38,6 +38,7 @@ object TlsAudit {
     fun setEnabled(context: Context, value: Boolean) {
         reportDir = File(context.filesDir, "syncme-tls-audit")
         rustLogRoot = File(context.cacheDir, "logs")
+        nativeClearMarker = File(context.filesDir, "syncme-tls-audit/native-clear-cutoff.txt")
         if (!value) {
             enabled = false
             activeFile = null
@@ -65,7 +66,7 @@ object TlsAudit {
                 ?.drop(MAX_FILES)
                 ?.forEach { runCatching { it.delete() } }
         }
-        record("AUDIT_STARTED", "build=SyncMe234_TLS_AUDIT scope=Matrix_Rust_builder+Kotlin_OkHttp+Android_cleartext_hints")
+        record("AUDIT_STARTED", "build=SyncMe236_OPT_IN_TLS_AUDIT scope=Matrix_Rust_builder+Kotlin_OkHttp+Android_cleartext_hints")
         record("AUDIT_LIMITATION", "Rust_tracing_logs_are_scanned_but_not_packet_capture; unlogged_native_WebView_connections_can_remain_invisible")
         record("AUDIT_PRIVACY", "host_ip_port_only; no_URL_path_query_headers_cookies_tokens_or_body")
         startUidTrafficSampler()
@@ -87,6 +88,7 @@ object TlsAudit {
                 previousTx == TrafficStats.UNSUPPORTED.toLong()
             ) {
                 record("UID_TRAFFIC_COUNTER_UNAVAILABLE", "TrafficStats_unsupported")
+                trafficSamplerStarted.set(false)
                 return@Thread
             }
             record("UID_TRAFFIC_COUNTER_ENABLED", "sampling_interval_ms=5000 uid=" + uid)
