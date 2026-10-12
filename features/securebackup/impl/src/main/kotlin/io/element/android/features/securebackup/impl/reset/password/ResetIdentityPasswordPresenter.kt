@@ -59,7 +59,20 @@ class ResetIdentityPasswordPresenter(
             launch(dispatchers.io) {
                 StartupTrace.markReset("reset_post_success_backup_state_" + encryptionService.backupStateStateFlow.value)
                 encryptionService.doesBackupExistOnServer().fold(
-                    onSuccess = { StartupTrace.markReset("reset_post_success_server_backup_exists_" + it) },
+                    onSuccess = { exists ->
+                        StartupTrace.markReset("reset_post_success_server_backup_exists_" + exists)
+                        val state = encryptionService.backupStateStateFlow.value
+                        if (!exists && state == io.element.android.libraries.matrix.api.encryption.BackupState.UNKNOWN) {
+                            StartupTrace.markReset("reset_backup_repair_enable_begin")
+                            encryptionService.enableBackups().fold(
+                                onSuccess = { StartupTrace.markReset("reset_backup_repair_enable_success") },
+                                onFailure = { StartupTrace.markReset("reset_backup_repair_enable_failure_" + it.javaClass.simpleName) },
+                            )
+                            StartupTrace.markReset("reset_backup_repair_final_state_" + encryptionService.backupStateStateFlow.value)
+                        } else {
+                            StartupTrace.markReset("reset_backup_repair_skipped_exists_" + exists + "_state_" + state)
+                        }
+                    },
                     onFailure = { StartupTrace.markReset("reset_post_success_server_backup_query_error_" + it.javaClass.simpleName) },
                 )
             }
