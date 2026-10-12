@@ -15,6 +15,7 @@ import android.widget.Toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
+import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
 import io.element.android.libraries.matrix.api.user.SyncMeAppVisibility
 import java.io.File
 import android.os.Bundle
@@ -77,6 +78,7 @@ class MainActivity : NodeActivity() {
         StartupTrace.mark("setContent_return")
         observeFirstDraw()
         if (intent?.action == "io.syncme.EXPORT_STARTUP_TRACE") exportStartupTrace()
+        if (intent?.action == "io.syncme.EXPORT_TLS_AUDIT") exportTlsAudit()
 
         val activity = this
         appBindings.appStartupHooks().forEach {
@@ -191,6 +193,10 @@ class MainActivity : NodeActivity() {
             exportStartupTrace()
             return
         }
+        if (intent.action == "io.syncme.EXPORT_TLS_AUDIT") {
+            exportTlsAudit()
+            return
+        }
         if (::mainNode.isInitialized) {
             mainNode.handleIntent(intent)
         } else {
@@ -234,6 +240,57 @@ class MainActivity : NodeActivity() {
         StartupTrace.mark("presence_app_background")
         StartupTrace.mark("activity_onStop")
         super.onStop()
+    }
+
+    /**
+     * Separate on-device, copyable SSL/TLS audit. This never changes user sessions
+     * or the existing startup trace export.
+     */
+    private fun exportTlsAudit() {
+        TlsAudit.record("TLS_REPORT_VIEW_REQUESTED")
+        lifecycleScope.launch {
+            val report = withContext(Dispatchers.IO) {
+                runCatching { TlsAudit.readReports().takeLast(850_000) }
+                    .getOrElse { "TLS log read error: " + it.javaClass.simpleName }
+            }
+            val textView = android.widget.TextView(this@MainActivity).apply {
+                text = report
+                textSize = 12f
+                setTextIsSelectable(true)
+                setPadding(24, 16, 24, 16)
+                typeface = android.graphics.Typeface.MONOSPACE
+            }
+            val scroll = android.widget.ScrollView(this@MainActivity).apply {
+                addView(textView)
+            }
+            android.app.AlertDialog.Builder(this@MainActivity)
+                .setTitle("SyncMe SSL / TLS audit")
+                .setView(scroll)
+                .setPositiveButton("Copy All") { _, _ ->
+                    val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE)
+                        as android.content.ClipboardManager
+                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("SyncMe TLS audit", report))
+                    Toast.makeText(this@MainActivity, "TLS audit copied", Toast.LENGTH_SHORT).show()
+                }
+                .setNeutralButton("Clear TLS Logs") { _, _ ->
+                    android.app.AlertDialog.Builder(this@MainActivity)
+                        .setTitle("Clear SSL/TLS audit?")
+                        .setMessage("Only the dedicated TLS audit files will be cleared. Your account and chats stay untouched.")
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Clear") { _, _ ->
+                            lifecycleScope.launch {
+                                val cleared = withContext(Dispatchers.IO) { TlsAudit.clearReports() }
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    if (cleared) "TLS audit cleared" else "Unable to clear TLS audit",
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            }
+                        }.show()
+                }
+                .setNegativeButton("Close", null)
+                .show()
+        }
     }
 
     private fun exportStartupTrace() {
