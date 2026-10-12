@@ -69,6 +69,8 @@ dependencies {
     implementation(projects.libraries.di)
     implementation(projects.libraries.featureflag.api)
     implementation(projects.libraries.network)
+    implementation(platform(libs.network.okhttp.bom))
+    implementation(libs.network.okhttp)
     implementation(projects.libraries.sessionStorage.api)
     implementation(projects.libraries.workmanager.api)
     implementation(projects.services.analytics.api)
@@ -79,6 +81,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.collections.immutable)
 
+    testImplementation(libs.network.mockwebserver)
     testCommonDependencies(libs)
     testImplementation(projects.features.enterprise.test)
     testImplementation(projects.features.networkmonitor.test)

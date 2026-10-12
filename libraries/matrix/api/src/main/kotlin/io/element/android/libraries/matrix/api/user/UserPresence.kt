@@ -23,3 +23,16 @@ fun UserPresence.presenceLabel(nowMillis: Long): String? = when (this) {
         }
     }
 }
+
+/** An incomplete count is a lower bound, and must never be presented as an exact total. */
+data class OnlineMemberCount(val online: Int, val isComplete: Boolean)
+
+fun Map<io.element.android.libraries.matrix.api.core.UserId, UserPresence>.onlineMemberCount(
+    joinedUserIds: Set<io.element.android.libraries.matrix.api.core.UserId>,
+    joinedMembersCount: Long,
+): OnlineMemberCount? {
+    val online = joinedUserIds.count { this[it] == UserPresence.Online }
+    val complete = joinedUserIds.size.toLong() == joinedMembersCount && joinedUserIds.isNotEmpty() &&
+        joinedUserIds.all { this[it] != null && this[it] != UserPresence.Unknown }
+    return if (online > 0 || complete) OnlineMemberCount(online, complete) else null
+}
