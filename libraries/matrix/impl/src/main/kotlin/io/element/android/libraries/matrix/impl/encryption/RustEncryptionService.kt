@@ -13,6 +13,7 @@ import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.extensions.flatMap
 import io.element.android.libraries.core.extensions.mapFailure
 import io.element.android.libraries.core.extensions.runCatchingExceptions
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.encryption.BackupState
@@ -35,6 +36,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
@@ -64,9 +66,10 @@ class RustEncryptionService(
     private val steadyStateExceptionMapper = SteadyStateExceptionMapper()
 
     override val backupStateStateFlow = combine(
-        service.backupStateFlow(),
-        syncService.syncState,
+        service.backupStateFlow().onEach { StartupTrace.mark("reset_raw_backup_" + it.toString()) },
+        syncService.syncState.onEach { StartupTrace.mark("reset_sync_" + it.toString()) },
     ) { backupState, syncState ->
+        StartupTrace.mark("reset_combined_raw_" + backupState.toString() + "_sync_" + syncState.toString())
         if (syncState == SyncState.Running) {
             backupState
         } else {
