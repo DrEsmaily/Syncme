@@ -10,6 +10,7 @@ package io.element.android.libraries.matrix.impl
 
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
 import org.matrix.rustcomponents.sdk.ClientBuilder
 
 interface ClientBuilderProvider {
@@ -23,6 +24,11 @@ class RustClientBuilderProvider : ClientBuilderProvider {
         // certificate/hostname verification at its source rather than patching
         // Android's rustls-platform-verifier. TLS transport remains enabled.
         // This intentionally permits server impersonation (MITM).
+        TlsAudit.record(
+            "RUST_MATRIX_CLIENT_BUILDER",
+            "disableSslVerification=true source=RustClientBuilderProvider.provide; native_requests_not_intercepted",
+            caller = true,
+        )
         return ClientBuilder().disableSslVerification()
     }
 }
