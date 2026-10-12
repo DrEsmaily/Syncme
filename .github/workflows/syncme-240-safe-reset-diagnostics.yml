@@ -1,16 +1,16 @@
-name: SyncMe 240 Reset Full Diagnostics ARM64 APK
+name: SyncMe 242 Reset Root Cause Diagnostics ARM64 APK
 
 on:
   push:
     branches:
-      - syncme-240-safe-reset-diagnostics-20261012
+      - syncme-242-reset-rootcause-20261012
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: syncme-240-reset-full-diagnostics-${{ github.ref }}
+  group: syncme-242-reset-rootcause-diagnostics-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -19,7 +19,7 @@ env:
 
 jobs:
   build:
-    name: Build isolated SyncMe 240 ARM64
+    name: Build isolated SyncMe 242 ARM64
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -81,6 +81,7 @@ jobs:
 
       - name: Verify complete reset trace hooks
         run: |
+          grep -F 'reset_post_success_server_backup_exists_' features/securebackup/impl/src/main/kotlin/io/element/android/features/securebackup/impl/reset/password/ResetIdentityPasswordPresenter.kt
           grep -F 'reset_password_sdk_success' features/securebackup/impl/src/main/kotlin/io/element/android/features/securebackup/impl/reset/password/ResetIdentityPasswordPresenter.kt
           grep -F 'reset_wait_observed_' features/securebackup/impl/src/main/kotlin/io/element/android/features/securebackup/impl/reset/ResetIdentityFlowManager.kt
           grep -F 'reset_combined_raw_' libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/encryption/RustEncryptionService.kt
@@ -102,13 +103,13 @@ jobs:
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
 
-      - name: Build SyncMe 240 ARM64 with opt-in diagnostics
+      - name: Build SyncMe 242 ARM64 with opt-in diagnostics
         env:
-          SYNCME_BUILD_NUMBER: '240'
+          SYNCME_BUILD_NUMBER: '242'
           SYNCME_VERSION_CODE: '20260910'
         run: ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease $CI_GRADLE_ARG_PROPERTIES
 
-      - name: Package named Build 240 ARM64 APK, full notes and SHA-256
+      - name: Package named Build 242 ARM64 APK, full notes and SHA-256
         shell: bash
         run: |
           set -euo pipefail
@@ -122,20 +123,20 @@ jobs:
           test -x "$aapt_bin"
           package_line="$("$aapt_bin" dump badging "$source_apk" | grep '^package:')"
           echo "$package_line"
-          echo "$package_line" | grep -F "versionName='240'"
+          echo "$package_line" | grep -F "versionName='242'"
           echo "$package_line" | grep -F "versionCode='202609102'"
           mkdir -p build-checkpoint
-          cp "$source_apk" build-checkpoint/SyncMe-240-ARM64-Reset-Full-Diagnostics.apk
-          target_apk=build-checkpoint/SyncMe-240-ARM64-Reset-Full-Diagnostics.apk
-          sha256sum "$target_apk" > build-checkpoint/SyncMe-240-SHA256.txt
+          cp "$source_apk" build-checkpoint/SyncMe-242-ARM64-Reset-Full-Diagnostics.apk
+          target_apk=build-checkpoint/SyncMe-242-ARM64-Reset-Full-Diagnostics.apk
+          sha256sum "$target_apk" > build-checkpoint/SyncMe-242-SHA256.txt
           {
-            echo "Build 240 expected Android versionName: 240"
-            echo "Build 240 expected ARM64 versionCode: 202609102"
+            echo "Build 242 expected Android versionName: 242"
+            echo "Build 242 expected ARM64 versionCode: 202609102"
             echo "Source APK: $source_apk"
             ls -lh "$target_apk"
-            cat build-checkpoint/SyncMe-240-SHA256.txt
-          } | tee build-checkpoint/SyncMe-240-APK-Validation.txt
-          cp .github/SYNCME_BUILD_NOTES_236.md build-checkpoint/SyncMe-240-Build-Notes.md
+            cat build-checkpoint/SyncMe-242-SHA256.txt
+          } | tee build-checkpoint/SyncMe-242-APK-Validation.txt
+          cp .github/SYNCME_BUILD_NOTES_236.md build-checkpoint/SyncMe-242-Build-Notes.md
           {
             echo
             echo "## Build-specific provenance and results"
@@ -150,22 +151,22 @@ jobs:
             echo
             echo "### APK hash and size"
             echo
-            cat build-checkpoint/SyncMe-240-APK-Validation.txt
+            cat build-checkpoint/SyncMe-242-APK-Validation.txt
             echo
             echo "### Recent source changes"
             echo
             git log -n 20 --format='- %h %s'
-          } >> build-checkpoint/SyncMe-240-Build-Notes.md
-          cat build-checkpoint/SyncMe-240-Build-Notes.md >> "$GITHUB_STEP_SUMMARY"
+          } >> build-checkpoint/SyncMe-242-Build-Notes.md
+          cat build-checkpoint/SyncMe-242-Build-Notes.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload Build 240 named APK and documentation
+      - name: Upload Build 242 named APK and documentation
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: SyncMe-240-ARM64-Reset-Full-Diagnostics
+          name: SyncMe-242-ARM64-Reset-Full-Diagnostics
           if-no-files-found: error
           retention-days: 90
           path: |
-            build-checkpoint/SyncMe-240-ARM64-Reset-Full-Diagnostics.apk
-            build-checkpoint/SyncMe-240-Build-Notes.md
-            build-checkpoint/SyncMe-240-SHA256.txt
-            build-checkpoint/SyncMe-240-APK-Validation.txt
+            build-checkpoint/SyncMe-242-ARM64-Reset-Full-Diagnostics.apk
+            build-checkpoint/SyncMe-242-Build-Notes.md
+            build-checkpoint/SyncMe-242-SHA256.txt
+            build-checkpoint/SyncMe-242-APK-Validation.txt
