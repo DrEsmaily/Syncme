@@ -49,6 +49,8 @@ class PlatformInitializer : Initializer<Unit> {
         val featureFlagService = appBindings.featureFlagService()
         val logLevel = runBlocking { preferencesStore.getTracingLogLevelFlow().first() }
         val tlsAuditEnabled = SyncMeDiagnosticsControl.tlsEnabled(context)
+        // Diagnostic-only build: capture SDK recovery and crypto decisions from process startup.
+        val resetTraceEnabled = true
         // Keep the native SDK's existing baseline behavior when diagnostics are
         // disabled, but do NOT force DEBUG, activate extra network targets, or
         // run the audit-specific event capture in normal operation.
@@ -67,17 +69,32 @@ class PlatformInitializer : Initializer<Unit> {
                     " level=DEBUG native_log_files=cache/logs",
             )
         }
-        val effectiveLevel = if (tlsAuditEnabled) LogLevel.DEBUG else logLevel
+        val resetTargets = if (resetTraceEnabled) listOf(
+            "matrix_sdk::encryption",
+            "matrix_sdk::encryption::backups",
+            "matrix_sdk::encryption::recovery",
+            "matrix_sdk_crypto",
+            "matrix_sdk::client",
+            "matrix_sdk::sync",
+            "matrix_sdk::event_cache",
+        ) else emptyList()
+        val effectiveLevel = if (tlsAuditEnabled || resetTraceEnabled) LogLevel.DEBUG else logLevel
         val tracingConfiguration = TracingConfiguration(
             writesToLogcat = runBlocking { featureFlagService.isFeatureEnabled(FeatureFlags.PrintLogsToLogcat) },
-            writesToFilesConfiguration = if (tlsAuditEnabled) {
+            writesToFilesConfiguration = if (resetTraceEnabled) {
+                WriteToFilesConfiguration.Enabled(
+                    directory = java.io.File(context.cacheDir, "logs").also { it.mkdirs() }.absolutePath,
+                    filenamePrefix = "syncme-reset-rust",
+                    numberOfFiles = 8,
+                )
+            } else if (tlsAuditEnabled) {
                 bugReporter.createWriteToFilesConfiguration()
             } else {
                 WriteToFilesConfiguration.Disabled
             },
             logLevel = effectiveLevel,
-            extraTargets = listOf(ELEMENT_X_TARGET) + auditTargets,
-            traceLogPacks = if (tlsAuditEnabled) {
+            extraTargets = listOf(ELEMENT_X_TARGET) + auditTargets + resetTargets,
+            traceLogPacks = if (tlsAuditEnabled || resetTraceEnabled) {
                 runBlocking { preferencesStore.getTracingLogPacksFlow().first() }
             } else emptySet(),
             sdkSentryDsn = appBindings.sentrySdkDsn()?.value?.takeIf { it.isNotBlank() },
