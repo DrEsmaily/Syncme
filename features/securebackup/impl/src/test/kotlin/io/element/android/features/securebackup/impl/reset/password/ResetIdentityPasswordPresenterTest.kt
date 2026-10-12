@@ -35,14 +35,19 @@ class ResetIdentityPasswordPresenterTest {
     fun `present - Reset event succeeds`() = runTest {
         val resetLambda = lambdaRecorder<String, Result<Unit>> { _ -> Result.success(Unit) }
         val resetHandle = FakeIdentityPasswordResetHandle(resetPasswordLambda = resetLambda)
-        val presenter = createPresenter(identityResetHandle = resetHandle)
+        var completed = false
+        val presenter = createPresenter(identityResetHandle = resetHandle, onResetCompleted = { completed = true })
         moleculeFlow(RecompositionMode.Immediate) {
             presenter.present()
         }.test {
             val initialState = awaitItem()
             initialState.eventSink(ResetIdentityPasswordEvent.Reset("password"))
+            initialState.eventSink(ResetIdentityPasswordEvent.Reset("password"))
             assertThat(awaitItem().resetAction.isLoading()).isTrue()
             assertThat(awaitItem().resetAction.isSuccess()).isTrue()
+            testScheduler.runCurrent()
+            assertThat(completed).isTrue()
+            resetLambda.assertions().isCalledOnce()
         }
     }
 
@@ -50,14 +55,17 @@ class ResetIdentityPasswordPresenterTest {
     fun `present - Reset event can fail gracefully`() = runTest {
         val resetLambda = lambdaRecorder<String, Result<Unit>> { _ -> Result.failure(IllegalStateException("Failed")) }
         val resetHandle = FakeIdentityPasswordResetHandle(resetPasswordLambda = resetLambda)
-        val presenter = createPresenter(identityResetHandle = resetHandle)
+        var completed = false
+        val presenter = createPresenter(identityResetHandle = resetHandle, onResetCompleted = { completed = true })
         moleculeFlow(RecompositionMode.Immediate) {
             presenter.present()
         }.test {
             val initialState = awaitItem()
             initialState.eventSink(ResetIdentityPasswordEvent.Reset("password"))
+            initialState.eventSink(ResetIdentityPasswordEvent.Reset("password"))
             assertThat(awaitItem().resetAction.isLoading()).isTrue()
             assertThat(awaitItem().resetAction.isFailure()).isTrue()
+            assertThat(completed).isFalse()
         }
     }
 
@@ -65,14 +73,17 @@ class ResetIdentityPasswordPresenterTest {
     fun `present - DismissError event resets the state`() = runTest {
         val resetLambda = lambdaRecorder<String, Result<Unit>> { _ -> Result.failure(IllegalStateException("Failed")) }
         val resetHandle = FakeIdentityPasswordResetHandle(resetPasswordLambda = resetLambda)
-        val presenter = createPresenter(identityResetHandle = resetHandle)
+        var completed = false
+        val presenter = createPresenter(identityResetHandle = resetHandle, onResetCompleted = { completed = true })
         moleculeFlow(RecompositionMode.Immediate) {
             presenter.present()
         }.test {
             val initialState = awaitItem()
             initialState.eventSink(ResetIdentityPasswordEvent.Reset("password"))
+            initialState.eventSink(ResetIdentityPasswordEvent.Reset("password"))
             assertThat(awaitItem().resetAction.isLoading()).isTrue()
             assertThat(awaitItem().resetAction.isFailure()).isTrue()
+            assertThat(completed).isFalse()
 
             initialState.eventSink(ResetIdentityPasswordEvent.DismissError)
             assertThat(awaitItem().resetAction.isUninitialized()).isTrue()
@@ -81,8 +92,10 @@ class ResetIdentityPasswordPresenterTest {
 
     private fun TestScope.createPresenter(
         identityResetHandle: FakeIdentityPasswordResetHandle = FakeIdentityPasswordResetHandle(),
+        onResetCompleted: () -> Unit = {},
     ) = ResetIdentityPasswordPresenter(
         identityPasswordResetHandle = identityResetHandle,
         dispatchers = testCoroutineDispatchers(),
+        onResetCompleted = onResetCompleted,
     )
 }

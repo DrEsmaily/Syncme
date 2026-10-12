@@ -50,7 +50,7 @@ class PlatformInitializer : Initializer<Unit> {
         val logLevel = runBlocking { preferencesStore.getTracingLogLevelFlow().first() }
         val tlsAuditEnabled = SyncMeDiagnosticsControl.tlsEnabled(context)
         // Diagnostic-only build: capture SDK recovery and crypto decisions from process startup.
-        val resetTraceEnabled = true
+        val resetTraceEnabled = SyncMeDiagnosticsControl.startupEnabled(context)
         // Keep the native SDK's existing baseline behavior when diagnostics are
         // disabled, but do NOT force DEBUG, activate extra network targets, or
         // run the audit-specific event capture in normal operation.

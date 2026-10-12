@@ -27,6 +27,7 @@ object StartupTrace {
         }
     }
     fun markReset(event: String) {
+        if (!enabled) return
         val file = resetTraceFile ?: return
         val safe = event.replace(Regex("[^a-zA-Z0-9_.:-]"), "_").take(240)
         val row = "${Instant.now()} pid=${android.os.Process.myPid()} ms=${SystemClock.elapsedRealtime() - processStart} event=$safe\n"

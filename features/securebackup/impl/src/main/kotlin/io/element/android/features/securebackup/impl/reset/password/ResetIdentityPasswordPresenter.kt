@@ -19,14 +19,14 @@ import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runCatchingUpdatingState
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.matrix.api.encryption.IdentityPasswordResetHandle
-import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 
 class ResetIdentityPasswordPresenter(
     private val identityPasswordResetHandle: IdentityPasswordResetHandle,
     private val dispatchers: CoroutineDispatchers,
-    private val encryptionService: EncryptionService,
+    private val onResetCompleted: () -> Unit,
 ) : Presenter<ResetIdentityPasswordState> {
     @Composable
     override fun present(): ResetIdentityPasswordState {
@@ -36,7 +36,11 @@ class ResetIdentityPasswordPresenter(
 
         fun handleEvent(event: ResetIdentityPasswordEvent) {
             when (event) {
-                is ResetIdentityPasswordEvent.Reset -> coroutineScope.reset(event.password, resetAction)
+                is ResetIdentityPasswordEvent.Reset -> if (!resetAction.value.isLoading() && !resetAction.value.isSuccess()) {
+                    // Set loading before launching so repeated IME/button events cannot reset twice.
+                    resetAction.value = AsyncAction.Loading
+                    coroutineScope.reset(event.password, resetAction)
+                }
                 ResetIdentityPasswordEvent.DismissError -> resetAction.value = AsyncAction.Uninitialized
             }
         }
@@ -56,26 +60,7 @@ class ResetIdentityPasswordPresenter(
         }.runCatchingUpdatingState(action)
         StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
         if (action.value is AsyncAction.Success) {
-            launch(dispatchers.io) {
-                StartupTrace.markReset("reset_post_success_backup_state_" + encryptionService.backupStateStateFlow.value)
-                encryptionService.doesBackupExistOnServer().fold(
-                    onSuccess = { exists ->
-                        StartupTrace.markReset("reset_post_success_server_backup_exists_" + exists)
-                        val state = encryptionService.backupStateStateFlow.value
-                        if (!exists && state == io.element.android.libraries.matrix.api.encryption.BackupState.UNKNOWN) {
-                            StartupTrace.markReset("reset_backup_repair_enable_begin")
-                            encryptionService.enableBackups().fold(
-                                onSuccess = { StartupTrace.markReset("reset_backup_repair_enable_success") },
-                                onFailure = { StartupTrace.markReset("reset_backup_repair_enable_failure_" + it.javaClass.simpleName) },
-                            )
-                            StartupTrace.markReset("reset_backup_repair_final_state_" + encryptionService.backupStateStateFlow.value)
-                        } else {
-                            StartupTrace.markReset("reset_backup_repair_skipped_exists_" + exists + "_state_" + state)
-                        }
-                    },
-                    onFailure = { StartupTrace.markReset("reset_post_success_server_backup_query_error_" + it.javaClass.simpleName) },
-                )
-            }
+            withContext(dispatchers.main) { onResetCompleted() }
         }
     }
 }

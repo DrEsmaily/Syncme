@@ -100,7 +100,12 @@ class ResetIdentityFlowNode(
                 val handle = resetIdentityFlowManager.currentHandleFlow.value.dataOrNull() as? IdentityPasswordResetHandle ?: error("No password handle found")
                 createNode<ResetIdentityPasswordNode>(
                     buildContext,
-                    listOf(ResetIdentityPasswordNode.Inputs(handle))
+                    listOf(
+                        ResetIdentityPasswordNode.Inputs(handle),
+                        object : ResetIdentityPasswordNode.Callback {
+                            override fun onResetCompleted() = resetIdentityFlowManager.onResetCompleted()
+                        },
+                    )
                 )
             }
         }
@@ -130,7 +135,11 @@ class ResetIdentityFlowNode(
                         val url = sessionEnterpriseService.tweakMasUrl(handle.url)
                         activity.openUrlInChromeCustomTab(null, darkTheme, url)
                         Timber.d("Starting resetOAuth")
-                        resetJob = launch { handle.resetOAuth() }
+                        resetJob = launch {
+                            handle.resetOAuth()
+                                .onSuccess { resetIdentityFlowManager.onResetCompleted() }
+                                .onFailure { Timber.e(it, "Identity reset authorization failed") }
+                        }
                         resetJob?.invokeOnCompletion { Timber.d("resetOAuth ended") }
                     }
                     is IdentityPasswordResetHandle -> backstack.push(NavTarget.ResetPassword)

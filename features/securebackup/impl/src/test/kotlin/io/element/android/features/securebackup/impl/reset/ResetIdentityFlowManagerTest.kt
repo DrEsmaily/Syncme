@@ -103,7 +103,7 @@ class ResetIdentityFlowManagerTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `whenResetIsDone - will trigger the lambda when key backup is enabled`() = runTest {
+    fun `reset completion follows SDK success even when backup is not enabled`() = runTest {
         val encryptionService = FakeEncryptionService()
         val flowManager = createFlowManager(encryptionService = encryptionService)
         var isDone = false
@@ -132,7 +132,50 @@ class ResetIdentityFlowManagerTest {
 
         encryptionService.emitBackupState(BackupState.ENABLED)
         advanceUntilIdle()
+        assertThat(isDone).isFalse()
+
+        encryptionService.emitBackupState(BackupState.UNKNOWN)
+        flowManager.onResetCompleted()
+        advanceUntilIdle()
         assertThat(isDone).isTrue()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `reset without authentication completes without waiting for backup`() = runTest {
+        val manager = createFlowManager(FakeEncryptionService(startIdentityResetLambda = { Result.success(null) }))
+        var completed = false
+        manager.whenResetIsDone { completed = true }
+        manager.getResetHandle()
+        advanceUntilIdle()
+        assertThat(completed).isTrue()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `replacing completion observer invokes only the current callback`() = runTest {
+        val manager = createFlowManager()
+        var oldCalls = 0
+        var newCalls = 0
+        manager.whenResetIsDone { oldCalls++ }
+        manager.whenResetIsDone { newCalls++ }
+        manager.onResetCompleted()
+        manager.onResetCompleted()
+        advanceUntilIdle()
+        assertThat(oldCalls).isEqualTo(0)
+        assertThat(newCalls).isEqualTo(1)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `cancel prevents the completion callback`() = runTest {
+        val manager = createFlowManager()
+        var completed = false
+        manager.whenResetIsDone { completed = true }
+        manager.cancel()
+        manager.onResetCompleted()
+        advanceUntilIdle()
+        assertThat(completed).isFalse()
     }
 
     private fun TestScope.createFlowManager(

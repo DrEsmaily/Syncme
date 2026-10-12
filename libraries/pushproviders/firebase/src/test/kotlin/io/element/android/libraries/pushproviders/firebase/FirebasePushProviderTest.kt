@@ -19,6 +19,10 @@ import io.element.android.libraries.pushproviders.api.Distributor
 import io.element.android.libraries.pushproviders.api.PusherSubscriber
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -100,6 +104,84 @@ class FirebasePushProviderTest {
         )
         val result = firebasePushProvider.registerWith(FakeMatrixClient(), Distributor("value", "Name"))
         assertThat(result.isFailure).isTrue()
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @Test
+    fun `registration waits for a late nonblank token`() = runTest {
+        val store = InMemoryFirebaseStore("")
+        var registeredKey: String? = null
+        val provider = createFirebasePushProvider(
+            firebaseStore = store,
+            pusherSubscriber = FakePusherSubscriber(registerPusherResult = { _, key, _ ->
+                registeredKey = key
+                Result.success(Unit)
+            }),
+        )
+        val registration = async { provider.registerWith(FakeMatrixClient(), Distributor("Firebase", "Firebase")) }
+        runCurrent()
+        assertThat(registration.isCompleted).isFalse()
+        store.storeInstallationId(" ")
+        runCurrent()
+        assertThat(registeredKey).isNull()
+        advanceTimeBy(19_000)
+        store.storeInstallationId("late-token")
+        assertThat(registration.await().isSuccess).isTrue()
+        assertThat(registeredKey).isEqualTo("late-token")
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @Test
+    fun `missing token times out without registering an empty pusher`() = runTest {
+        var called = false
+        val provider = createFirebasePushProvider(
+            firebaseStore = InMemoryFirebaseStore(),
+            pusherSubscriber = FakePusherSubscriber(registerPusherResult = { _, _, _ ->
+                called = true
+                Result.success(Unit)
+            }),
+        )
+        val registration = async { provider.registerWith(FakeMatrixClient(), Distributor("Firebase", "Firebase")) }
+        runCurrent()
+        advanceTimeBy(19_999)
+        assertThat(registration.isCompleted).isFalse()
+        advanceTimeBy(1)
+        assertThat(registration.await().isFailure).isTrue()
+        assertThat(called).isFalse()
+    }
+
+    @Test
+    fun `completed token flow returns a failure instead of throwing`() = runTest {
+        val store = object : FirebaseStore {
+            override fun getInstallationId(): String? = null
+            override fun fcmInstallationIdFlow() = flowOf<String?>(null, "")
+            override fun storeInstallationId(installationId: String?) = Unit
+        }
+        val result = createFirebasePushProvider(firebaseStore = store)
+            .registerWith(FakeMatrixClient(), Distributor("Firebase", "Firebase"))
+        assertThat(result.isFailure).isTrue()
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @Test
+    fun `cancelled registration does not register when a token arrives later`() = runTest {
+        val store = InMemoryFirebaseStore()
+        var called = false
+        val provider = createFirebasePushProvider(
+            firebaseStore = store,
+            pusherSubscriber = FakePusherSubscriber(registerPusherResult = { _, _, _ ->
+                called = true
+                Result.success(Unit)
+            }),
+        )
+        val registration = async { provider.registerWith(FakeMatrixClient(), Distributor("Firebase", "Firebase")) }
+        runCurrent()
+        registration.cancel()
+        registration.join()
+        store.storeInstallationId("late-token")
+        runCurrent()
+        assertThat(registration.isCancelled).isTrue()
+        assertThat(called).isFalse()
     }
 
     @Test

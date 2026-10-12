@@ -20,15 +20,10 @@ interface ClientBuilderProvider {
 @ContributesBinding(AppScope::class)
 class RustClientBuilderProvider : ClientBuilderProvider {
     override fun provide(): ClientBuilder {
-        // SyncMe 234 experiment: disable the Matrix Rust HTTP client's
-        // certificate/hostname verification at its source rather than patching
-        // Android's rustls-platform-verifier. TLS transport remains enabled.
-        // This intentionally permits server impersonation (MITM).
         TlsAudit.record(
             "RUST_MATRIX_CLIENT_BUILDER",
-            "disableSslVerification=true source=RustClientBuilderProvider.provide; native_requests_not_intercepted",
-            caller = true,
+            "certificate_and_hostname_validation=true online_revocation=false",
         )
-        return ClientBuilder().disableSslVerification()
+        return ClientBuilder()
     }
 }

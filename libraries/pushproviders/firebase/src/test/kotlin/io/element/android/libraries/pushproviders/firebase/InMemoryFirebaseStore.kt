@@ -9,16 +9,18 @@
 package io.element.android.libraries.pushproviders.firebase
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class InMemoryFirebaseStore(
-    private var installationId: String? = null
+    installationId: String? = null
 ) : FirebaseStore {
-    override fun getInstallationId(): String? = installationId
+    private val token = MutableStateFlow(installationId)
 
-    override fun fcmInstallationIdFlow(): Flow<String?> = flowOf(installationId)
+    override fun getInstallationId(): String? = token.value
+
+    override fun fcmInstallationIdFlow(): Flow<String?> = token
 
     override fun storeInstallationId(installationId: String?) {
-        this.installationId = installationId
+        token.value = installationId
     }
 }

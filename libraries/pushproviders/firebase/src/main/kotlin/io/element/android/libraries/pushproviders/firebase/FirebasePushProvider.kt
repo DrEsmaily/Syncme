@@ -17,7 +17,7 @@ import io.element.android.libraries.pushproviders.api.Config
 import io.element.android.libraries.pushproviders.api.Distributor
 import io.element.android.libraries.pushproviders.api.PushProvider
 import io.element.android.libraries.pushproviders.api.PusherSubscriber
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
@@ -44,9 +44,9 @@ class FirebasePushProvider(
     override suspend fun registerWith(matrixClient: MatrixClient, distributor: Distributor): Result<Unit> {
         // Identity reset can complete before Firebase delivers its initial token.
         // Wait for the existing FirebaseStore update instead of failing immediately.
-        val pushKey = firebaseStore.getInstallationId()
+        val pushKey = firebaseStore.getInstallationId()?.takeIf { it.isNotBlank() }
             ?: withTimeoutOrNull(20_000L) {
-                firebaseStore.fcmInstallationIdFlow().first { !it.isNullOrBlank() }
+                firebaseStore.fcmInstallationIdFlow().firstOrNull { !it.isNullOrBlank() }
             }
             ?: return Result.failure<Unit>(
             IllegalStateException(
