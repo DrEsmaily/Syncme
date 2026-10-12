@@ -8,6 +8,7 @@
 
 package io.element.android.features.preferences.impl.developer
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -15,6 +16,7 @@ import androidx.compose.foundation.progressSemantics
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -47,6 +49,7 @@ fun DeveloperSettingsView(
     modifier: Modifier = Modifier,
     extraOptions: @Composable () -> Unit = {},
 ) {
+    val context = LocalContext.current
     if (state.showLoader) {
         ProgressDialog()
     }
@@ -78,6 +81,20 @@ fun DeveloperSettingsView(
         },
         title = stringResource(id = CommonStrings.common_developer_options)
     ) {
+        // Only present in the existing (five-tap) developer settings.
+        PreferenceCategory(title = "SyncMe diagnostics") {
+            ListItem(
+                content = { Text("SSL / TLS audit log") },
+                supportingContent = { Text("Separate request and certificate diagnostics · Copy All / Clear") },
+                onClick = {
+                    context.startActivity(
+                        Intent("io.syncme.EXPORT_TLS_AUDIT")
+                            .setClassName(context.packageName, "io.element.android.x.MainActivity")
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    )
+                },
+            )
+        }
         // Note: this is OK to hardcode strings in this debug screen.
         AppDeveloperSettingsView(
             state = state.appDeveloperSettingsState,
