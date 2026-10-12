@@ -14,6 +14,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.Switch
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +41,7 @@ import io.element.android.libraries.designsystem.theme.components.CircularProgre
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.DeviceId
+import io.element.android.libraries.matrix.api.diagnostics.SyncMeDiagnosticsControl
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.mhssn.colorpicker.ColorPickerDialog
 import io.mhssn.colorpicker.ColorPickerType
@@ -50,6 +56,16 @@ fun DeveloperSettingsView(
     extraOptions: @Composable () -> Unit = {},
 ) {
     val context = LocalContext.current
+    var startupLogsEnabled by remember { mutableStateOf(SyncMeDiagnosticsControl.startupEnabled(context)) }
+    var tlsLogsEnabled by remember { mutableStateOf(SyncMeDiagnosticsControl.tlsEnabled(context)) }
+    val updateStartupLogs: (Boolean) -> Unit = { enabled ->
+        SyncMeDiagnosticsControl.setStartupEnabled(context, enabled)
+        startupLogsEnabled = enabled
+    }
+    val updateTlsLogs: (Boolean) -> Unit = { enabled ->
+        SyncMeDiagnosticsControl.setTlsEnabled(context, enabled)
+        tlsLogsEnabled = enabled
+    }
     if (state.showLoader) {
         ProgressDialog()
     }
@@ -83,6 +99,22 @@ fun DeveloperSettingsView(
     ) {
         // Only present in the existing (five-tap) developer settings.
         PreferenceCategory(title = "SyncMe diagnostics") {
+            ListItem(
+                content = { Text("Enable startup logs") },
+                supportingContent = { Text("Off by default. Enables main-thread watchdog and startup trace.") },
+                trailingContent = ListItemContent.Custom {
+                    Switch(checked = startupLogsEnabled, onCheckedChange = updateStartupLogs)
+                },
+                onClick = { updateStartupLogs(!startupLogsEnabled) },
+            )
+            ListItem(
+                content = { Text("Enable SSL / TLS logs") },
+                supportingContent = { Text("Off by default. Restart app to apply native Rust DEBUG and cleartext monitor.") },
+                trailingContent = ListItemContent.Custom {
+                    Switch(checked = tlsLogsEnabled, onCheckedChange = updateTlsLogs)
+                },
+                onClick = { updateTlsLogs(!tlsLogsEnabled) },
+            )
             ListItem(
                 content = { Text("Startup diagnostics") },
                 supportingContent = { Text("Startup, main-thread stalls and timing · Copy All / Clear") },
