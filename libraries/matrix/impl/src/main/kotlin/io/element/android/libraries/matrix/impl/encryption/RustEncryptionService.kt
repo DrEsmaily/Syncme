@@ -66,10 +66,10 @@ class RustEncryptionService(
     private val steadyStateExceptionMapper = SteadyStateExceptionMapper()
 
     override val backupStateStateFlow = combine(
-        service.backupStateFlow().onEach { StartupTrace.mark("reset_raw_backup_" + it.toString()) },
-        syncService.syncState.onEach { StartupTrace.mark("reset_sync_" + it.toString()) },
+        service.backupStateFlow().onEach { StartupTrace.markReset("reset_raw_backup_" + it.toString()) },
+        syncService.syncState.onEach { StartupTrace.markReset("reset_sync_" + it.toString()) },
     ) { backupState, syncState ->
-        StartupTrace.mark("reset_combined_raw_" + backupState.toString() + "_sync_" + syncState.toString())
+        StartupTrace.markReset("reset_combined_raw_" + backupState.toString() + "_sync_" + syncState.toString())
         if (syncState == SyncState.Running) {
             backupState
         } else {
