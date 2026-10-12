@@ -96,17 +96,38 @@ jobs:
             unzip -t "$apk" | tail -1
           done
           mkdir -p build-checkpoint
+          notes="build-checkpoint/SYNCME-234-BUILD-NOTES-${GITHUB_RUN_ID}.md"
+          cat .github/SYNCME_BUILD_NOTES_234.md > "$notes"
           {
-            echo 'SyncMe 234 complete diagnostics (certificate-verification bypass retained)'
-            echo "Original 234 source: 836883110d1dbeb1f4463004bcd825658c4f9f86"
-            echo "Experiment commit: ${GITHUB_SHA}"
-            echo "Run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-            echo "Matrix SDK: 26.10.05-nightly"
-            echo 'Matrix Rust client: disableSslVerification() + creation marker'
-            echo 'Kotlin OkHttp: DNS/handshake/failure event log; native SDK tracing scanned from cache/logs'
-            echo 'TLS transport retained; authenticity unchecked. Rust native and WebView are outside OkHttp visibility.'
-            echo 'Developer Options (5 taps on version) > SyncMe diagnostics > Startup diagnostics and SSL / TLS audit log; Copy All.'
-          } > build-checkpoint/SYNCME-234-NOSSL-README.txt
+            echo
+            echo '## Build-specific provenance and results'
+            echo
+            echo "- UTC date: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            echo "- GitHub run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "- Run attempt: ${GITHUB_RUN_ATTEMPT}"
+            echo "- Branch: ${GITHUB_REF_NAME}"
+            echo "- Source commit: ${GITHUB_SHA}"
+            echo "- Build: :app:assembleGplayRelease / ARM64 / JDK 21"
+            echo "- CI result: compile complete and APK structure validated"
+            echo "- Runtime test result: NOT TESTED ON ANDROID IN THIS WORKFLOW"
+            echo
+            echo '### APK output sizes and SHA-256 checksums'
+            echo
+            for apk in "${apks[@]}"; do
+              echo "- ${apk}"
+              sha256sum "$apk"
+              ls -lh "$apk"
+            done
+            echo
+            echo '### Recent source commits'
+            echo
+            git log -n 15 --format='- %h %s'
+            echo
+            echo '### Explicit caution'
+            echo
+            echo 'A green GitHub build is not proof of secure TLS or absence of external connections.'
+          } >> "$notes"
+          cat "$notes" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload experimental APK and checkpoint
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -116,4 +137,4 @@ jobs:
           retention-days: 90
           path: |
             app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk
-            build-checkpoint/SYNCME-234-NOSSL-README.txt
+            build-checkpoint/SYNCME-234-BUILD-NOTES-*.md
