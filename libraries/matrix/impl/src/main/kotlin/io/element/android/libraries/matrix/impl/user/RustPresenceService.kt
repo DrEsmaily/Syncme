@@ -9,10 +9,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -29,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-/** One cancellable presence-only long poll per session, using normal platform TLS validation. */
+/** Bounded presence GETs only: never acknowledges to-device messages owned by SDK sync. */
 internal class RustPresenceService(
     homeserver: String,
     private val sessionId: UserId,
@@ -37,6 +40,8 @@ internal class RustPresenceService(
     syncState: StateFlow<SyncState>,
     visibility: StateFlow<Boolean?>,
     private val scope: CoroutineScope,
+    private val publishOwnPresence: suspend (String) -> Unit = {},
+    private val refreshIntervalMillis: (Int) -> Long = { if (it <= 8) 15_000 else 60_000 },
 ) {
     private val base = homeserver.trimEnd('/').toHttpUrl()
     private val http = OkHttpClient.Builder()
@@ -44,6 +49,8 @@ internal class RustPresenceService(
         .callTimeout(45, TimeUnit.SECONDS).followRedirects(false).followSslRedirects(false).build()
     private val registrations = mutableMapOf<UserId, Int>()
     private val snapshots = Channel<Pair<UserId, Long>>(Channel.UNLIMITED)
+    private val pending = mutableSetOf<Pair<UserId, Long>>()
+    private val observedAtNanos = mutableMapOf<UserId, Long>()
     private var generation = 0L
     private var running = false
     private val cooldownUntilNanos = AtomicLong(0)
@@ -55,41 +62,66 @@ internal class RustPresenceService(
         repeat(4) {
             scope.launch {
                 for ((user, epoch) in snapshots) {
-                    if (!isCurrent(user, epoch)) continue
                     try {
+                        if (!isCurrent(user, epoch)) continue
                         val content = request("presence", user.value, "status") ?: continue
                         synchronized(registrations) {
-                            if (isCurrent(user, epoch) && user !in mutableStates.value) {
+                            if (isCurrent(user, epoch)) {
                                 mutableStates.value += user to presenceFromJson(content, System.currentTimeMillis())
+                                observedAtNanos[user] = System.nanoTime()
                             }
                         }
                     } catch (cancelled: CancellationException) {
                         throw cancelled
                     } catch (_: Exception) {
-                        // Missing/forbidden presence is Unknown, never Offline.
+                        synchronized(registrations) {
+                            if (isCurrent(user, epoch)) mutableStates.value -= user
+                        }
+                    } finally {
+                        synchronized(registrations) { pending.remove(user to epoch) }
                     }
                 }
             }
         }
+        val stableVisibility = channelFlow {
+            visibility.collectLatest { foreground ->
+                if (foreground == false) delay(1_000)
+                send(foreground)
+            }
+        }.stateIn(scope, SharingStarted.Eagerly, null)
         scope.launch {
-            val stableVisibility = channelFlow {
-                visibility.collectLatest { foreground ->
-                    // Rotation and short Activity switches must not briefly publish Away.
-                    if (foreground == false) delay(1_000)
-                    send(foreground)
+            stableVisibility.collectLatest { foreground ->
+                if (foreground == null) return@collectLatest
+                try {
+                    // The SDK owns publication, including presence in its future sync requests.
+                    publishOwnPresence(if (foreground) "online" else "unavailable")
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Exception) {
+                    // Best effort only. Never fabricate self presence from a lifecycle hint.
                 }
             }
-            combine(syncState, stableVisibility) { sync, foreground -> (sync == SyncState.Running && foreground != null) to foreground }
-                .collectLatest { (enabled, foreground) ->
+        }
+        scope.launch {
+            combine(syncState, stableVisibility) { sync, foreground -> sync == SyncState.Running && foreground == true }
+                .distinctUntilChanged().collectLatest { enabled ->
                     synchronized(registrations) {
                         generation++
                         running = enabled
                         mutableStates.value = emptyMap()
-                        if (enabled) registrations.keys.forEach { snapshots.trySend(it to generation) }
+                        observedAtNanos.clear()
                     }
                     if (enabled) {
                         try {
-                            observe(if (foreground == true) "online" else "unavailable")
+                            while (kotlin.coroutines.coroutineContext.isActive) {
+                                val count = synchronized(registrations) {
+                                    val oldest = System.nanoTime() - TimeUnit.SECONDS.toNanos(90)
+                                    mutableStates.value = mutableStates.value.filterKeys { (observedAtNanos[it] ?: 0) >= oldest }
+                                    registrations.keys.forEach(::enqueue)
+                                    registrations.size
+                                }
+                                delay(refreshIntervalMillis(count))
+                            }
                         } finally {
                             synchronized(registrations) {
                                 generation++
@@ -102,11 +134,17 @@ internal class RustPresenceService(
         }
     }
 
+    // Called only while holding registrations' monitor. Do not accumulate refreshes for slow users.
+    private fun enqueue(user: UserId) {
+        val entry = user to generation
+        if (pending.add(entry)) snapshots.trySend(entry)
+    }
+
     fun track(users: Set<UserId>) = synchronized(registrations) {
         users.forEach { user ->
             val count = registrations[user] ?: 0
             registrations[user] = count + 1
-            if (count == 0 && running) snapshots.trySend(user to generation)
+            if (count == 0 && running) enqueue(user)
         }
     }
 
@@ -117,6 +155,7 @@ internal class RustPresenceService(
                 registrations[user] = count - 1
             } else {
                 registrations.remove(user)
+                observedAtNanos.remove(user)
                 mutableStates.value -= user
             }
         }
@@ -126,53 +165,11 @@ internal class RustPresenceService(
         running && epoch == generation && user in registrations
     }
 
-    private suspend fun observe(ownPresence: String) {
-        var since: String? = null
-        var failures = 0
-        while (kotlin.coroutines.coroutineContext.isActive) {
-            try {
-                val payload = request("sync", query = mapOf(
-                    "timeout" to "30000",
-                    "set_presence" to ownPresence,
-                    "filter" to """{"room":{"rooms":[],"timeline":{"limit":0}},"presence":{"types":["m.presence"]}}""",
-                ) + (since?.let { mapOf("since" to it) } ?: emptyMap())) ?: return
-                since = payload.getString("next_batch")
-                failures = 0
-                val events = payload.optJSONObject("presence")?.optJSONArray("events")
-                synchronized(registrations) {
-                    val updates = mutableMapOf<UserId, UserPresence>()
-                    for (index in 0 until (events?.length() ?: 0)) {
-                        val event = events?.optJSONObject(index) ?: continue
-                        if (event.optString("type") != "m.presence") continue
-                        val sender = event.optString("sender").takeIf { it.startsWith('@') && ':' in it } ?: continue
-                        val user = UserId(sender)
-                        if (user !in registrations) continue
-                        updates[user] = presenceFromJson(event.optJSONObject("content") ?: continue, System.currentTimeMillis())
-                    }
-                    mutableStates.value += updates
-                }
-                // Protect against servers returning empty syncs immediately, avoiding a hot loop.
-                delay(500)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Exception) {
-                synchronized(registrations) {
-                    generation++
-                    mutableStates.value = emptyMap()
-                }
-                since = null // A reconnect must refresh presence instead of keeping an incomplete incremental cache.
-                failures = (failures + 1).coerceAtMost(6)
-                delay(if (error is RateLimited) error.retryMs else (1_000L shl failures).coerceAtMost(60_000))
-            }
-        }
-    }
-
-    private suspend fun request(vararg path: String, query: Map<String, String> = emptyMap()): JSONObject? {
+    private suspend fun request(vararg path: String): JSONObject? {
         delay(((cooldownUntilNanos.get() - System.nanoTime()) / 1_000_000).coerceAtLeast(0))
         val session = sessionStore.getSession(sessionId.value) ?: return null
         val url = base.newBuilder().addPathSegments("_matrix/client/v3").apply {
             path.forEach(::addPathSegment)
-            query.forEach { (key, value) -> addQueryParameter(key, value) }
         }.build()
         return suspendCancellableCoroutine { continuation ->
             val call = http.newCall(Request.Builder().url(url).header("Authorization", "Bearer ${session.accessToken}").build())

@@ -22,15 +22,20 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class RustPresenceServiceTest : RobolectricTest() {
     private val user = UserId("@bob:example.org")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val sync = MutableStateFlow(SyncState.Running)
     private val visibility = MutableStateFlow<Boolean?>(true)
-    private val failSync = AtomicBoolean(false)
+    private val failRequests = AtomicBoolean(false)
+    private val presence = AtomicReference("online")
+    private val published = CopyOnWriteArrayList<String>()
+    private val paths = CopyOnWriteArrayList<String>()
     private val slowSnapshots = AtomicBoolean(false)
     private lateinit var server: MockWebServer
     private lateinit var service: RustPresenceService
@@ -40,13 +45,9 @@ class RustPresenceServiceTest : RobolectricTest() {
         server = MockWebServer()
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                if (request.requestUrl!!.encodedPath.endsWith("/sync")) {
-                    if (failSync.get()) return MockResponse().setResponseCode(503)
-                    return MockResponse().setBody("""{"next_batch":"next","presence":{"events":[
-                        {"type":"m.presence","sender":"@bob:example.org","content":{"presence":"online"}}
-                    ]}}""")
-                }
-                return MockResponse().setBody("""{"presence":"unavailable"}""").apply {
+                paths.add(request.requestUrl!!.encodedPath)
+                if (failRequests.get()) return MockResponse().setResponseCode(503)
+                return MockResponse().setBody("""{"presence":"${presence.get()}"}""").apply {
                     if (slowSnapshots.get()) setBodyDelay(2, TimeUnit.SECONDS)
                 }
             }
@@ -99,32 +100,39 @@ class RustPresenceServiceTest : RobolectricTest() {
         service.track(setOf(user))
         eventually { service.states.value[user] == UserPresence.Online }
         visibility.value = false
-        var awayRequest: RecordedRequest? = null
-        withTimeout(5000) {
-            while (awayRequest == null) {
-                val request = server.takeRequest(100, TimeUnit.MILLISECONDS)
-                if (request?.requestUrl?.queryParameter("set_presence") == "unavailable") awayRequest = request
-            }
-        }
-        assertThat(awayRequest!!.requestUrl!!.queryParameter("set_presence")).isEqualTo("unavailable")
+        eventually { "unavailable" in published }
+        eventually { service.states.value.isEmpty() }
         visibility.value = true
-        withTimeout(5000) {
-            var found = false
-            while (!found) {
-                val request = server.takeRequest(100, TimeUnit.MILLISECONDS)
-                found = request?.requestUrl?.queryParameter("set_presence") == "online"
-            }
-        }
+        eventually { published.count { it == "online" } == 2 }
+        eventually { service.states.value[user] == UserPresence.Online }
+        assertThat(published).doesNotContain("offline")
     }
 
     @Test
-    fun `server failure clears presence and reconnect refreshes full state`() = runBlocking {
+    fun `server failure clears presence and later successful snapshots restore it`() = runBlocking {
         service.track(setOf(user))
         eventually { service.states.value[user] == UserPresence.Online }
-        failSync.set(true)
+        failRequests.set(true)
         eventually { service.states.value.isEmpty() }
-        failSync.set(false)
+        failRequests.set(false)
         eventually { service.states.value[user] == UserPresence.Online }
+    }
+
+    @Test
+    fun `online changes to away from a fresh server response`() = runBlocking {
+        service.track(setOf(user))
+        eventually { service.states.value[user] == UserPresence.Online }
+        presence.set("unavailable")
+        eventually { service.states.value[user] == UserPresence.Away }
+    }
+
+    @Test
+    fun `presence never calls sync or acknowledges to device encryption messages`() = runBlocking {
+        service.track(setOf(user))
+        eventually { service.states.value[user] == UserPresence.Online }
+        delay(500)
+        assertThat(paths).isNotEmpty()
+        assertThat(paths.all { it.startsWith("/_matrix/client/v3/presence/") && it.endsWith("/status") }).isTrue()
     }
 
     private suspend fun eventually(condition: () -> Boolean) = withTimeout(6000) {
