@@ -45,7 +45,7 @@ jobs:
           set -euo pipefail
           grep -F 'return ClientBuilder().disableSslVerification()' libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/ClientBuilderProvider.kt
           grep -F 'sslSocketFactory(sslContext.socketFactory, permissiveTrustManager)' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
-          grep -F 'hostnameVerifier { _, _ -> true }' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
+          grep -F 'hostnameVerifier { hostname, _ ->' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
           grep -F '26.10.05-nightly' gradle/libs.versions.toml
           grep -F 'object TlsAudit' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
           grep -F 'TlsAudit.initialize(this)' app/src/main/kotlin/io/element/android/x/ElementXApplication.kt
