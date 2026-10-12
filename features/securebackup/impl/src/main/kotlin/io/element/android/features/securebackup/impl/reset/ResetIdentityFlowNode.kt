@@ -37,6 +37,7 @@ import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.designsystem.components.ProgressDialog
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.encryption.IdentityOAuthResetHandle
 import io.element.android.libraries.matrix.api.encryption.IdentityPasswordResetHandle
 import kotlinx.coroutines.CoroutineScope
@@ -98,9 +99,15 @@ class ResetIdentityFlowNode(
             }
             is NavTarget.ResetPassword -> {
                 val handle = resetIdentityFlowManager.currentHandleFlow.value.dataOrNull() as? IdentityPasswordResetHandle ?: error("No password handle found")
+                val passwordCallback = object : ResetIdentityPasswordNode.Callback {
+                    override fun onPasswordResetSuccess() {
+                        StartupTrace.markReset("reset_password_complete_exit_flow_backup_not_assumed_enabled")
+                        callback.onDone()
+                    }
+                }
                 createNode<ResetIdentityPasswordNode>(
                     buildContext,
-                    listOf(ResetIdentityPasswordNode.Inputs(handle))
+                    listOf(ResetIdentityPasswordNode.Inputs(handle), passwordCallback)
                 )
             }
         }
