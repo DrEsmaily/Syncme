@@ -17,6 +17,8 @@ import io.element.android.libraries.pushproviders.api.Config
 import io.element.android.libraries.pushproviders.api.Distributor
 import io.element.android.libraries.pushproviders.api.PushProvider
 import io.element.android.libraries.pushproviders.api.PusherSubscriber
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
 private val loggerTag = LoggerTag("FirebasePushProvider", LoggerTag.PushLoggerTag)
@@ -40,7 +42,13 @@ class FirebasePushProvider(
     }
 
     override suspend fun registerWith(matrixClient: MatrixClient, distributor: Distributor): Result<Unit> {
-        val pushKey = firebaseStore.getInstallationId() ?: return Result.failure<Unit>(
+        // Identity reset can complete before Firebase delivers its initial token.
+        // Wait for the existing FirebaseStore update instead of failing immediately.
+        val pushKey = firebaseStore.getInstallationId()
+            ?: withTimeoutOrNull(20_000L) {
+                firebaseStore.fcmInstallationIdFlow().first { !it.isNullOrBlank() }
+            }
+            ?: return Result.failure<Unit>(
             IllegalStateException(
                 "Unable to register pusher, Firebase token is not known."
             )
