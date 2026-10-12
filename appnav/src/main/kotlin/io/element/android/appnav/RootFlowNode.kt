@@ -216,7 +216,9 @@ class RootFlowNode(
     private fun switchToLoggedInFlow(sessionId: SessionId, navId: Int) {
         pendingLoginParams = null
         backstack.safeRoot(NavTarget.LoggedInFlow(sessionId, navId))
-        restoreAllSessions()
+        // SyncMe 238 diagnostic: disable background restoration of all accounts on login.
+        // The selected session is still restored normally.
+        // restoreAllSessions()
     }
 
     /**
