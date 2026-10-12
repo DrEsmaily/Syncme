@@ -141,5 +141,6 @@ private fun filterSelectionState(filter: RoomListFilter, selected: Boolean) = Fi
 private fun TestScope.createRoomListFiltersPresenter(): RoomListFiltersPresenter {
     return RoomListFiltersPresenter(
         filterSelectionStrategy = DefaultFilterSelectionStrategy(),
+        appPreferencesStore = io.element.android.libraries.preferences.test.InMemoryAppPreferencesStore(),
     )
 }

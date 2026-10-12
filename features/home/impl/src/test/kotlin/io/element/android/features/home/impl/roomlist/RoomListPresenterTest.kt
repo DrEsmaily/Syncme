@@ -756,5 +756,9 @@ class RoomListPresenterTest {
         announcementService = announcementService,
         coldStartWatcher = FakeAnalyticsColdStartWatcher(),
         featureFlagService = featureFlagService,
+        appPreferencesStore = io.element.android.libraries.preferences.test.InMemoryAppPreferencesStore(),
+        appContext = io.mockk.mockk<android.content.Context> {
+            io.mockk.every { getSharedPreferences(any(), any()) } returns io.mockk.mockk(relaxed = true)
+        },
     )
 }

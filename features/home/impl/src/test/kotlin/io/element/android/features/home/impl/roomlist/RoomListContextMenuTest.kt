@@ -137,6 +137,7 @@ class RoomListContextMenuTest : RobolectricTest() {
         setSafeContent {
             RoomListContextMenu(
                 contextMenu = contextMenu,
+                customTags = emptyList(),
                 canReportRoom = canReportRoom,
                 onRoomSettingsClick = onRoomSettingsClick,
                 onReportRoomClick = onReportRoomClick,
