@@ -64,7 +64,7 @@ jobs:
           grep -F 'native-clear-cutoff.txt' libraries/matrix/api/src/main/kotlin/io/element/android/libraries/matrix/api/diagnostics/TlsAudit.kt
           grep -F 'Build ${buildMeta.versionName} • Optional Diagnostics' features/preferences/impl/src/main/kotlin/io/element/android/features/preferences/impl/root/VersionFormatter.kt
           grep -F 'SYNCME_VERSION_CODE' app/build.gradle.kts
-          grep -F 'SyncMe 238: no trailing chevron' features/home/impl/src/main/kotlin/io/element/android/features/home/impl/filters/RoomListFiltersView.kt
+          grep -F 'SyncMe 236: no trailing chevron' features/home/impl/src/main/kotlin/io/element/android/features/home/impl/filters/RoomListFiltersView.kt
           if grep -Fq 'androidx.compose.material3.Text("›")' features/home/impl/src/main/kotlin/io/element/android/features/home/impl/filters/RoomListFiltersView.kt; then
             echo "Tag manager trailing chevron remains" >&2
             exit 1
