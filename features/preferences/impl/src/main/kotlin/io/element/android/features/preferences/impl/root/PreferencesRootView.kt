@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import android.content.Intent
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -377,17 +375,6 @@ private fun ColumnScope.GeneralSection(
         content = { Text(stringResource(id = CommonStrings.common_about)) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Info())),
         onClick = onOpenAbout,
-    )
-    val context = LocalContext.current
-    ListItem(
-        content = { Text("View startup diagnostics") },
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Info())),
-        onClick = {
-            context.startActivity(Intent("io.syncme.EXPORT_STARTUP_TRACE").apply {
-                setClassName(context.packageName, "io.element.android.x.MainActivity")
-                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            })
-        },
     )
     // SyncMe developer options appear only after five taps on the version.
     AnimatedVisibility(
