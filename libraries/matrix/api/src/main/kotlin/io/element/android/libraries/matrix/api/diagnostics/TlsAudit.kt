@@ -32,6 +32,7 @@ object TlsAudit {
     @Volatile private var activeFile: File? = null
     @Volatile private var reportDir: File? = null
     @Volatile private var rustLogRoot: File? = null
+    @Volatile private var nativeClearMarker: File? = null
 
     fun initialize(context: Context) {
         val folder = File(context.filesDir, "syncme-tls-audit")
@@ -40,6 +41,8 @@ object TlsAudit {
         // Matrix SDK's own native tracing writer (set up in PlatformInitializer).
         // It is separate from this audit and may be rotated by the SDK.
         rustLogRoot = File(context.cacheDir, "logs")
+        // Persist a cutoff rather than deleting files belonging to the active Rust writer.
+        nativeClearMarker = File(folder, "native-clear-cutoff.txt")
         activeFile = File(folder, "tls-" + System.currentTimeMillis() + "-" + Process.myPid() + ".txt")
         writer.execute {
             folder.listFiles { f -> f.isFile && f.name.startsWith("tls-") && f.name.endsWith(".txt") }
@@ -155,8 +158,10 @@ object TlsAudit {
     private fun scanNativeRustNetworkLogs(): String {
         val folder = rustLogRoot ?: return "RUST_NATIVE_TRACE_NOT_INITIALIZED"
         if (!folder.isDirectory) {
-            return "RUST_NATIVE_TRACE_UNAVAILABLE directory_not_found=cache/logs " +
-                "note=Native_tracing_may_be_disabled_or_use_another_location"
+            return "RUST_NATIVE_TRACE_UNAVAILABLE directory_not_found=cache/logs"
+        }
+        val cutoffMs = nativeClearMarker?.let { marker ->
+            runCatching { marker.takeIf { it.isFile }?.readText()?.trim()?.toLongOrNull() }.getOrNull()
         }
         val files = runCatching {
             folder.walkTopDown().maxDepth(3)
@@ -168,23 +173,35 @@ object TlsAudit {
                 .sortedByDescending { it.lastModified() }
                 .take(20).toList()
         }.getOrDefault(emptyList())
-        val entries = ArrayList<String>()
-        var matchedLines = 0
+        val examples = LinkedHashMap<String, String>()
+        val eventCounts = linkedMapOf<String, Int>()
+        var candidateEvents = 0
         var scannedLines = 0
+        var oldLinesFiltered = 0
         var readErrors = 0
         for (file in files) {
             runCatching {
                 RandomAccessFile(file, "r").use { raf ->
                     val from = (raf.length() - 400_000L).coerceAtLeast(0L)
                     raf.seek(from)
-                    if (from > 0L) raf.readLine() // Drop the possibly partial first line
+                    if (from > 0L) raf.readLine()
                     var line = raf.readLine()
                     while (line != null && scannedLines < 15_000) {
                         scannedLines++
-                        classifyRustLine(line)?.let { event ->
-                            matchedLines++
-                            if (entries.size < 350) {
-                                entries.add("source=RustSDK " + event)
+                        val rawTime = rustTimeRegex.find(line)?.value
+                        // Do not delete or truncate live Rust logs: ignore events from
+                        // before the last 'Clear TLS Logs' action, even after restart.
+                        val eventMs = rawTime?.let { runCatching { Instant.parse(it).toEpochMilli() }.getOrNull() }
+                        if (cutoffMs != null && (eventMs == null || eventMs < cutoffMs)) {
+                            oldLinesFiltered++
+                        } else {
+                            classifyRustLine(line)?.let { event ->
+                                candidateEvents++
+                                val bucket = event.substringBefore(" time=")
+                                eventCounts[bucket] = (eventCounts[bucket] ?: 0) + 1
+                                if (!examples.containsKey(bucket) && examples.size < 90) {
+                                    examples[bucket] = event
+                                }
                             }
                         }
                         line = raf.readLine()
@@ -196,19 +213,20 @@ object TlsAudit {
         return buildString {
             appendLine("===== RUST_NATIVE_NETWORK_TRACING (sanitized; metadata only) =====")
             appendLine("files=" + files.size + " scanned_lines=" + scannedLines +
-                " network_events=" + matchedLines + " read_errors=" + readErrors)
-            appendLine("coverage=SDK_tracing_targets_only; native_packets_without_tracing_not_visible")
+                " candidate_trace_lines=" + candidateEvents + " read_errors=" + readErrors +
+                " before_clear_filtered=" + oldLinesFiltered)
+            appendLine("COUNT_NOTE: trace_lines_are_NOT_requests_or_failed_connections")
+            appendLine("HOST_NOTE: observed_host_is_from_log_text_NOT_verified_socket_destination")
+            appendLine("coverage=SDK_tracing_targets_only; does_NOT_prove_absence_of_external_traffic")
             appendLine("raw_urls_query_headers_tokens_message_contents=NOT_EXPORTED")
-            if (files.isEmpty()) {
-                appendLine("RUST_NATIVE_TRACE_UNAVAILABLE no_tracing_files_seen")
-            } else if (matchedLines == 0) {
-                appendLine("RUST_NATIVE_NETWORK_EVENTS_NOT_FOUND does_NOT_prove_absence_of_connections")
+            if (files.isEmpty()) appendLine("RUST_NATIVE_TRACE_UNAVAILABLE no_tracing_files_seen")
+            if (candidateEvents == 0) appendLine("NO_CLASSIFIED_NATIVE_NETWORK_EVENTS")
+            appendLine("--- AGGREGATED_EVENT_CATEGORIES ---")
+            eventCounts.entries.sortedByDescending { it.value }.take(100).forEach { (key, count) ->
+                appendLine("count=" + count + " " + key)
             }
-            entries.forEach { appendLine(it) }
-            if (matchedLines > entries.size) {
-                appendLine("RUST_NATIVE_NETWORK_EVENTS_TRUNCATED remaining=" +
-                    (matchedLines - entries.size))
-            }
+            appendLine("--- FIRST_EXAMPLE_PER_CATEGORY (maximum 90) ---")
+            examples.values.forEach { appendLine("source=RustSDK " + it) }
         }
     }
 
@@ -232,44 +250,54 @@ object TlsAudit {
         RegexOption.IGNORE_CASE,
     )
 
+    private val rustSeverityRegex = Regex(
+        """(?:^|\s)(?:ERROR|WARN)(?:\s|:|\]|\})|(?:level|severity)\s*[:=]\s*["']?(?:error|warn)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+    private val httpStatusRegex = Regex(
+        """\b(?:status|status_code|http_status)\s*[:=]\s*["']?([1-5][0-9]{2})\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private fun classifyRustLine(line: String): String? {
         val target = traceTargetRegex.find(line)?.value ?: return null
         val lc = line.lowercase()
-        if (target.equals("matrix_sdk::client", ignoreCase = true) &&
-            listOf("http", "request", "response", "connect", "host", "tls", "cert", "dns", "proxy")
-                .none { lc.contains(it) }
-        ) return null
+        val networkContext = listOf("http", "request", "response", "connect", "host", "tls", "cert", "dns", "proxy", "socket")
+            .any { lc.contains(it) }
+        if (!networkContext) return null
+        val status = httpStatusRegex.find(line)?.groupValues?.getOrNull(1).orEmpty()
+        val severity = rustSeverityRegex.containsMatchIn(line)
         val event = when {
             lc.contains("ocsp") -> "RUST_OCSP_CANDIDATE"
             lc.contains("crl") -> "RUST_CRL_CANDIDATE"
             lc.contains("aia") && lc.contains("cert") -> "RUST_AIA_CANDIDATE"
-            lc.contains("timeout") || lc.contains("error") || lc.contains("failed") -> "RUST_NETWORK_ERROR"
-            lc.contains("dns") || lc.contains("resolve") -> "RUST_DNS_ACTIVITY"
-            lc.contains("tls") || lc.contains("handshake") || lc.contains("certificate") -> "RUST_TLS_ACTIVITY"
-            lc.contains("response") -> "RUST_HTTP_RESPONSE"
-            lc.contains("request") || lc.contains("send") -> "RUST_HTTP_REQUEST"
-            lc.contains("connect") -> "RUST_CONNECT_ACTIVITY"
+            severity && (lc.contains("timeout") || lc.contains("error") ||
+                lc.contains("failed") || lc.contains("refused")) -> "RUST_REPORTED_NETWORK_ERROR"
+            status.startsWith("5") -> "RUST_HTTP_5XX"
+            status.startsWith("4") -> "RUST_HTTP_4XX"
+            lc.contains("dns") || lc.contains("resolve") -> "RUST_DNS_TRACE"
+            lc.contains("tls") || lc.contains("handshake") || lc.contains("certificate") -> "RUST_TLS_TRACE"
+            lc.contains("response") -> "RUST_HTTP_RESPONSE_TRACE"
+            lc.contains("request") || lc.contains("send") -> "RUST_HTTP_REQUEST_TRACE"
+            lc.contains("connect") -> "RUST_CONNECT_TRACE"
             else -> "RUST_NETWORK_TRACE"
         }
         val hostMatch = urlHostRegex.find(line) ?: hostLabelRegex.find(line)
         val host = hostMatch?.groupValues?.getOrNull(1)?.take(200).orEmpty()
-        val port = if (hostMatch?.value?.contains("://") == true)
-            hostMatch.groupValues.getOrNull(2).orEmpty() else ""
         val ip = rustIpRegex.find(line)?.groupValues?.getOrNull(1).orEmpty()
-        val timestamp = rustTimeRegex.find(line)?.value.orEmpty()
         val category = when {
             host.isEmpty() -> "UNKNOWN_TARGET"
             isPossibleCertificateEndpoint(host) -> "SUSPECT_CERT_ENDPOINT"
             host.equals("syncme.ir", true) || host.endsWith(".syncme.ir", true) -> "SYNCME"
-            else -> "EXTERNAL"
+            else -> "EXTERNAL_OBSERVED"
         }
-        // Deliberately do NOT append original log lines: raw Rust logs can
-        // include bearer tokens, request paths, access credentials, or IDs.
-        return "time=" + (if (timestamp.isEmpty()) "not_emitted" else safe(timestamp, 45)) +
-            " event=" + event + " target=" + safe(target, 50) +
-            " category=" + category + " ip=" + (if (ip.isEmpty()) "unknown" else safe(ip, 50)) +
-            " host=" + (if (host.isEmpty()) "unknown" else safe(host, 200)) +
-            (if (port.isNotEmpty()) " port=" + safe(port, 5) else "")
+        val key = "event=" + event + " target=" + safe(target, 50) +
+            " category=" + category + " observed_host=" +
+            (if (host.isEmpty()) "unknown" else safe(host, 200)) +
+            " status=" + (if (status.isEmpty()) "unknown" else status)
+        val time = rustTimeRegex.find(line)?.value.orEmpty()
+        return key + " time=" + (if (time.isEmpty()) "unknown" else safe(time, 45)) +
+            " observed_ip=" + (if (ip.isEmpty()) "unknown" else safe(ip, 50))
     }
 
     fun clearReports(): Boolean {
@@ -278,6 +306,11 @@ object TlsAudit {
             writer.submit<Boolean> {
                 counters.clear()
                 var ok = true
+                // Clearing Rust tracing via its live file writer is unsafe.
+                // A persisted UTC cutoff gives clean future exports instead.
+                nativeClearMarker?.let { marker ->
+                    if (runCatching { marker.writeText(System.currentTimeMillis().toString()) }.isFailure) ok = false
+                } ?: run { ok = false }
                 folder.listFiles { f -> f.isFile && f.name.startsWith("tls-") && f.name.endsWith(".txt") }
                     ?.forEach { file ->
                         if (file == activeFile) {
