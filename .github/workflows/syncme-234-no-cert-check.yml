@@ -1,0 +1,107 @@
+name: SyncMe 234 no-cert-check ARM64 APK
+
+on:
+  push:
+    branches:
+      - syncme-234-no-ssl-verification-20261012
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: syncme-234-no-cert-check-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+UseG1GC
+  CI_GRADLE_ARG_PROPERTIES: --stacktrace --no-configuration-cache
+
+jobs:
+  build:
+    name: Build isolated SyncMe 234 ARM64
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      - name: Checkout experimental branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Confirm SSL bypass is configured on both client stacks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'return ClientBuilder().disableSslVerification()' libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/ClientBuilderProvider.kt
+          grep -F 'sslSocketFactory(sslContext.socketFactory, permissiveTrustManager)' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
+          grep -F 'hostnameVerifier { _, _ -> true }' libraries/network/src/main/kotlin/io/element/android/libraries/network/di/NetworkBindingContainer.kt
+          grep -F '26.10.05-nightly' gradle/libs.versions.toml
+          git diff --check
+
+      - name: Set separate Android application ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(grep -c 'getByName("release") {' app/build.gradle.kts)" -eq 1
+          sed -i '/getByName("release") {/a\            applicationIdSuffix = ".syncmerelease"' app/build.gradle.kts
+          grep -F 'applicationIdSuffix = ".syncmerelease"' app/build.gradle.kts
+
+      - name: Use JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Configure Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+
+      - name: Build optimized ARM64 APK on unmodified 234 build settings
+        env:
+          SYNCME_BUILD_NUMBER: 234
+        run: ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease $CI_GRADLE_ARG_PROPERTIES
+
+      - name: Verify output package and record SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk)
+          test "${#apks[@]}" -ge 1
+          for apk in "${apks[@]}"; do
+            ls -lh "$apk"
+            sha256sum "$apk"
+            unzip -t "$apk" | tail -1
+          done
+          mkdir -p build-checkpoint
+          {
+            echo 'SyncMe 234 experimental certificate-verification bypass'
+            echo "Original 234 source: 836883110d1dbeb1f4463004bcd825658c4f9f86"
+            echo "Experiment commit: ${GITHUB_SHA}"
+            echo "Run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "Matrix SDK: 26.10.05-nightly"
+            echo 'Matrix Rust client: disableSslVerification()'
+            echo 'Kotlin OkHttp client: permissive trust manager and hostname verifier'
+            echo 'TLS transport is retained; authenticity is not checked.'
+            echo 'Not yet proof of functional login or synchronization on Android.'
+          } > build-checkpoint/SYNCME-234-NOSSL-README.txt
+
+      - name: Upload experimental APK and checkpoint
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-234-no-SSL-verification-ARM64
+          if-no-files-found: error
+          retention-days: 90
+          path: |
+            app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk
+            build-checkpoint/SYNCME-234-NOSSL-README.txt
