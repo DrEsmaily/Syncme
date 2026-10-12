@@ -11,4 +11,15 @@
     <string name="a11y_active">Active</string>
     <string name="a11y_inactive">Inactive</string>
     <string name="common_switch_account">Switch accounts</string>
+    <string name="syncme_presence_online">Online</string>
+    <string name="syncme_presence_away">Away</string>
+    <string name="syncme_presence_offline">Offline</string>
+    <plurals name="syncme_presence_online_count">
+        <item quantity="one">%1$d online</item>
+        <item quantity="other">%1$d online</item>
+    </plurals>
+    <plurals name="syncme_presence_online_count_partial">
+        <item quantity="one">At least %1$d online</item>
+        <item quantity="other">At least %1$d online</item>
+    </plurals>
 </resources>

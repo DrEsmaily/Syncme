@@ -43,7 +43,9 @@ import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
+import io.element.android.libraries.matrix.api.user.UserPresence
 import io.element.android.libraries.matrix.ui.model.toText
+import io.element.android.libraries.matrix.ui.presence.PresenceStatus
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -59,7 +61,8 @@ fun UserProfileHeaderSection(
     onUserIdClick: () -> Unit,
     withdrawVerificationClick: () -> Unit,
     displayedStatus: DisplayedStatus?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    presence: UserPresence = UserPresence.Unknown,
 ) {
     Column(
         modifier = modifier
@@ -95,6 +98,7 @@ fun UserProfileHeaderSection(
             )
             Spacer(modifier = Modifier.height(12.dp))
         }
+        PresenceStatus(presence)
         displayedStatus?.let { status ->
             Text(
                 text = status.toText(),

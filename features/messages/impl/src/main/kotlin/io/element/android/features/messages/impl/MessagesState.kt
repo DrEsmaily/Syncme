@@ -30,6 +30,7 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.room.tombstone.SuccessorRoom
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
+import io.element.android.libraries.matrix.api.user.OnlineMemberCount
 import io.element.android.libraries.matrix.api.user.UserPresence
 import kotlinx.collections.immutable.ImmutableList
 
@@ -66,7 +67,8 @@ data class MessagesState(
     val showLiveLocationShareBanner: Boolean,
     val redactEventAction: AsyncAction<Unit>,
     val eventSink: (MessagesEvent) -> Unit,
-    val dmPresence: UserPresence = UserPresence.Unknown
+    val dmPresence: UserPresence = UserPresence.Unknown,
+    val onlineMemberCount: OnlineMemberCount? = null
 ) {
     val isTombstoned = successorRoom != null
 

@@ -14,6 +14,8 @@ import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.core.bool.orFalse
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.room.RoomMember
+import io.element.android.libraries.matrix.api.user.OnlineMemberCount
+import io.element.android.libraries.matrix.api.user.UserPresence
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -26,6 +28,7 @@ data class RoomMemberListState(
     val selectedSection: SelectedSection,
     val moderationState: RoomMemberModerationState,
     val eventSink: (RoomMemberListEvent) -> Unit,
+    val onlineMemberCount: OnlineMemberCount? = null,
 ) {
     val showBannedSection: Boolean = moderationState.permissions.canBan && roomMembers.dataOrNull()?.banned?.isNotEmpty() == true
 }
@@ -66,5 +69,6 @@ data class RoomMembers(
 data class RoomMemberWithIdentityState(
     val roomMember: RoomMember,
     val identityState: IdentityState?,
-    val isInCall: Boolean
+    val isInCall: Boolean,
+    val presence: UserPresence = UserPresence.Unknown,
 )

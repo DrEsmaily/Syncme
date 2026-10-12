@@ -37,6 +37,8 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.room.powerlevels.canCall
 import io.element.android.libraries.matrix.api.room.powerlevels.use
 import io.element.android.libraries.matrix.api.user.MatrixUser
+import io.element.android.libraries.matrix.api.user.UserPresence
+import io.element.android.libraries.matrix.ui.presence.observePresence
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -87,6 +89,7 @@ class UserProfilePresenter(
     override fun present(): UserProfileState {
         val coroutineScope = rememberCoroutineScope()
         val isCurrentUser = remember { client.isMe(userId) }
+        val presence = client.observePresence(setOf(userId))[userId] ?: UserPresence.Unknown
         var confirmationDialog by remember { mutableStateOf<ConfirmationDialog?>(null) }
         val startDmActionState: MutableState<AsyncAction<RoomId>> = remember { mutableStateOf(AsyncAction.Uninitialized) }
         val isBlocked: MutableState<AsyncData<Boolean>> = remember { mutableStateOf(AsyncData.Uninitialized) }
@@ -155,6 +158,7 @@ class UserProfilePresenter(
             canCall = canCall,
             snackbarMessage = null,
             eventSink = ::handleEvent,
+            presence = presence,
         )
     }
 

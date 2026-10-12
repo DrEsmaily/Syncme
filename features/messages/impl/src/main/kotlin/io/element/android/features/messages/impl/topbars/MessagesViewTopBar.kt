@@ -53,9 +53,11 @@ import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
+import io.element.android.libraries.matrix.api.user.UserPresence
 import io.element.android.libraries.matrix.ui.components.DisplayNameWithStatus
 import io.element.android.libraries.matrix.ui.components.aMatrixUserList
 import io.element.android.libraries.matrix.ui.model.getAvatarData
+import io.element.android.libraries.matrix.ui.presence.PresenceStatus
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -71,6 +73,7 @@ internal fun MessagesViewTopBar(
     sharedHistoryIcon: SharedHistoryIcon,
     dmUserStatus: DisplayedStatus?,
     presenceLabel: String? = null,
+    presence: UserPresence = UserPresence.Unknown,
     onRoomDetailsClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -100,6 +103,7 @@ internal fun MessagesViewTopBar(
                     heroes = heroes,
                     dmUserStatus = dmUserStatus,
                     presenceLabel = presenceLabel,
+                    presence = presence,
                     modifier = titleModifier
                 )
 
@@ -155,6 +159,7 @@ private fun RoomAvatarAndNameRow(
     isTombstoned: Boolean,
     dmUserStatus: DisplayedStatus?,
     presenceLabel: String?,
+    presence: UserPresence,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -176,9 +181,13 @@ private fun RoomAvatarAndNameRow(
                 nameColor = ElementTheme.colors.textPrimary,
                 nameFontStyle = FontStyle.Italic.takeIf { roomName == null },
             )
+            PresenceStatus(presence)
             if (presenceLabel != null) {
-                Text(text = presenceLabel, style = ElementTheme.typography.fontBodySmRegular,
-                    color = ElementTheme.colors.textSecondary)
+                Text(
+                    text = presenceLabel,
+                    style = ElementTheme.typography.fontBodySmRegular,
+                    color = ElementTheme.colors.textSecondary
+                )
             }
         }
     }

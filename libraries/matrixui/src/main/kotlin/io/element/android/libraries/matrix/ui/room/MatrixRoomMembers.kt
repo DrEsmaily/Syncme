@@ -43,7 +43,7 @@ fun getRoomMemberAsState(roomMembersState: RoomMembersState, userId: UserId): St
 @Composable
 fun BaseRoom.getDirectRoomMember(roomMembersState: RoomMembersState): State<RoomMember?> {
     val roomInfo by roomInfoFlow.collectAsState()
-    return remember(roomInfo.isDm) {
+    return remember(roomInfo.isDm, roomMembersState, sessionId) {
         mutableStateOf(roomMembersState.getDirectRoomMember(roomInfo, sessionId))
     }
 }

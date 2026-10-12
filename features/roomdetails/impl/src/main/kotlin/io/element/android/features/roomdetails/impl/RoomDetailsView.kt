@@ -25,8 +25,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -92,6 +92,7 @@ import io.element.android.libraries.matrix.api.room.getBestName
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.toText
+import io.element.android.libraries.matrix.ui.presence.toPresenceText
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -132,7 +133,11 @@ fun RoomDetailsView(
         AlertDialog(
             onDismissRequest = { if (!state.closingGroup) showCloseGroupConfirmation = false },
             title = { androidx.compose.material3.Text("Close group for everyone?") },
-            text = { androidx.compose.material3.Text("All members you can moderate will be banned and you will leave. This does not erase past messages, downloaded files or federated copies. This action cannot be undone automatically.") },
+            text = {
+                androidx.compose.material3.Text(
+                "All members you can moderate will be banned and you will leave. This does not erase past messages, downloaded files or federated copies. This action cannot be undone automatically."
+            )
+            },
             confirmButton = {
                 TextButton(enabled = !state.closingGroup, onClick = {
                     showCloseGroupConfirmation = false
@@ -277,6 +282,7 @@ fun RoomDetailsView(
                     PreferenceCategory {
                         MembersItem(
                             memberCount = state.memberCount,
+                            onlineCountLabel = state.onlineMemberCount.toPresenceText(),
                             hasVerificationViolations = state.hasMemberVerificationViolations,
                             openRoomMemberList = openRoomMemberList,
                         )
@@ -775,11 +781,13 @@ private fun ProfileItem(
 @Composable
 private fun MembersItem(
     memberCount: Long,
+    onlineCountLabel: String?,
     hasVerificationViolations: Boolean,
     openRoomMemberList: () -> Unit,
 ) {
     ListItem(
         content = { Text(stringResource(CommonStrings.common_people)) },
+        supportingContent = onlineCountLabel?.let { label -> { Text(label) } },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.User())),
         trailingContent = if (hasVerificationViolations) {
             ListItemContent.Icon(

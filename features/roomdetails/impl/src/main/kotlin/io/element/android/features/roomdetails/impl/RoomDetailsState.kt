@@ -19,10 +19,12 @@ import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.api.room.RoomNotificationSettings
 import io.element.android.libraries.matrix.api.room.history.RoomHistoryVisibility
 import io.element.android.libraries.matrix.api.user.MatrixUser
+import io.element.android.libraries.matrix.api.user.OnlineMemberCount
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 data class RoomDetailsState(
+    val onlineMemberCount: OnlineMemberCount? = null,
     val roomId: RoomId,
     val roomName: String,
     val roomAlias: RoomAlias?,

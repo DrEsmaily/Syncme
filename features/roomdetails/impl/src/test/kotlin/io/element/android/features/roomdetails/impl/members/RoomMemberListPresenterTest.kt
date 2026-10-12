@@ -255,4 +255,5 @@ private fun TestScope.createPresenter(
         roomMemberModerationState
     },
     encryptionService = encryptedService,
+    matrixClient = io.element.android.libraries.matrix.test.FakeMatrixClient(),
 )

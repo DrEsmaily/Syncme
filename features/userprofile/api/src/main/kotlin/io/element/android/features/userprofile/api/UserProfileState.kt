@@ -14,6 +14,7 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
+import io.element.android.libraries.matrix.api.user.UserPresence
 
 data class UserProfileState(
     val userId: UserId,
@@ -28,7 +29,8 @@ data class UserProfileState(
     val canCall: Boolean,
     val snackbarMessage: SnackbarMessage?,
     val displayedStatus: DisplayedStatus?,
-    val eventSink: (UserProfileEvent) -> Unit
+    val eventSink: (UserProfileEvent) -> Unit,
+    val presence: UserPresence = UserPresence.Unknown
 ) {
     enum class ConfirmationDialog {
         Block,

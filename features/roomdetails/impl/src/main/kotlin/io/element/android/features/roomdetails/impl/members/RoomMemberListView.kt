@@ -62,6 +62,7 @@ import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.api.room.getBestName
 import io.element.android.libraries.matrix.api.room.toMatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
+import io.element.android.libraries.matrix.ui.presence.toPresenceText
 import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -102,6 +103,9 @@ fun RoomMemberListView(
                     .padding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()),
                 placeholder = stringResource(CommonStrings.common_search_for_someone),
             )
+            state.onlineMemberCount.toPresenceText()?.let { label ->
+                Text(text = label, modifier = Modifier.padding(horizontal = 16.dp), color = ElementTheme.colors.textSecondary)
+            }
             RoomMemberList(
                 roomMembersData = state.filteredRoomMembers,
                 selectedSection = state.selectedSection,
@@ -302,6 +306,7 @@ private fun RoomMemberListItem(
         modifier = modifier.clickable(onClick = onClick),
         matrixUser = roomMemberWithIdentity.roomMember.toMatrixUser(),
         avatarSize = AvatarSize.UserListItem,
+        presence = roomMemberWithIdentity.presence,
         trailingContent = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),

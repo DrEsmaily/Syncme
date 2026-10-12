@@ -73,30 +73,32 @@ import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.emoji.api.recentemojis.AddRecentEmoji
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
+import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.toThreadId
 import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.permalink.PermalinkParser
 import io.element.android.libraries.matrix.api.room.JoinedRoom
-import io.element.android.libraries.matrix.api.MatrixClient
-import io.element.android.libraries.matrix.api.user.UserPresence
 import io.element.android.libraries.matrix.api.room.RoomInfo
 import io.element.android.libraries.matrix.api.room.RoomMembersState
 import io.element.android.libraries.matrix.api.room.history.RoomHistoryVisibility
+import io.element.android.libraries.matrix.api.room.joinedRoomMembers
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
 import io.element.android.libraries.matrix.api.timeline.Timeline
 import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransactionId
 import io.element.android.libraries.matrix.api.timeline.item.event.toEventOrTransactionId
+import io.element.android.libraries.matrix.api.user.UserPresence
+import io.element.android.libraries.matrix.api.user.onlineMemberCount
 import io.element.android.libraries.matrix.ui.messages.reply.map
 import io.element.android.libraries.matrix.ui.model.dmUserStatus
 import io.element.android.libraries.matrix.ui.model.getAvatarData
+import io.element.android.libraries.matrix.ui.presence.observePresence
 import io.element.android.libraries.matrix.ui.room.getDirectRoomMember
 import io.element.android.libraries.textcomposer.model.MessageComposerMode
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
@@ -226,12 +228,13 @@ class MessagesPresenter(
 
         val membersState by room.membersStateFlow.collectAsState()
         val dmRoomMember by room.getDirectRoomMember(membersState)
-        // One shared session-scoped presence stream; no foreground heartbeat or status polling.
-        val presenceStates by matrixClient.presenceStates.collectAsState()
-        LaunchedEffect(dmRoomMember?.userId) {
-            dmRoomMember?.userId?.let { matrixClient.trackPresence(setOf(it)) }
+        LaunchedEffect(room.roomId) {
+            if (roomInfo.joinedMembersCount <= 128) room.updateMembers()
         }
+        val joinedUsers = membersState.joinedRoomMembers().map { it.userId }.toSet()
+        val presenceStates = matrixClient.observePresence(joinedUsers)
         val dmPresence = dmRoomMember?.userId?.let(presenceStates::get) ?: UserPresence.Unknown
+        val onlineMemberCount = if (roomInfo.isDm) null else presenceStates.onlineMemberCount(joinedUsers, roomInfo.joinedMembersCount)
 
         val roomMemberIdentityStateChanges = identityChangeState.roomMemberIdentityStateChanges
 
@@ -357,6 +360,7 @@ class MessagesPresenter(
             dmUserVerificationState = dmUserVerificationState,
             dmUserStatus = roomInfo.dmUserStatus(),
             dmPresence = dmPresence,
+            onlineMemberCount = onlineMemberCount,
             roomMemberModerationState = roomMemberModerationState,
             topBarSharedHistoryIcon = topBarSharedHistoryIcon,
             successorRoom = roomInfo.successorRoom,

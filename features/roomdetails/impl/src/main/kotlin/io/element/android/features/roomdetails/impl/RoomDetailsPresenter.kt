@@ -16,8 +16,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -45,11 +45,16 @@ import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.notificationsettings.NotificationSettingsService
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.room.RoomMember
+import io.element.android.libraries.matrix.api.room.RoomMembershipState
 import io.element.android.libraries.matrix.api.room.join.JoinRule
+import io.element.android.libraries.matrix.api.room.joinedRoomMembers
 import io.element.android.libraries.matrix.api.room.powerlevels.canEditRolesAndPermissions
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
+import io.element.android.libraries.matrix.api.room.roomMembers
 import io.element.android.libraries.matrix.api.room.roomNotificationSettings
 import io.element.android.libraries.matrix.api.timeline.ReceiptType
+import io.element.android.libraries.matrix.api.user.onlineMemberCount
+import io.element.android.libraries.matrix.ui.presence.observePresence
 import io.element.android.libraries.matrix.ui.room.getDirectRoomMember
 import io.element.android.libraries.matrix.ui.room.roomMemberIdentityStateChange
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
@@ -63,9 +68,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import timber.log.Timber
-import io.element.android.libraries.matrix.api.room.roomMembers
-import io.element.android.libraries.matrix.api.room.RoomMembershipState
 
 @AssistedInject
 class RoomDetailsPresenter(
@@ -120,6 +122,11 @@ class RoomDetailsPresenter(
 
         val isDm = roomInfo.isDm
         val membersState by room.membersStateFlow.collectAsState()
+        LaunchedEffect(room.roomId) {
+            if (roomInfo.joinedMembersCount <= 128) room.updateMembers()
+        }
+        val joinedUsers = membersState.joinedRoomMembers().map { it.userId }.toSet()
+        val presenceStates = client.observePresence(joinedUsers)
         val permissions by getPermissions()
         val canonicalAlias by remember { derivedStateOf { roomInfo.canonicalAlias } }
         val isEncrypted by remember { derivedStateOf { roomInfo.isEncrypted == true } }
@@ -158,7 +165,10 @@ class RoomDetailsPresenter(
         val myPowerLevel = membersState.roomMembers().orEmpty().firstOrNull { it.userId.value == room.sessionId.value }?.powerLevel ?: 0
         val roomMemberList = membersState.roomMembers().orEmpty()
         val canCloseGroup = !isDm && permissions.canEditRolesAndPermissions &&
-            roomMemberList.filter { it.userId.value != room.sessionId.value && it.membership in listOf(RoomMembershipState.JOIN, RoomMembershipState.INVITE, RoomMembershipState.KNOCK) }
+            roomMemberList.filter {
+                it.userId.value != room.sessionId.value &&
+                it.membership in listOf(RoomMembershipState.JOIN, RoomMembershipState.INVITE, RoomMembershipState.KNOCK)
+            }
                 .all { it.powerLevel < myPowerLevel }
 
         val snackbarDispatcher = LocalSnackbarDispatcher.current
@@ -175,7 +185,8 @@ class RoomDetailsPresenter(
                                 it.userId.value != room.sessionId.value &&
                                     it.membership in listOf(RoomMembershipState.JOIN, RoomMembershipState.INVITE, RoomMembershipState.KNOCK)
                             }
-                            val power = room.membersStateFlow.value.roomMembers().orEmpty().firstOrNull { it.userId.value == room.sessionId.value }?.powerLevel ?: 0
+                            val power =
+                                room.membersStateFlow.value.roomMembers().orEmpty().firstOrNull { it.userId.value == room.sessionId.value }?.powerLevel ?: 0
                             val failure = if (members.any { it.powerLevel >= power }) {
                                 "A member has equal or higher privileges; transfer ownership or lower their role first."
                             } else {
@@ -239,6 +250,7 @@ class RoomDetailsPresenter(
             roomAvatarUrl = roomAvatar,
             roomTopic = topicState,
             memberCount = joinedMemberCount,
+            onlineMemberCount = presenceStates.onlineMemberCount(joinedUsers, joinedMemberCount),
             isEncrypted = isEncrypted,
             canInvite = permissions.canInvite,
             canCloseGroup = canCloseGroup,

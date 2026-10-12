@@ -8,6 +8,7 @@
 
 package io.element.android.libraries.matrix.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,8 @@ import io.element.android.libraries.designsystem.components.avatar.Avatar
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.matrix.api.user.UserPresence
+import io.element.android.libraries.matrix.ui.presence.PresenceIndicator
 
 @Composable
 internal fun UserRow(
@@ -37,6 +40,7 @@ internal fun UserRow(
     enabled: Boolean = true,
     verticalSpaceWidth: Dp = 12.dp,
     trailingContent: @Composable (() -> Unit)? = null,
+    presence: UserPresence = UserPresence.Unknown,
 ) {
     UserRow(
         avatarData = avatarData,
@@ -55,6 +59,7 @@ internal fun UserRow(
         enabled = enabled,
         verticalSpaceWidth = verticalSpaceWidth,
         trailingContent = trailingContent,
+        presence = presence,
     )
 }
 
@@ -67,6 +72,7 @@ internal fun UserRow(
     enabled: Boolean = true,
     verticalSpaceWidth: Dp = 12.dp,
     trailingContent: @Composable (() -> Unit)? = null,
+    presence: UserPresence = UserPresence.Unknown,
 ) {
     Row(
         modifier = modifier
@@ -74,10 +80,12 @@ internal fun UserRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Avatar(
-            avatarData = avatarData,
-            avatarType = AvatarType.User,
-        )
+        Box {
+            Avatar(avatarData = avatarData, avatarType = AvatarType.User)
+            if (presence == UserPresence.Online || presence == UserPresence.Away) {
+                PresenceIndicator(presence, Modifier.align(Alignment.BottomEnd))
+            }
+        }
         Spacer(modifier = Modifier.width(verticalSpaceWidth))
         Column(
             modifier = Modifier.weight(1f),
