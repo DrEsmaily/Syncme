@@ -15,7 +15,9 @@ import java.util.concurrent.Executors
  */
 object StartupTrace {
     @Volatile private var resetTraceFile: File? = null
+    @Volatile private var rustTraceDir: File? = null
     fun initResetTrace(context: Context) {
+        rustTraceDir = File(context.cacheDir, "logs")
         val folder = File(context.filesDir, "syncme-reset-diagnostics")
         folder.mkdirs()
         resetTraceFile = File(folder, "reset-events.txt")
@@ -113,10 +115,71 @@ object StartupTrace {
         val files = folder.listFiles { f -> f.isFile && f.name.startsWith("run-") && f.name.endsWith(".txt") }
             ?.sortedBy { it.name }?.takeLast(MAX_RUNS).orEmpty()
         val resetReport = resetTraceFile?.let { runCatching { it.readText() }.getOrDefault("Reset trace read error") } ?: "Reset trace unavailable"
-        return "===== RESET IDENTITY DIAGNOSTICS (always on in Build 239) =====\n" + resetReport + "\n\n" + (if (files.isEmpty()) "No startup data." else files.joinToString("\n\n") { file ->
+        return "===== RESET IDENTITY DIAGNOSTICS =====\n" + resetReport + "\n\n" + readRustResetSummary() + "\n\n" + (if (files.isEmpty()) "No startup data." else files.joinToString("\n\n") { file ->
             "===== " + file.name + " =====\n" +
                 runCatching { file.readText() }.getOrDefault("Read error")
         })
+    }
+
+    /**
+     * Summarize native SDK crypto/recovery traces without exporting untrusted raw
+     * text (which can include secrets, user IDs, URLs, or message content).
+     */
+    private fun readRustResetSummary(): String {
+        val dir = rustTraceDir ?: return "RUST_RESET_TRACE_NOT_INITIALIZED"
+        if (!dir.isDirectory) return "RUST_RESET_TRACE_DIRECTORY_MISSING"
+        val candidates = dir.walkTopDown().maxDepth(3)
+            .filter { it.isFile && it.name.startsWith("syncme-reset-rust") }
+            .sortedByDescending { it.lastModified() }.take(8).toList()
+        val counts = linkedMapOf<String, Int>()
+        var scanned = 0
+        var failures = 0
+        val relevant = listOf("backup", "cross.sign", "identity", "recovery", "secret.storage", "key.upload", "crypto")
+        for (file in candidates) {
+            runCatching {
+                java.io.RandomAccessFile(file, "r").use { raf ->
+                    val offset = (raf.length() - 700_000L).coerceAtLeast(0L)
+                    raf.seek(offset)
+                    if (offset > 0) raf.readLine()
+                    while (scanned < 25_000) {
+                        val line = raf.readLine() ?: break
+                        scanned++
+                        val lc = line.lowercase()
+                        if (relevant.none { lc.contains(it) }) continue
+                        val topic = when {
+                            lc.contains("backup") -> "BACKUP"
+                            lc.contains("cross.sign") -> "CROSS_SIGNING"
+                            lc.contains("identity") -> "IDENTITY"
+                            lc.contains("recovery") -> "RECOVERY"
+                            lc.contains("secret.storage") -> "SECRET_STORAGE"
+                            lc.contains("key.upload") -> "KEY_UPLOAD"
+                            else -> "CRYPTO"
+                        }
+                        val result = when {
+                            lc.contains("error") || lc.contains("failed") -> "ERROR"
+                            lc.contains("warn") -> "WARN"
+                            lc.contains("disable") -> "DISABLE"
+                            lc.contains("enable") -> "ENABLE"
+                            lc.contains("creat") -> "CREATE"
+                            lc.contains("upload") -> "UPLOAD"
+                            lc.contains("success") || lc.contains("complete") -> "SUCCESS"
+                            else -> "OTHER"
+                        }
+                        val key = topic + "_" + result
+                        counts[key] = (counts[key] ?: 0) + 1
+                    }
+                }
+            }.onFailure { failures++ }
+            if (scanned >= 25_000) break
+        }
+        return buildString {
+            appendLine("===== RUST_CRYPTO_RECOVERY_TRACE_SUMMARY (no raw secrets) =====")
+            appendLine("files=" + candidates.size + " lines_scanned=" + scanned + " read_errors=" + failures)
+            if (candidates.isEmpty()) appendLine("NATIVE_TRACE_MISSING")
+            if (counts.isEmpty()) appendLine("NO_MATCHING_NATIVE_CRYPTO_EVENTS")
+            counts.forEach { (key, count) -> appendLine("event=" + key + " count=" + count) }
+            appendLine("NOTE: Aggregated SDK events are not a full Rust call trace.")
+        }
     }
 
     /**
