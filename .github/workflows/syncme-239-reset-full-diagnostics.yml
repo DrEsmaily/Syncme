@@ -129,8 +129,8 @@ jobs:
           target_apk=build-checkpoint/SyncMe-239-ARM64-Reset-Full-Diagnostics.apk
           sha256sum "$target_apk" > build-checkpoint/SyncMe-239-SHA256.txt
           {
-            echo "Build 239 expected Android versionName: 236"
-            echo "Build 239 expected ARM64 versionCode: 202609062"
+            echo "Build 239 expected Android versionName: 239"
+            echo "Build 239 expected ARM64 versionCode: 202609092"
             echo "Source APK: $source_apk"
             ls -lh "$target_apk"
             cat build-checkpoint/SyncMe-239-SHA256.txt
