@@ -13,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runCatchingUpdatingState
@@ -45,8 +46,11 @@ class ResetIdentityPasswordPresenter(
     }
 
     private fun CoroutineScope.reset(password: String, action: MutableState<AsyncAction<Unit>>) = launch(dispatchers.io) {
+        StartupTrace.mark("reset_password_request_begin")
         suspend {
             identityPasswordResetHandle.resetPassword(password).getOrThrow()
+            StartupTrace.mark("reset_password_sdk_success")
         }.runCatchingUpdatingState(action)
+        StartupTrace.mark("reset_password_action_" + action.value.javaClass.simpleName)
     }
 }
