@@ -10,6 +10,7 @@ package io.element.android.x
 
 import android.app.Application
 import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
+import io.element.android.libraries.matrix.api.diagnostics.SyncMeDiagnosticsControl
 import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
 import android.os.Build
 import java.util.concurrent.Executors
@@ -43,9 +44,12 @@ class ElementXApplication : Application(), DependencyInjectionGraphOwner, Config
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate() {
         super.onCreate()
-        StartupTrace.initialize(this)
-        TlsAudit.initialize(this)
-        enableTlsAuditCleartextHints()
+        // Both opt-in diagnostics are OFF on first install. Disabled probes
+        // do not run background samplers or emit trace files.
+        StartupTrace.setEnabled(this, SyncMeDiagnosticsControl.startupEnabled(this))
+        val tlsEnabled = SyncMeDiagnosticsControl.tlsEnabled(this)
+        TlsAudit.setEnabled(this, tlsEnabled)
+        if (tlsEnabled) enableTlsAuditCleartextHints()
 
         enableStrictMode()
 
