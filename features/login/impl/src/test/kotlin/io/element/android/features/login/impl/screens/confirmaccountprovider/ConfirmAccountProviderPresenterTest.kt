@@ -62,6 +62,26 @@ class ConfirmAccountProviderPresenterTest {
     }
 
     @Test
+    fun `present - syncme default is blank even when saved in history`() = runTest {
+        val preferences = InMemoryAppPreferencesStore(homeserverHistory = listOf("https://syncme.ir"))
+        val presenter = createConfirmAccountProviderPresenter(
+            accountProviderDataSource = anAccountProviderDataSource(appPreferencesStore = preferences),
+            appPreferencesStore = preferences,
+        )
+        presenter.test {
+            val initial = awaitItem()
+            assertThat(initial.accountProviderInput).isEmpty()
+            assertThat(initial.submitEnabled).isFalse()
+
+            // Typing the address explicitly must not be erased by default handling.
+            initial.eventSink(ConfirmAccountProviderEvent.UserInputChanged("syncme.ir"))
+            val typed = awaitState { it.accountProviderInput == "syncme.ir" }
+            assertThat(typed.submitEnabled).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - continue password login`() = runTest {
         val authenticationService = FakeMatrixAuthenticationService(
             setHomeserverResult = {
