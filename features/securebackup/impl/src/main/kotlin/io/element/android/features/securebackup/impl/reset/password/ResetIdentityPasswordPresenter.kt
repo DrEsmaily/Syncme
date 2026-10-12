@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 class ResetIdentityPasswordPresenter(
     private val identityPasswordResetHandle: IdentityPasswordResetHandle,
     private val dispatchers: CoroutineDispatchers,
+    private val onPasswordResetSuccess: () -> Unit,
 ) : Presenter<ResetIdentityPasswordState> {
     @Composable
     override fun present(): ResetIdentityPasswordState {
@@ -52,5 +53,9 @@ class ResetIdentityPasswordPresenter(
             StartupTrace.markReset("reset_password_sdk_success")
         }.runCatchingUpdatingState(action)
         StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
+        if (action.value.isSuccess()) {
+            StartupTrace.markReset("reset_password_success_navigation_callback")
+            onPasswordResetSuccess()
+        }
     }
 }
