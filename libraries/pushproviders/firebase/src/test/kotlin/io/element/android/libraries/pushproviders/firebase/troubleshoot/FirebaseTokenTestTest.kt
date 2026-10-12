@@ -57,7 +57,7 @@ class FirebaseTokenTestTest {
             val lastItem = awaitItem()
             assertThat(lastItem.status).isEqualTo(NotificationTroubleshootTestState.Status.Failure(hasQuickFix = true))
             // Quick fix
-            sut.quickFix(this, FakeNotificationTroubleshootNavigator())
+            sut.quickFix(backgroundScope, FakeNotificationTroubleshootNavigator())
             assertThat(awaitItem().status).isEqualTo(NotificationTroubleshootTestState.Status.InProgress)
             assertThat(awaitItem().status).isEqualTo(NotificationTroubleshootTestState.Status.Success)
         }

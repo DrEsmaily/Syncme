@@ -13,15 +13,15 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runCatchingUpdatingState
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.encryption.IdentityPasswordResetHandle
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ResetIdentityPasswordPresenter(
     private val identityPasswordResetHandle: IdentityPasswordResetHandle,

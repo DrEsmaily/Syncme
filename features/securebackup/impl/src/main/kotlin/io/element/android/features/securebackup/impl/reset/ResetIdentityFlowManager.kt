@@ -10,8 +10,8 @@ package io.element.android.features.securebackup.impl.reset
 
 import dev.zacsweers.metro.Inject
 import io.element.android.libraries.architecture.AsyncData
-import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import io.element.android.libraries.matrix.api.encryption.IdentityResetHandle
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +76,5 @@ class ResetIdentityFlowManager(
         resetCompleted.value = false
         currentHandleFlow.value.dataOrNull()?.cancel()
         resetHandleFlow.value = AsyncData.Uninitialized
-
     }
 }

@@ -3,7 +3,6 @@
 
 package org.rustls.platformverifier
 
-import timber.log.Timber
 import android.content.Context
 import android.net.http.X509TrustManagerExtensions
 import java.io.ByteArrayInputStream
@@ -18,6 +17,7 @@ import java.security.cert.X509Certificate
 import java.util.Date
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import timber.log.Timber
 
 // If this is updated, update the Rust definition too.
 // Marked private as this is not meant to be used in Android code.

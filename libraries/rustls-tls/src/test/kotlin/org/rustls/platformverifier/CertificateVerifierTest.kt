@@ -10,13 +10,13 @@ import io.mockk.every
 import io.mockk.mockkConstructor
 import io.mockk.unmockkConstructor
 import io.mockk.verify
+import java.security.cert.CertificateException
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
-import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
 
 class CertificateVerifierTest : RobolectricTest() {
     private val certificate = javaClass.getResourceAsStream("/server.pem")!!.use {

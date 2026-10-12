@@ -72,7 +72,8 @@ results, not 321 device runtime tests.
   application ID so this candidate does not introduce another package change.
 
 Disabling **online revocation** means revoked-but-otherwise-valid certificates
-are not rejected on the basis of a freshly fetched OCSP/CRL response. This is a
+are not rejected on the basis of an OCSP/CRL response. The Android revocation
+stage, including stapled OCSP processing, is omitted. This is a
 specific tradeoff requested to eliminate external revocation requests, not a
 claim that all possible TLS/network delays are eliminated.
 
