@@ -61,6 +61,7 @@ class ResetIdentityPasswordPresenter(
                     onFailure = { StartupTrace.markReset("reset_post_success_server_backup_query_error_" + it.javaClass.simpleName) },
                 )
             }
+            Unit
         }.runCatchingUpdatingState(action)
         StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
     }
