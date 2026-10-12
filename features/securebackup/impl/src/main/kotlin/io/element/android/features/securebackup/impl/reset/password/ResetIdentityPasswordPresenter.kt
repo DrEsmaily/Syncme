@@ -19,12 +19,16 @@ import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runCatchingUpdatingState
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.matrix.api.encryption.IdentityPasswordResetHandle
+import io.element.android.libraries.matrix.api.encryption.EncryptionService
+import io.element.android.libraries.matrix.api.encryption.BackupState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class ResetIdentityPasswordPresenter(
     private val identityPasswordResetHandle: IdentityPasswordResetHandle,
     private val dispatchers: CoroutineDispatchers,
+    private val encryptionService: EncryptionService,
 ) : Presenter<ResetIdentityPasswordState> {
     @Composable
     override fun present(): ResetIdentityPasswordState {
@@ -50,6 +54,14 @@ class ResetIdentityPasswordPresenter(
         suspend {
             identityPasswordResetHandle.resetPassword(password).getOrThrow()
             StartupTrace.markReset("reset_password_sdk_success")
+            // Initial login can complete identity reset before the SDK starts a new
+            // key backup. Let automatic activation settle before retrying explicitly.
+            delay(3_000)
+            if (encryptionService.backupStateStateFlow.value == BackupState.UNKNOWN) {
+                StartupTrace.markReset("reset_backup_enable_retry_begin")
+                encryptionService.enableBackups().getOrThrow()
+                StartupTrace.markReset("reset_backup_enable_retry_success")
+            }
         }.runCatchingUpdatingState(action)
         StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
     }
