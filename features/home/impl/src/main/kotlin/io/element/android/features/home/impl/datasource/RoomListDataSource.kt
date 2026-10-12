@@ -9,7 +9,6 @@
 package io.element.android.features.home.impl.datasource
 
 import dev.zacsweers.metro.Inject
-import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import dev.zacsweers.metro.SingleIn
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.libraries.androidutils.diff.DiffCacheUpdater
@@ -19,6 +18,7 @@ import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.notificationsettings.NotificationSettingsService
 import io.element.android.libraries.matrix.api.roomlist.RoomList
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
@@ -35,6 +35,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -82,6 +84,9 @@ class RoomListDataSource(
 
     val roomSummariesFlow: Flow<ImmutableList<RoomListRoomSummary>> = _roomSummariesFlow
 
+    private val mutableVisibleRange = MutableStateFlow(0..20)
+    val visibleRange = mutableVisibleRange.asStateFlow()
+
     val loadingState = roomList.loadingState
 
     fun launchIn(coroutineScope: CoroutineScope): Job {
@@ -100,6 +105,7 @@ class RoomListDataSource(
     }
 
     suspend fun updateVisibleRange(visibleRange: IntRange) = coroutineScope {
+        mutableVisibleRange.value = visibleRange
         launch {
             roomList.updateVisibleRange(visibleRange, PAGINATION_THRESHOLD)
         }

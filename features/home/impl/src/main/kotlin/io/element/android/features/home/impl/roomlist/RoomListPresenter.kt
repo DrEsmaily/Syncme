@@ -269,7 +269,8 @@ class RoomListPresenter(
         }
         val loadingState by roomListDataSource.loadingState.collectAsState()
         // A single session-scoped event stream supplies all DM presence states.
-        val presenceIds = roomSummaries.dataOrNull().orEmpty().filter { it.isDm }
+        val visibleRange by roomListDataSource.visibleRange.collectAsState()
+        val presenceIds = roomSummaries.dataOrNull().orEmpty().filterIndexed { index, summary -> index in visibleRange && summary.isDm }
             .mapNotNull { it.dmUserId }.map(::UserId).toSet()
         val presenceStates = client.observePresence(presenceIds)
 

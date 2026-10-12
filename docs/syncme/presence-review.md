@@ -24,7 +24,9 @@ publishes Unavailable, with no forced account-wide Offline timer. Server policy 
 signed-in devices influence presence; this is not proof a person is looking at a screen.
 
 Visible user subscriptions are reference-counted and released when their screen leaves
-composition. Snapshots have four workers and at most 128 users per screen.
+composition. Snapshots have four workers and at most 128 users per subscription. Home subscribes only
+the current visible room range. People additionally subscribes visible rows, so scrolling
+in a large group still loads individual indicators beyond the counting sample.
 Small rooms load membership once; larger rooms use available members, with full membership
 available in the People view. Presence updates do not repeat encryption identity lookups.
 

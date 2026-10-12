@@ -67,7 +67,9 @@ class RoomMemberListPresenter(
         val membersState by room.membersStateFlow.collectAsState()
         val roomInfo by room.roomInfoFlow.collectAsState()
         val joinedUsers = membersState.joinedRoomMembers().map { it.userId }.toSet()
+        var visibleUsers by remember { mutableStateOf(emptySet<UserId>()) }
         val presenceStates = matrixClient.observePresence(joinedUsers)
+        matrixClient.observePresence(visibleUsers.intersect(joinedUsers))
         val canInvite by room.permissionsAsState(false) { perms -> perms.canOwnUserInvite() }
         val roomModerationState = roomMembersModerationPresenter.present()
 
@@ -142,6 +144,7 @@ class RoomMemberListPresenter(
 
         fun handleEvent(event: RoomMemberListEvent) {
             when (event) {
+                is RoomMemberListEvent.VisibleUsersChanged -> visibleUsers = event.users
                 is RoomMemberListEvent.RoomMemberSelected ->
                     roomModerationState.eventSink(ShowActionsForUser(event.roomMember.toMatrixUser()))
                 is RoomMemberListEvent.ChangeSelectedSection -> selectedSection = event.section

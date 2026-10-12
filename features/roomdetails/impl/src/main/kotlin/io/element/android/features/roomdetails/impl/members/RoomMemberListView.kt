@@ -29,6 +29,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -113,6 +117,7 @@ fun RoomMemberListView(
                 searchQuery = state.searchQuery.text.toString(),
                 onSelectedSectionChange = { state.eventSink(RoomMemberListEvent.ChangeSelectedSection(it)) },
                 onSelectUser = ::onSelectUser,
+                onVisibleUsersChange = { state.eventSink(RoomMemberListEvent.VisibleUsersChanged(it)) },
             )
         }
     }
@@ -126,10 +131,20 @@ private fun RoomMemberList(
     searchQuery: String,
     onSelectedSectionChange: (SelectedSection) -> Unit,
     onSelectUser: (RoomMember) -> Unit,
+    onVisibleUsersChange: (Set<UserId>) -> Unit,
 ) {
+    val listState = rememberLazyListState()
+    val onVisibleUsers by rememberUpdatedState(onVisibleUsersChange)
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.layoutInfo.visibleItemsInfo.mapNotNull { item ->
+                (item.key as? String)?.takeIf { it.startsWith('@') && ':' in it }?.let(::UserId)
+            }.toSet()
+        }.collect { onVisibleUsers(it) }
+    }
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
-        state = rememberLazyListState(),
+        state = listState,
         contentPadding = lazyColumnContentPadding,
     ) {
         stickyHeader {
@@ -263,7 +278,7 @@ private fun LazyListScope.roomMemberListSectionItems(
     members: ImmutableList<RoomMemberWithIdentityState>?,
     onMemberSelected: (RoomMember) -> Unit,
 ) {
-    items(members.orEmpty()) { matrixUser ->
+    items(members.orEmpty(), key = { it.roomMember.userId.value }) { matrixUser ->
         RoomMemberListItem(
             modifier = Modifier.fillMaxWidth(),
             roomMemberWithIdentity = matrixUser,
