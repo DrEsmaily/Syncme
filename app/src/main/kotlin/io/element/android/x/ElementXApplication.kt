@@ -46,6 +46,7 @@ class ElementXApplication : Application(), DependencyInjectionGraphOwner, Config
         super.onCreate()
         // Both opt-in diagnostics are OFF on first install. Disabled probes
         // do not run background samplers or emit trace files.
+        StartupTrace.initResetTrace(this)
         StartupTrace.setEnabled(this, SyncMeDiagnosticsControl.startupEnabled(this))
         val tlsEnabled = SyncMeDiagnosticsControl.tlsEnabled(this)
         TlsAudit.setEnabled(this, tlsEnabled)
