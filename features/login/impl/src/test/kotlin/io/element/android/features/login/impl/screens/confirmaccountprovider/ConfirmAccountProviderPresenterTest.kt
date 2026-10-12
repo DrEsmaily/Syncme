@@ -55,8 +55,8 @@ class ConfirmAccountProviderPresenterTest {
         presenter.test {
             val initialState = awaitItem()
             assertThat(initialState.isAccountCreation).isFalse()
-            assertThat(initialState.submitEnabled).isTrue()
-            assertThat(initialState.accountProviderInput).isEqualTo("matrix.org")
+            assertThat(initialState.submitEnabled).isFalse()
+            assertThat(initialState.accountProviderInput).isEmpty()
             assertThat(initialState.loginModeState.loginMode).isEqualTo(AsyncData.Uninitialized)
         }
     }
