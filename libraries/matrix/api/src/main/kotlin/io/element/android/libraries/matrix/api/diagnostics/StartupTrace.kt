@@ -27,7 +27,7 @@ object StartupTrace {
     fun markReset(event: String) {
         val file = resetTraceFile ?: return
         val safe = event.replace(Regex("[^a-zA-Z0-9_.:-]"), "_").take(240)
-        val row = "${Instant.now()} pid=${android.os.Process.myPid()} ms=${SystemClock.elapsedRealtime() - processStart} event=$safe\\n"
+        val row = "${Instant.now()} pid=${android.os.Process.myPid()} ms=${SystemClock.elapsedRealtime() - processStart} event=$safe\n"
         worker.execute { runCatching { if (file.length() < 350_000L) file.appendText(row) } }
     }
     private val worker = Executors.newSingleThreadExecutor { task ->
@@ -113,7 +113,7 @@ object StartupTrace {
         val files = folder.listFiles { f -> f.isFile && f.name.startsWith("run-") && f.name.endsWith(".txt") }
             ?.sortedBy { it.name }?.takeLast(MAX_RUNS).orEmpty()
         val resetReport = resetTraceFile?.let { runCatching { it.readText() }.getOrDefault("Reset trace read error") } ?: "Reset trace unavailable"
-        return "===== RESET IDENTITY DIAGNOSTICS (always on in Build 239) =====\\n" + resetReport + "\\n\\n" + (if (files.isEmpty()) "No startup data." else files.joinToString("\n\n") { file ->
+        return "===== RESET IDENTITY DIAGNOSTICS (always on in Build 239) =====\n" + resetReport + "\n\n" + (if (files.isEmpty()) "No startup data." else files.joinToString("\n\n") { file ->
             "===== " + file.name + " =====\n" +
                 runCatching { file.readText() }.getOrDefault("Read error")
         })
