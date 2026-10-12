@@ -60,6 +60,7 @@ class RustEncryptionService(
 ) : EncryptionService {
     private val service: Encryption = client.encryption()
     private val sessionId = SessionId(client.session().userId)
+    init { StartupTrace.markReset("crypto_service_created") }
 
     private val enableRecoveryProgressMapper = EnableRecoveryProgressMapper()
     private val backupUploadStateMapper = BackupUploadStateMapper()
@@ -125,10 +126,13 @@ class RustEncryptionService(
         .stateIn(sessionCoroutineScope, SharingStarted.Eagerly, AsyncData.Uninitialized)
 
     override suspend fun enableBackups(): Result<Unit> = withContext(dispatchers.io) {
+        StartupTrace.markReset("crypto_enable_backup_called_state_" + backupStateStateFlow.value)
         runCatchingExceptions {
             service.enableBackups()
         }.mapFailure {
             it.mapRecoveryException()
+        }.also { result ->
+            StartupTrace.markReset("crypto_enable_backup_result_" + if (result.isSuccess) "success" else "failure_" + result.exceptionOrNull()?.javaClass?.simpleName)
         }
     }
 
@@ -162,8 +166,14 @@ class RustEncryptionService(
     }
 
     override suspend fun doesBackupExistOnServer(): Result<Boolean> = withContext(dispatchers.io) {
+        StartupTrace.markReset("crypto_backup_exists_query_begin")
         runCatchingExceptions {
             service.backupExistsOnServer()
+        }.also { result ->
+            StartupTrace.markReset("crypto_backup_exists_query_" + result.fold(
+                onSuccess = { "success_" + it },
+                onFailure = { "failure_" + it.javaClass.simpleName }
+            ))
         }
     }
 
@@ -245,10 +255,13 @@ class RustEncryptionService(
     }
 
     override suspend fun startIdentityReset(): Result<IdentityResetHandle?> {
+        StartupTrace.markReset("crypto_reset_identity_begin_state_" + backupStateStateFlow.value)
         return runCatchingExceptions {
             service.resetIdentity()
         }.flatMap { handle ->
             RustIdentityResetHandleFactory.create(sessionId, handle)
+        }.also { result ->
+            StartupTrace.markReset("crypto_reset_identity_result_" + if (result.isSuccess) "success" else "failure_" + result.exceptionOrNull()?.javaClass?.simpleName)
         }
     }
 
