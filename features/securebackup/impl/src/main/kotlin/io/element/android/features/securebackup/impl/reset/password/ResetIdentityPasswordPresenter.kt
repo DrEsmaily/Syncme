@@ -46,11 +46,11 @@ class ResetIdentityPasswordPresenter(
     }
 
     private fun CoroutineScope.reset(password: String, action: MutableState<AsyncAction<Unit>>) = launch(dispatchers.io) {
-        StartupTrace.mark("reset_password_request_begin")
+        StartupTrace.markReset("reset_password_request_begin")
         suspend {
             identityPasswordResetHandle.resetPassword(password).getOrThrow()
-            StartupTrace.mark("reset_password_sdk_success")
+            StartupTrace.markReset("reset_password_sdk_success")
         }.runCatchingUpdatingState(action)
-        StartupTrace.mark("reset_password_action_" + action.value.javaClass.simpleName)
+        StartupTrace.markReset("reset_password_action_" + action.value.javaClass.simpleName)
     }
 }
