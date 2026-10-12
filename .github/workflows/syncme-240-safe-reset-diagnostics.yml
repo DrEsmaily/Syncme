@@ -3,7 +3,7 @@ name: SyncMe 240 Reset Full Diagnostics ARM64 APK
 on:
   push:
     branches:
-      - syncme-240-reset-full-diagnostics-20261012
+      - syncme-240-safe-reset-diagnostics-20261012
   workflow_dispatch:
 
 permissions:
