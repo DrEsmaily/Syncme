@@ -20,6 +20,8 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.tracing.TracingConfiguration
 import io.element.android.libraries.matrix.api.tracing.LogLevel
 import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
+import io.element.android.libraries.matrix.api.diagnostics.SyncMeDiagnosticsControl
+import io.element.android.libraries.matrix.api.tracing.WriteToFilesConfiguration
 import io.element.android.x.di.AppBindings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -46,31 +48,41 @@ class PlatformInitializer : Initializer<Unit> {
         val preferencesStore = appBindings.preferencesStore()
         val featureFlagService = appBindings.featureFlagService()
         val logLevel = runBlocking { preferencesStore.getTracingLogLevelFlow().first() }
-        // Dedicated connectivity diagnostic build: enable supported Rust networking
-        // tracing targets in the SDK's local file writer. Never raise to TRACE:
-        // TRACE may include sensitive metadata and causes significant log volume.
-        val auditTargets = listOf(
+        val tlsAuditEnabled = SyncMeDiagnosticsControl.tlsEnabled(context)
+        // Keep the native SDK's existing baseline behavior when diagnostics are
+        // disabled, but do NOT force DEBUG, activate extra network targets, or
+        // run the audit-specific event capture in normal operation.
+        val auditTargets = if (tlsAuditEnabled) listOf(
             "matrix_sdk::http_client",
             "matrix_sdk::client",
             "reqwest",
             "hyper",
             "rustls",
             "hickory_resolver",
-        )
-        TlsAudit.record(
-            "RUST_TRACING_CONFIG",
-            "network_targets=" + auditTargets.joinToString(",") +
-                " level=DEBUG native_log_files=cache/logs",
-        )
+        ) else emptyList()
+        if (tlsAuditEnabled) {
+            TlsAudit.record(
+                "RUST_TRACING_CONFIG",
+                "network_targets=" + auditTargets.joinToString(",") +
+                    " level=DEBUG native_log_files=cache/logs",
+            )
+        }
+        val effectiveLevel = if (tlsAuditEnabled) LogLevel.DEBUG else logLevel
         val tracingConfiguration = TracingConfiguration(
             writesToLogcat = runBlocking { featureFlagService.isFeatureEnabled(FeatureFlags.PrintLogsToLogcat) },
-            writesToFilesConfiguration = bugReporter.createWriteToFilesConfiguration(),
-            logLevel = LogLevel.DEBUG,
+            writesToFilesConfiguration = if (tlsAuditEnabled) {
+                bugReporter.createWriteToFilesConfiguration()
+            } else {
+                WriteToFilesConfiguration.Disabled
+            },
+            logLevel = effectiveLevel,
             extraTargets = listOf(ELEMENT_X_TARGET) + auditTargets,
-            traceLogPacks = runBlocking { preferencesStore.getTracingLogPacksFlow().first() },
+            traceLogPacks = if (tlsAuditEnabled) {
+                runBlocking { preferencesStore.getTracingLogPacksFlow().first() }
+            } else emptySet(),
             sdkSentryDsn = appBindings.sentrySdkDsn()?.value?.takeIf { it.isNotBlank() },
         )
-        bugReporter.setCurrentTracingLogLevel(LogLevel.DEBUG.name)
+        bugReporter.setCurrentTracingLogLevel(effectiveLevel.name)
 
         // Init the tracing service with the configuration so we have logging enabled as soon as possible
         platformService.init(tracingConfiguration)
