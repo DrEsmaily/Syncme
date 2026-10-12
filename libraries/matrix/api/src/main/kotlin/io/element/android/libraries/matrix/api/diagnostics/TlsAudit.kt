@@ -3,12 +3,14 @@ package io.element.android.libraries.matrix.api.diagnostics
 import android.content.Context
 import android.os.Process
 import android.os.SystemClock
+import android.net.TrafficStats
 import java.io.File
 import java.io.RandomAccessFile
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * SyncMe experimental SSL/TLS audit. Logs connection metadata only.
@@ -26,6 +28,7 @@ object TlsAudit {
     private const val MAX_FILE_BYTES = 384_000L
     private val started = SystemClock.elapsedRealtime()
     private val counters = ConcurrentHashMap<String, AtomicInteger>()
+    private val trafficSamplerStarted = AtomicBoolean(false)
     @Volatile private var activeFile: File? = null
     @Volatile private var reportDir: File? = null
     @Volatile private var rustLogRoot: File? = null
@@ -47,6 +50,45 @@ object TlsAudit {
         record("AUDIT_STARTED", "build=SyncMe234_TLS_AUDIT scope=Matrix_Rust_builder+Kotlin_OkHttp+Android_cleartext_hints")
         record("AUDIT_LIMITATION", "Rust_tracing_logs_are_scanned_but_not_packet_capture; unlogged_native_WebView_connections_can_remain_invisible")
         record("AUDIT_PRIVACY", "host_ip_port_only; no_URL_path_query_headers_cookies_tokens_or_body")
+        startUidTrafficSampler()
+    }
+
+    /**
+     * Independent, low-frequency app-UID byte counters. Helps spot packets
+     * from native or WebView stacks that SDK tracing did not log.
+     * NO destination, URL, port or caller attribution is available from
+     * TrafficStats; this is only evidence that some app traffic occurred.
+     */
+    private fun startUidTrafficSampler() {
+        if (!trafficSamplerStarted.compareAndSet(false, true)) return
+        Thread({
+            val uid = Process.myUid()
+            var previousRx = TrafficStats.getUidRxBytes(uid)
+            var previousTx = TrafficStats.getUidTxBytes(uid)
+            if (previousRx == TrafficStats.UNSUPPORTED.toLong() ||
+                previousTx == TrafficStats.UNSUPPORTED.toLong()
+            ) {
+                record("UID_TRAFFIC_COUNTER_UNAVAILABLE", "TrafficStats_unsupported")
+                return@Thread
+            }
+            record("UID_TRAFFIC_COUNTER_ENABLED", "sampling_interval_ms=5000 uid=" + uid)
+            while (true) {
+                Thread.sleep(5_000L)
+                val rx = TrafficStats.getUidRxBytes(uid)
+                val tx = TrafficStats.getUidTxBytes(uid)
+                if (rx >= previousRx && tx >= previousTx &&
+                    (rx > previousRx || tx > previousTx)
+                ) {
+                    record(
+                        "UID_NETWORK_DELTA",
+                        "rx_bytes=" + (rx - previousRx) + " tx_bytes=" + (tx - previousTx) +
+                            " destination=UNKNOWN source=ALL_APP_STACKS",
+                    )
+                }
+                previousRx = rx
+                previousTx = tx
+            }
+        }, "syncme-uid-traffic-sampler").apply { isDaemon = true }.start()
     }
 
     fun record(kind: String, details: String = "", caller: Boolean = false) {
