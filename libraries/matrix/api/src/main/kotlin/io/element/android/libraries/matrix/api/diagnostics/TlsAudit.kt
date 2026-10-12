@@ -29,12 +29,27 @@ object TlsAudit {
     private val started = SystemClock.elapsedRealtime()
     private val counters = ConcurrentHashMap<String, AtomicInteger>()
     private val trafficSamplerStarted = AtomicBoolean(false)
+    @Volatile private var enabled = false
     @Volatile private var activeFile: File? = null
     @Volatile private var reportDir: File? = null
     @Volatile private var rustLogRoot: File? = null
     @Volatile private var nativeClearMarker: File? = null
 
+    fun setEnabled(context: Context, value: Boolean) {
+        reportDir = File(context.filesDir, "syncme-tls-audit")
+        rustLogRoot = File(context.cacheDir, "logs")
+        if (!value) {
+            enabled = false
+            activeFile = null
+            return
+        }
+        if (enabled && activeFile != null) return
+        enabled = true
+        initialize(context)
+    }
+
     fun initialize(context: Context) {
+        if (!enabled) return
         val folder = File(context.filesDir, "syncme-tls-audit")
         folder.mkdirs()
         reportDir = folder
@@ -63,7 +78,7 @@ object TlsAudit {
      * TrafficStats; this is only evidence that some app traffic occurred.
      */
     private fun startUidTrafficSampler() {
-        if (!trafficSamplerStarted.compareAndSet(false, true)) return
+        if (!enabled || !trafficSamplerStarted.compareAndSet(false, true)) return
         Thread({
             val uid = Process.myUid()
             var previousRx = TrafficStats.getUidRxBytes(uid)
@@ -75,8 +90,9 @@ object TlsAudit {
                 return@Thread
             }
             record("UID_TRAFFIC_COUNTER_ENABLED", "sampling_interval_ms=5000 uid=" + uid)
-            while (true) {
+            while (enabled) {
                 Thread.sleep(5_000L)
+                if (!enabled) break
                 val rx = TrafficStats.getUidRxBytes(uid)
                 val tx = TrafficStats.getUidTxBytes(uid)
                 if (rx >= previousRx && tx >= previousTx &&
@@ -91,10 +107,13 @@ object TlsAudit {
                 previousRx = rx
                 previousTx = tx
             }
+            trafficSamplerStarted.set(false)
+            if (enabled) startUidTrafficSampler()
         }, "syncme-uid-traffic-sampler").apply { isDaemon = true }.start()
     }
 
     fun record(kind: String, details: String = "", caller: Boolean = false) {
+        if (!enabled) return
         val file = activeFile ?: return
         val safeDetails = safe(details, 400)
         val origin = if (caller) " origin=" + callerFrames() else ""
@@ -109,6 +128,7 @@ object TlsAudit {
     }
 
     fun network(kind: String, host: String, details: String = "", caller: Boolean = false) {
+        if (!enabled) return
         val cleanHost = safe(host.lowercase(), 200)
         val suspect = isPossibleCertificateEndpoint(host)
         val internal = host.equals("syncme.ir", ignoreCase = true) ||
