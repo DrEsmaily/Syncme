@@ -79,6 +79,7 @@ class RustMatrixClientFactory(
 
     suspend fun create(sessionData: SessionData): RustMatrixClient = withContext(coroutineDispatchers.io) {
         StartupTrace.mark("rust_restore_begin")
+        StartupTrace.markReset("session_factory_restore_begin")
         // This secret is called 'passphrase' for historical reasons, but it can be a raw key or an actual passphrase
         val clientSecret = sessionData.passphrase?.let(ClientSecret::fromString)
         val sessionPaths = sessionData.getSessionPaths()
@@ -112,6 +113,7 @@ class RustMatrixClientFactory(
             }
             .use { it.build() }
         StartupTrace.mark("rust_client_built")
+        StartupTrace.markReset("session_factory_client_built")
 
         client.setMediaRetentionPolicy(
             MediaRetentionPolicy(
@@ -129,6 +131,7 @@ class RustMatrixClientFactory(
         StartupTrace.mark("restore_session_begin")
         client.restoreSession(sessionData.toSession())
         StartupTrace.mark("restore_session_done")
+        StartupTrace.markReset("session_factory_session_restored")
 
         val (anonymizedAccessToken, anonymizedRefreshToken) = client.session().anonymizedTokens()
 
@@ -141,6 +144,7 @@ class RustMatrixClientFactory(
             .finish()
 
         StartupTrace.mark("sync_service_created")
+        StartupTrace.markReset("session_factory_sync_service_created")
         innerMatrixClientFactory.create(
             sessionPaths = sessionData.getSessionPaths(),
             innerClient = client,
@@ -151,6 +155,7 @@ class RustMatrixClientFactory(
             sessionDelegate = sessionDelegate,
         ).also {
             StartupTrace.mark("rust_client_ready")
+            StartupTrace.markReset("session_factory_client_ready")
             Timber.tag("RustMatrixClient").i("Creating Client with access token '$anonymizedAccessToken' and refresh token '$anonymizedRefreshToken'")
         }
     }
@@ -162,6 +167,7 @@ class RustMatrixClientFactory(
         isMessageSearchAvailable: Boolean,
         sessionDelegate: ClientSessionDelegate,
     ): ClientBuilder {
+        StartupTrace.markReset("session_builder_auto_backup_true_cross_signing_true")
         return clientBuilderProvider.provide()
             .run {
                 sqliteStoreBuilderProvider.provide(sessionPaths)
