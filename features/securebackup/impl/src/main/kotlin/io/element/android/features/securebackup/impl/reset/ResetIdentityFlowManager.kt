@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 @Inject
 class ResetIdentityFlowManager(
@@ -36,7 +38,18 @@ class ResetIdentityFlowManager(
         StartupTrace.markReset("reset_wait_registered_state_" + encryptionService.backupStateStateFlow.value)
         whenResetIsDoneWaitingJob = sessionCoroutineScope.launch {
             StartupTrace.markReset("reset_wait_started")
+            // Independent bounded heartbeat: proves whether the observer is alive
+            // and records the final backup state even if no flow event arrives.
+            val observer = launch {
+                repeat(36) { index ->
+                    delay(5_000)
+                    StartupTrace.markReset("reset_wait_heartbeat_" + index +
+                        "_backup_" + encryptionService.backupStateStateFlow.value +
+                        "_recovery_" + encryptionService.recoveryStateStateFlow.value)
+                }
+            }
             encryptionService.backupStateStateFlow.onEach { StartupTrace.markReset("reset_wait_observed_" + it) }.first { it == BackupState.ENABLED }
+            observer.cancel()
             StartupTrace.markReset("reset_wait_enabled_callback")
             block()
         }
