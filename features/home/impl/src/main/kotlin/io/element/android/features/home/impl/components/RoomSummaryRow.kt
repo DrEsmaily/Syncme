@@ -8,7 +8,6 @@
 
 package io.element.android.features.home.impl.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -66,9 +64,11 @@ import io.element.android.libraries.designsystem.theme.unreadIndicator
 import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
+import io.element.android.libraries.matrix.api.user.UserPresence
 import io.element.android.libraries.matrix.ui.components.DisplayNameWithStatus
 import io.element.android.libraries.matrix.ui.components.InviteSenderView
 import io.element.android.libraries.matrix.ui.model.InviteSender
+import io.element.android.libraries.matrix.ui.presence.PresenceIndicator
 import io.element.android.libraries.ui.strings.CommonStrings
 import timber.log.Timber
 
@@ -210,8 +210,8 @@ private fun RoomSummaryScaffoldRow(
                 },
                 hideImage = hideAvatarImage,
             )
-            if (room.isDm && room.isOnline && !hideAvatarImage) {
-                Box(modifier = Modifier.size(10.dp).background(Color(0xFF2BCB74), CircleShape))
+            if (room.isDm && (room.presence == UserPresence.Online || room.presence == UserPresence.Away) && !hideAvatarImage) {
+                PresenceIndicator(room.presence)
             }
         }
         Spacer(modifier = Modifier.width(16.dp))

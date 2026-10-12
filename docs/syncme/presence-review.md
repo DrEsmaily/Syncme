@@ -1,5 +1,6 @@
 # SyncMe 246 presence
 
+Home DM avatars, chat headers, user profiles and People share the same status stream.
 Online and Away come only from authenticated Matrix presence responses. Away is
 Matrix `unavailable`; `currently_active=false` alone does not change Online to Away.
 Unknown or forbidden presence is hidden, not inferred as Offline. Labels use Android

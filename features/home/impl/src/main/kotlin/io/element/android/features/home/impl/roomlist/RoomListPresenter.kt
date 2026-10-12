@@ -9,10 +9,8 @@
 package io.element.android.features.home.impl.roomlist
 
 import android.content.Context
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -23,11 +21,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import dev.zacsweers.metro.Inject
-import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import im.vector.app.features.analytics.plan.Interaction
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
@@ -39,7 +35,6 @@ import io.element.android.features.home.impl.search.RoomListSearchEvent
 import io.element.android.features.home.impl.search.RoomListSearchState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.into
-import io.element.android.features.home.impl.spacefilters.selectedFilter
 import io.element.android.features.invite.api.SeenInvitesStore
 import io.element.android.features.invite.api.acceptdecline.AcceptDeclineInviteEvent.AcceptInvite
 import io.element.android.features.invite.api.acceptdecline.AcceptDeclineInviteEvent.DeclineInvite
@@ -57,19 +52,15 @@ import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermiss
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
-import io.element.android.libraries.matrix.api.user.UserPresence
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.roomlist.RoomList
 import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
+import io.element.android.libraries.matrix.api.user.UserPresence
+import io.element.android.libraries.matrix.ui.presence.observePresence
 import io.element.android.libraries.matrix.ui.safety.rememberHideInvitesAvatar
-import io.element.android.libraries.push.api.battery.BatteryOptimizationState
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.libraries.push.api.battery.BatteryOptimizationState
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.watchers.AnalyticsColdStartWatcher
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
@@ -77,7 +68,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -280,12 +271,7 @@ class RoomListPresenter(
         // A single session-scoped event stream supplies all DM presence states.
         val presenceIds = roomSummaries.dataOrNull().orEmpty().filter { it.isDm }
             .mapNotNull { it.dmUserId }.map(::UserId).toSet()
-        LaunchedEffect(presenceIds) {
-            StartupTrace.mark("presence_track_begin_count_" + presenceIds.size)
-            client.trackPresence(presenceIds)
-            StartupTrace.mark("presence_track_done")
-        }
-        val presenceStates by client.presenceStates.collectAsState()
+        val presenceStates = client.observePresence(presenceIds)
 
         val showEmpty by remember {
             derivedStateOf {
@@ -315,7 +301,7 @@ class RoomListPresenter(
                     fullScreenIntentPermissionsState = fullScreenIntentPermissionsPresenter.present(),
                     batteryOptimizationState = batteryOptimizationPresenter.present(),
                     summaries = roomSummaries.dataOrNull().orEmpty().map { summary ->
-                        summary.copy(isOnline = presenceStates[summary.dmUserId?.let(::UserId)] is UserPresence.Online)
+                        summary.copy(presence = presenceStates[summary.dmUserId?.let(::UserId)] ?: UserPresence.Unknown)
                     }.toImmutableList(),
                     showAllActivity = showAllActivity,
                     seenRoomInvites = seenRoomInvites.toImmutableSet(),

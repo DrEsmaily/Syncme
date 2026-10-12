@@ -16,6 +16,7 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
+import io.element.android.libraries.matrix.api.user.UserPresence
 import io.element.android.libraries.matrix.ui.model.InviteSender
 import kotlinx.collections.immutable.ImmutableList
 
@@ -45,7 +46,7 @@ data class RoomListRoomSummary(
     val isSpace: Boolean,
     val dmUserStatus: DisplayedStatus?,
     val dmUserId: String? = null,
-    val isOnline: Boolean = false,
+    val presence: UserPresence = UserPresence.Unknown,
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

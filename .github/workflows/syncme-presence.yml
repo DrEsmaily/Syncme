@@ -50,6 +50,7 @@ jobs:
           :libraries:matrix:api:testDebugUnitTest --tests '*UserPresenceTest' --tests '*OnlineMemberCountTest'
           :libraries:matrix:impl:testDebugUnitTest --tests '*Presence*Test'
           :features:roomdetails:impl:testDebugUnitTest --tests '*RoomMemberList*Test' --tests '*RoomDetailsPresenterTest'
+          :features:home:impl:testDebugUnitTest --tests '*RoomListPresenterTest' --tests '*RoomListRoomSummaryFactoryTest'
           :features:userprofile:impl:testDebugUnitTest --tests '*UserProfilePresenterTest'
           :libraries:rustls-tls:testDebugUnitTest
           :features:securebackup:impl:testDebugUnitTest --tests '*ResetIdentity*Test'
@@ -113,6 +114,7 @@ jobs:
             libraries/matrix/impl/build/reports/tests/
             features/roomdetails/impl/build/reports/tests/
             features/userprofile/impl/build/reports/tests/
+            features/home/impl/build/reports/tests/
             libraries/rustls-tls/build/reports/tests/
             libraries/pushproviders/firebase/build/reports/tests/
             features/securebackup/impl/build/reports/tests/
