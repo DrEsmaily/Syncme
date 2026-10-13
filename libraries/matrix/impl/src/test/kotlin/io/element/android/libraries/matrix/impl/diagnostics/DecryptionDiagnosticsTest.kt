@@ -52,4 +52,34 @@ class DecryptionDiagnosticsTest : RobolectricTest() {
         DecryptionDiagnostics.clear()
         assertThat(DecryptionDiagnostics.report()).doesNotContain("EVENT_SESSION")
     }
+    @Test
+    fun `report correlates sessions without exporting raw event JSON and tracks decryption recovery`() {
+        SyncMeDiagnosticsControl.setDecryptionEnabled(context, true)
+        val event = io.element.android.libraries.matrix.test.timeline.anEventTimelineItem(
+            content = io.element.android.libraries.matrix.api.timeline.item.event.UnableToDecryptContent(
+                data = io.element.android.libraries.matrix.api.timeline.item.event.UnableToDecryptContent.Data.MegolmV1AesSha2(
+                    "test-session",
+                    io.element.android.libraries.matrix.api.timeline.item.event.UtdCause.Unknown,
+                ),
+            ),
+        )
+        DecryptionDiagnostics.observe(event)
+        DecryptionDiagnostics.observe(event)
+        val available = io.element.android.libraries.matrix.test.timeline.anEventTimelineItem(
+            debugInfoProvider = {
+                io.element.android.libraries.matrix.api.timeline.item.TimelineItemDebugInfo(
+                    "PRIVATE MODEL",
+                    """{"type":"m.room.encrypted","content":{"session_id":"test-session","ciphertext":"PRIVATE CIPHERTEXT"}}""",
+                    null,
+                )
+            },
+        )
+        DecryptionDiagnostics.observe(available)
+        val report = DecryptionDiagnostics.report()
+        assertThat(report.split(" EVENT_UNDECRYPTABLE ").size - 1).isEqualTo(1)
+        assertThat(report).contains("EVENT_AVAILABLE")
+        assertThat(report).contains("EVENT_SESSION")
+        assertThat(report).doesNotContain("test-session")
+        assertThat(report).doesNotContain("PRIVATE")
+    }
 }

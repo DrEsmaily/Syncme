@@ -288,7 +288,6 @@ class DefaultMediaOptimizationSelectorPresenterTest : RobolectricTest() {
             localMedia = localMedia,
             sendAsFile = sendAsFile,
             maxUploadSizeProvider = maxUploadSizeProvider,
-            featureFlagService = featureFlagService,
             mediaExtractorFactory = mediaExtractorFactory,
             mediaOptimizationConfigProvider = mediaOptimizationConfigProvider,
             videoCompressionPresetSelector = videoCompressionPresetSelector,

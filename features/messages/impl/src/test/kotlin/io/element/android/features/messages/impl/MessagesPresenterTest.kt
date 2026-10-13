@@ -1541,6 +1541,7 @@ class MessagesPresenterTest {
         liveLocationShareManager: FakeActiveLiveLocationShareManager = FakeActiveLiveLocationShareManager(),
     ): MessagesPresenter {
         return MessagesPresenter(
+            matrixClient = io.element.android.libraries.matrix.test.FakeMatrixClient(),
             navigator = navigator,
             room = joinedRoom,
             composerPresenter = messageComposerPresenter,
