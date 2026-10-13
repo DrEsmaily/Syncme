@@ -560,6 +560,7 @@ class RoomListPresenterTest {
             }.last()
 
             state.eventSink(RoomListEvent.UpdateVisibleRange(IntRange(0, 10)))
+            assertThat(awaitItem().contentState).isInstanceOf(RoomListContentState.Rooms::class.java)
             // If called again, it will cancel the current one, which should not result in a test failure
             state.eventSink(RoomListEvent.UpdateVisibleRange(IntRange(0, 11)))
             advanceTimeBy(1.seconds)

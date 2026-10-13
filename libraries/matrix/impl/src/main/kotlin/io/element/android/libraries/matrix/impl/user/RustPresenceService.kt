@@ -73,7 +73,11 @@ internal class RustPresenceService(
                         }
                     } catch (cancelled: CancellationException) {
                         throw cancelled
-                    } catch (_: Exception) {
+                    } catch (error: Exception) {
+                        if (error is RateLimited) {
+                            val until = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(error.retryMs)
+                            cooldownUntilNanos.updateAndGet { previous -> maxOf(previous, until) }
+                        }
                         synchronized(registrations) {
                             if (isCurrent(user, epoch)) mutableStates.value -= user
                         }

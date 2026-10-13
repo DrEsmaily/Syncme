@@ -33,6 +33,7 @@ class RustPresenceServiceTest : RobolectricTest() {
     private val sync = MutableStateFlow(SyncState.Running)
     private val visibility = MutableStateFlow<Boolean?>(true)
     private val failRequests = AtomicBoolean(false)
+    private val rateLimited = AtomicBoolean(false)
     private val presence = AtomicReference("online")
     private val published = CopyOnWriteArrayList<String>()
     private val paths = CopyOnWriteArrayList<String>()
@@ -47,6 +48,7 @@ class RustPresenceServiceTest : RobolectricTest() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 paths.add(request.requestUrl!!.encodedPath)
                 if (failRequests.get()) return MockResponse().setResponseCode(503)
+                if (rateLimited.get()) return MockResponse().setResponseCode(429).setBody("""{"retry_after_ms":2000}""")
                 return MockResponse().setBody("""{"presence":"${presence.get()}"}""").apply {
                     if (slowSnapshots.get()) setBodyDelay(2, TimeUnit.SECONDS)
                 }
@@ -135,6 +137,21 @@ class RustPresenceServiceTest : RobolectricTest() {
         delay(500)
         assertThat(paths).isNotEmpty()
         assertThat(paths.all { it.startsWith("/_matrix/client/v3/presence/") && it.endsWith("/status") }).isTrue()
+    }
+
+    @Test
+    fun `rate limiting clears stale state and pauses requests for other users too`() = runBlocking {
+        service.track(setOf(user))
+        eventually { service.states.value[user] == UserPresence.Online }
+        rateLimited.set(true)
+        eventually { service.states.value.isEmpty() }
+        val requestsBefore = paths.size
+        val otherUser = UserId("@carol:example.org")
+        service.track(setOf(otherUser))
+        rateLimited.set(false)
+        delay(700)
+        assertThat(paths.size).isEqualTo(requestsBefore)
+        eventually { service.states.value[user] == UserPresence.Online && service.states.value[otherUser] == UserPresence.Online }
     }
 
     private suspend fun eventually(condition: () -> Boolean) = withTimeout(6000) {
