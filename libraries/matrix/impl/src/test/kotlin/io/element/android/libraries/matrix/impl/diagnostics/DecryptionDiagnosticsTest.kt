@@ -61,6 +61,7 @@ class DecryptionDiagnosticsTest : RobolectricTest() {
                     "test-session",
                     io.element.android.libraries.matrix.api.timeline.item.event.UtdCause.Unknown,
                 ),
+                threadInfo = null,
             ),
         )
         DecryptionDiagnostics.observe(event)
