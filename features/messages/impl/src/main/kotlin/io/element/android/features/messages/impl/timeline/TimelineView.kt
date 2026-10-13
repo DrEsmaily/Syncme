@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -245,7 +246,7 @@ fun TimelineView(
                 )
 
                 TimelineScrollHelper(
-                    hasAnyEvent = state.hasAnyEvent,
+                    timelineItems = state.timelineItems,
                     lazyListState = lazyListState,
                     forceJumpToBottomVisibility = forceJumpToBottomVisibility,
                     forceJumpToReadMarkerVisibility = forceJumpToReadMarkerVisibility,
@@ -331,7 +332,7 @@ private fun TimelinePrefetchingHelper(
 
 @Composable
 private fun BoxScope.TimelineScrollHelper(
-    hasAnyEvent: Boolean,
+    timelineItems: List<TimelineItem>,
     lazyListState: LazyListState,
     newEventState: NewEventState,
     isLive: Boolean,
@@ -348,9 +349,15 @@ private fun BoxScope.TimelineScrollHelper(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val isScrollFinished by remember { derivedStateOf { !lazyListState.isScrollInProgress } }
-    val canAutoScroll by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex < 3 && isLive
+    val isDragged by lazyListState.interactionSource.collectIsDraggedAsState()
+    var followLive by remember { mutableStateOf(lazyListState.firstVisibleItemIndex < 3 && isLive) }
+    val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
+    val canAutoScroll = followLive && isLive
+    LaunchedEffect(isDragged, isScrollFinished, isLive) {
+        if (isDragged) {
+            followLive = false
+        } else if (isScrollFinished) {
+            followLive = isLive && lazyListState.firstVisibleItemIndex < 3
         }
     }
     val isJumpToUnreadVisible by remember(jumpToUnread, forceJumpToReadMarkerVisibility) {
@@ -420,22 +427,33 @@ private fun BoxScope.TimelineScrollHelper(
         }
     }
 
-    LaunchedEffect(canAutoScroll, newEventState) {
-        val shouldScrollToBottom = isScrollFinished && when (newEventState) {
-            is NewEventState.FromOther -> canAutoScroll
-            NewEventState.FromMe -> true
-            NewEventState.None -> false
-        }
-        if (shouldScrollToBottom) {
-            scrollToBottom(force = true)
+    // Each event identity triggers independently, even for a burst of FromOther events.
+    // Keep the user's pre-insertion follow intent; Compose may preserve an older item's anchor.
+    LaunchedEffect(newestEventId, newEventState, canAutoScroll, isDragged, isScrollFinished) {
+        if (isLive && !isDragged && isScrollFinished && newestEventId != null &&
+            (canAutoScroll || newEventState == NewEventState.FromMe)
+        ) {
+            lazyListState.scrollToItem(0)
         }
     }
 
     val latestOnScrollFinishAt by rememberUpdatedState(onScrollFinishAt)
-    LaunchedEffect(isScrollFinished, hasAnyEvent) {
-        if (isScrollFinished && hasAnyEvent) {
-            // Notify the parent composable about the first visible item index when scrolling finishes
-            latestOnScrollFinishAt(lazyListState.firstVisibleItemIndex)
+    val latestItems by rememberUpdatedState(timelineItems)
+    LaunchedEffect(lazyListState, newEventState) {
+        // Observe laid-out item identities, not only scroll completion. New messages can be
+        // visible without any scrolling (short conversations and a persistent typing row).
+        snapshotFlow {
+            if (lazyListState.isScrollInProgress) {
+                emptyList()
+            } else {
+                lazyListState.layoutInfo.visibleItemsInfo.map { it.key }
+            }
+        }.distinctUntilChanged().collect { visibleKeys ->
+            val items = latestItems
+            if (items.any { it is TimelineItem.Event }) {
+                val firstIndex = items.indexOfFirst { it.identifier() == visibleKeys.firstOrNull() }
+                if (firstIndex >= 0) latestOnScrollFinishAt(firstIndex)
+            }
         }
     }
 

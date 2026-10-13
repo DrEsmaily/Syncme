@@ -10,6 +10,7 @@ package io.element.android.libraries.matrix.impl.sync
 
 import io.element.android.libraries.core.coroutine.mapState
 import io.element.android.libraries.core.extensions.runCatchingExceptions
+import io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.sync.SyncState
 import kotlinx.coroutines.CoroutineDispatcher
@@ -41,6 +42,7 @@ class RustSyncService(
                 return@runCatchingExceptions
             }
             Timber.i("Start sync")
+            DecryptionDiagnostics.record(DecryptionDiagnostics.Stage.SYNC_START)
             inner.start()
         }.onFailure {
             Timber.d("Start sync failed: $it")
@@ -54,6 +56,7 @@ class RustSyncService(
                 return@runCatchingExceptions
             }
             Timber.i("Stop sync")
+            DecryptionDiagnostics.record(DecryptionDiagnostics.Stage.SYNC_STOP)
             inner.stop()
         }.onFailure {
             Timber.d("Stop sync failed: $it")
@@ -73,6 +76,7 @@ class RustSyncService(
             .map(SyncServiceState::toSyncState)
             .distinctUntilChanged()
             .onEach { state ->
+                DecryptionDiagnostics.record(DecryptionDiagnostics.Stage.SYNC_STATE, detail = state)
                 Timber.i("Sync state=$state")
             }
             .stateIn(sessionCoroutineScope, SharingStarted.Eagerly, SyncState.Idle)

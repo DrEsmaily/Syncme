@@ -63,7 +63,7 @@ class EventTimelineItemMapper(
             sendHandleProvider = { lazyProvider.getSendHandle()?.let(::RustSendHandle) },
             forwarder = forwarder?.let { UserId(it) },
             forwarderProfile = forwarderProfile?.map(),
-        )
+        ).also(io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics::observe)
     }
 }
 

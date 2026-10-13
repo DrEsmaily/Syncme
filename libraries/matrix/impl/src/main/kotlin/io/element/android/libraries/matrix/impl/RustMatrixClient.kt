@@ -220,6 +220,16 @@ class RustMatrixClient(
             syncService.syncState,
             SyncMeAppVisibility.isForeground,
             CoroutineScope(sessionCoroutineScope.coroutineContext + dispatchers.io),
+            publishOwnPresence = { value ->
+                innerClient.setPresence(
+                    if (value == "online") {
+                        org.matrix.rustcomponents.sdk.PresenceState.ONLINE
+                    } else {
+                        org.matrix.rustcomponents.sdk.PresenceState.UNAVAILABLE
+                    },
+                    immediate = true,
+                )
+            },
         )
     }
     override val presenceStates: StateFlow<Map<UserId, UserPresence>> get() = presenceService.states

@@ -12,6 +12,15 @@ object SyncMeDiagnosticsControl {
     private const val PREFS = "syncme-diagnostics-settings-v1"
     private const val STARTUP = "startup_enabled"
     private const val TLS = "tls_enabled"
+    private const val DECRYPTION = "decryption_enabled"
+
+    fun decryptionEnabled(context: Context): Boolean =
+        context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(DECRYPTION, false)
+
+    fun setDecryptionEnabled(context: Context, enabled: Boolean) {
+        context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(DECRYPTION, enabled).apply()
+        DecryptionDiagnostics.configure(context, enabled)
+    }
 
     fun startupEnabled(context: Context): Boolean =
         context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

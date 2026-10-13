@@ -8,19 +8,10 @@
 
 package io.element.android.x
 
-import android.content.Intent
-import androidx.core.content.FileProvider
 import android.content.ClipData
-import android.widget.Toast
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
-import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
-import io.element.android.libraries.matrix.api.user.SyncMeAppVisibility
-import java.io.File
+import android.content.Intent
 import android.os.Bundle
-import android.os.SystemClock
-import java.util.concurrent.atomic.AtomicBoolean
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -50,11 +41,17 @@ import io.element.android.libraries.architecture.bindings
 import io.element.android.libraries.core.log.logger.LoggerTag
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.snackbar.LocalSnackbarDispatcher
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
+import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
+import io.element.android.libraries.matrix.api.user.SyncMeAppVisibility
 import io.element.android.services.analytics.compose.LocalAnalyticsService
 import io.element.android.x.di.AppBindings
 import io.element.android.x.intent.SafeUriHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val loggerTag = LoggerTag("MainActivity")
 
@@ -77,6 +74,7 @@ class MainActivity : NodeActivity() {
         }
         StartupTrace.mark("setContent_return")
         observeFirstDraw()
+        if (intent?.action == "io.syncme.EXPORT_DECRYPTION_DIAGNOSTICS") exportDecryptionDiagnostics()
         if (intent?.action == "io.syncme.EXPORT_STARTUP_TRACE") exportStartupTrace()
         if (intent?.action == "io.syncme.EXPORT_TLS_AUDIT") exportTlsAudit()
 
@@ -189,6 +187,10 @@ class MainActivity : NodeActivity() {
         // If the mainNode is not init yet, keep the intent for later.
         // It can happen when the activity is killed by the system. The methods are called in this order :
         // onCreate(savedInstanceState=true) -> onNewIntent -> onResume -> onMainNodeInit
+        if (intent.action == "io.syncme.EXPORT_DECRYPTION_DIAGNOSTICS") {
+            exportDecryptionDiagnostics()
+            return
+        }
         if (intent.action == "io.syncme.EXPORT_STARTUP_TRACE") {
             exportStartupTrace()
             return
@@ -287,6 +289,44 @@ class MainActivity : NodeActivity() {
                                 ).show()
                             }
                         }.show()
+                }
+                .setNegativeButton("Close", null)
+                .show()
+        }
+    }
+
+    private fun exportDecryptionDiagnostics() {
+        lifecycleScope.launch {
+            val report = withContext(Dispatchers.IO) {
+                runCatching { io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.report() }
+                    .getOrDefault("Unable to read decryption diagnostics.")
+            }
+            val text = android.widget.TextView(this@MainActivity).apply {
+                this.text = report
+                textSize = 12f
+                setTextIsSelectable(true)
+                setPadding(24, 16, 24, 16)
+            }
+            val scroll = android.widget.ScrollView(this@MainActivity).apply { addView(text) }
+            android.app.AlertDialog.Builder(this@MainActivity)
+                .setTitle("SyncMe decryption diagnostics")
+                .setView(scroll)
+                .setPositiveButton("Copy All") { _, _ ->
+                    val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("SyncMe decryption diagnostics", report))
+                    Toast.makeText(this@MainActivity, "Decryption diagnostics copied", Toast.LENGTH_SHORT).show()
+                }
+                .setNeutralButton("Clear") { _, _ ->
+                    lifecycleScope.launch {
+                        val result = withContext(Dispatchers.IO) {
+                            runCatching { io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.clear() }
+                        }
+                        Toast.makeText(
+                            this@MainActivity,
+                            if (result.isSuccess) "Decryption logs cleared" else "Unable to clear logs",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
                 .setNegativeButton("Close", null)
                 .show()

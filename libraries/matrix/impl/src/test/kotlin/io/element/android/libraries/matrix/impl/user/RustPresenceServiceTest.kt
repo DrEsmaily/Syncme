@@ -154,6 +154,15 @@ class RustPresenceServiceTest : RobolectricTest() {
         eventually { service.states.value[user] == UserPresence.Online && service.states.value[otherUser] == UserPresence.Online }
     }
 
+    @Test
+    fun `reconnection republishes online without requiring a visibility change`() = runBlocking {
+        eventually { published.count { it == "online" } == 1 }
+        sync.value = SyncState.Offline
+        delay(250)
+        sync.value = SyncState.Running
+        eventually { published.count { it == "online" } == 2 }
+    }
+
     private suspend fun eventually(condition: () -> Boolean) = withTimeout(6000) {
         while (!condition()) delay(10)
     }

@@ -12,6 +12,15 @@ object SyncMeAppVisibility {
     val isForeground: StateFlow<Boolean?> = mutableIsForeground
 
     fun setForeground(value: Boolean) {
+        if (mutableIsForeground.value != value) {
+            io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.record(
+                if (value) {
+                    io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.Stage.FOREGROUND
+                } else {
+                    io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.Stage.BACKGROUND
+                },
+            )
+        }
         mutableIsForeground.value = value
     }
 }

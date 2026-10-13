@@ -9,11 +9,7 @@
 package io.element.android.x
 
 import android.app.Application
-import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
-import io.element.android.libraries.matrix.api.diagnostics.SyncMeDiagnosticsControl
-import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
 import android.os.Build
-import java.util.concurrent.Executors
 import android.os.StrictMode
 import androidx.compose.material3.ComposeMaterial3Flags.isAnchoredDraggableComponentsStrictOffsetCheckEnabled
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +20,9 @@ import dev.zacsweers.metro.createGraphFactory
 import io.element.android.libraries.architecture.bindings
 import io.element.android.libraries.di.DependencyInjectionGraphOwner
 import io.element.android.libraries.matrix.api.SdkMetadata
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
+import io.element.android.libraries.matrix.api.diagnostics.SyncMeDiagnosticsControl
+import io.element.android.libraries.matrix.api.diagnostics.TlsAudit
 import io.element.android.libraries.workmanager.api.di.MetroWorkerFactory
 import io.element.android.x.di.AppGraph
 import io.element.android.x.di.ApplicationBindings
@@ -31,6 +30,7 @@ import io.element.android.x.info.logApplicationInfo
 import io.element.android.x.initializer.CacheCleanerInitializer
 import io.element.android.x.initializer.CrashInitializer
 import io.element.android.x.initializer.PlatformInitializer
+import java.util.concurrent.Executors
 
 class ElementXApplication : Application(), DependencyInjectionGraphOwner, Configuration.Provider {
     override val graph: AppGraph = createGraphFactory<AppGraph.Factory>().create(this)
@@ -46,6 +46,7 @@ class ElementXApplication : Application(), DependencyInjectionGraphOwner, Config
         super.onCreate()
         // Both opt-in diagnostics are OFF on first install. Disabled probes
         // do not run background samplers or emit trace files.
+        io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.configure(this, SyncMeDiagnosticsControl.decryptionEnabled(this))
         StartupTrace.initResetTrace(this)
         StartupTrace.setEnabled(this, SyncMeDiagnosticsControl.startupEnabled(this))
         val tlsEnabled = SyncMeDiagnosticsControl.tlsEnabled(this)

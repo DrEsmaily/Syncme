@@ -47,3 +47,34 @@ Automated checks cover parsing, count completeness, screen subscription sharing,
 snapshots after disconnect, foreground/background requests, and reconnect. Existing TLS,
 reset and Firebase regressions are run alongside profile/member/details presenter tests.
 Actual multi-device/homeserver runtime testing is still required.
+
+## SyncMe 247 corrections and diagnostics
+
+Version 246's service tests supplied a fake publisher, but the production client omitted
+that callback. Version 247 explicitly wires SDK `setPresence` and requires the callback
+at construction. It republishes Online on reconnect. Away remains server-controlled,
+including other active sessions and homeserver policy; a force-stopped process cannot
+publish its own departure. This is not a guarantee of exact real-time presence.
+
+Developer options now has **Enable decryption diagnostics**, disabled by default, and
+**Decryption diagnostics** with Copy All and Clear. The toggle applies immediately and
+is independent of startup/TLS logs. Enable it on both devices before reproducing, then
+copy both reports before restarting the sender and note the affected message time.
+Disable it after capturing. Clear removes only this report. No native DEBUG trace is
+enabled by this switch.
+
+The bounded report records UTC milliseconds, local sequence, sync/lifecycle changes,
+local send admission, send states, immediate UTD cause, event availability and delayed
+SDK UTD callbacks. Event/session identifiers are fingerprinted to correlate the two
+reports; plaintext, ciphertext, credentials, exception messages and encryption keys are
+never exported. The report is capped at two 256 KB files and a bounded write queue,
+with dropped-event counts. Deduplication is bounded to 2048 event states.
+
+This is diagnostic evidence, not a fix for the rare decryption failure. Native key
+transport isn't exposed by this observer: queued/sent messages do not prove that a
+recipient received the room key. Capture may narrow the cause without proving it.
+
+Timeline following now keys off each newest event identity and retains the user's
+pre-insertion follow intent during bursts. Read updates observe laid-out item identities,
+including new messages while the list remains stationary. History readers are not
+pulled to the bottom by incoming messages.

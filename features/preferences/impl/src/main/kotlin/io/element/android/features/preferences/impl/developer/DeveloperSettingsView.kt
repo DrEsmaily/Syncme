@@ -13,12 +13,12 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.progressSemantics
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.Switch
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +56,7 @@ fun DeveloperSettingsView(
     extraOptions: @Composable () -> Unit = {},
 ) {
     val context = LocalContext.current
+    var decryptionLogsEnabled by remember { mutableStateOf(SyncMeDiagnosticsControl.decryptionEnabled(context)) }
     var startupLogsEnabled by remember { mutableStateOf(SyncMeDiagnosticsControl.startupEnabled(context)) }
     var tlsLogsEnabled by remember { mutableStateOf(SyncMeDiagnosticsControl.tlsEnabled(context)) }
     val updateStartupLogs: (Boolean) -> Unit = { enabled ->
@@ -99,6 +100,31 @@ fun DeveloperSettingsView(
     ) {
         // Only present in the existing (five-tap) developer settings.
         PreferenceCategory(title = "SyncMe diagnostics") {
+            ListItem(
+                content = { Text("Enable decryption diagnostics") },
+                supportingContent = { Text("Off by default. Applies immediately. Records message status and sync metadata, never message text or keys.") },
+                trailingContent = ListItemContent.Custom {
+                    Switch(checked = decryptionLogsEnabled, onCheckedChange = {
+                        decryptionLogsEnabled = it
+                        SyncMeDiagnosticsControl.setDecryptionEnabled(context, it)
+                    })
+                },
+                onClick = {
+                    decryptionLogsEnabled = !decryptionLogsEnabled
+                    SyncMeDiagnosticsControl.setDecryptionEnabled(context, decryptionLogsEnabled)
+                },
+            )
+            ListItem(
+                content = { Text("Decryption diagnostics") },
+                supportingContent = { Text("Separate report for Waiting for this message · Copy All / Clear") },
+                onClick = {
+                    context.startActivity(
+                        Intent("io.syncme.EXPORT_DECRYPTION_DIAGNOSTICS")
+                            .setClassName(context.packageName, "io.element.android.x.MainActivity")
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    )
+                },
+            )
             ListItem(
                 content = { Text("Enable startup logs") },
                 supportingContent = { Text("Off by default. Enables main-thread watchdog and startup trace.") },

@@ -40,7 +40,7 @@ internal class RustPresenceService(
     syncState: StateFlow<SyncState>,
     visibility: StateFlow<Boolean?>,
     private val scope: CoroutineScope,
-    private val publishOwnPresence: suspend (String) -> Unit = {},
+    private val publishOwnPresence: suspend (String) -> Unit,
     private val refreshIntervalMillis: (Int) -> Long = { if (it <= 8) 15_000 else 60_000 },
 ) {
     private val base = homeserver.trimEnd('/').toHttpUrl()
@@ -94,8 +94,9 @@ internal class RustPresenceService(
             }
         }.stateIn(scope, SharingStarted.Eagerly, null)
         scope.launch {
-            stableVisibility.collectLatest { foreground ->
-                if (foreground == null) return@collectLatest
+            combine(stableVisibility, syncState) { foreground, sync -> foreground to sync }
+                .distinctUntilChanged().collectLatest { (foreground, sync) ->
+                if (foreground == null || (foreground && sync != SyncState.Running)) return@collectLatest
                 try {
                     // The SDK owns publication, including presence in its future sync requests.
                     publishOwnPresence(if (foreground) "online" else "unavailable")

@@ -13,6 +13,7 @@ import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics
 import io.element.android.libraries.matrix.api.media.AudioInfo
 import io.element.android.libraries.matrix.api.media.FileInfo
 import io.element.android.libraries.matrix.api.media.GalleryItemInfo
@@ -300,8 +301,14 @@ class RustTimeline(
             msgType = msgType,
             asPlainText = asPlainText,
         ).use { content ->
+            DecryptionDiagnostics.record(DecryptionDiagnostics.Stage.SEND_REQUEST, joinedRoom.roomId.value)
             runCatchingExceptions<Unit> {
                 inner.send(content)
+            }.also { result ->
+                DecryptionDiagnostics.record(
+                    if (result.isSuccess) DecryptionDiagnostics.Stage.SEND_QUEUED else DecryptionDiagnostics.Stage.SEND_REJECTED,
+                    joinedRoom.roomId.value,
+                )
             }
         }
     }

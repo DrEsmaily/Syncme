@@ -19,6 +19,12 @@ class UtdTracker(
     private val analyticsService: AnalyticsService,
 ) : UnableToDecryptDelegate {
     override fun onUtd(info: UnableToDecryptInfo) {
+        io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.record(
+            io.element.android.libraries.matrix.api.diagnostics.DecryptionDiagnostics.Stage.UTD_CALLBACK,
+            info.eventId,
+            info.cause,
+            info.timeToDecryptMs?.toLong(),
+        )
         Timber.d("onUtd for event ${info.eventId}, timeToDecryptMs: ${info.timeToDecryptMs}")
         val name = when (info.cause) {
             UtdCause.UNKNOWN -> Error.Name.OlmKeysNotSentError
