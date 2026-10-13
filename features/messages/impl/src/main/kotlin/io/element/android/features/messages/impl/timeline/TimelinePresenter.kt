@@ -14,7 +14,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -53,11 +52,9 @@ import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.core.EventId
-import io.element.android.libraries.matrix.api.core.TransactionId
 import io.element.android.libraries.matrix.api.core.UniqueId
 import io.element.android.libraries.matrix.api.core.asEventId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
-import io.element.android.libraries.matrix.api.room.SendQueueUpdate
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
 import io.element.android.libraries.matrix.api.room.roomMembers
 import io.element.android.libraries.matrix.api.timeline.ReceiptType
@@ -77,7 +74,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -159,6 +155,7 @@ class TimelinePresenter(
         // the SDK to push a refreshed fully-read marker; the after-await ordering means any
         // RoomInfo update racing the mark-as-read call has already landed and can't undo this.
         val suppressJumpToUnread = remember { mutableStateOf(false) }
+        val locallyReadThrough = remember { mutableStateOf<UniqueId?>(null) }
 
         // Read upload progress directly from the timeline local-send state produced by
         // matrix-sdk-ui. Avoid a second send-queue subscription here: the extra observer duplicated
@@ -226,6 +223,12 @@ class TimelinePresenter(
                                 timelineItems = timelineItems,
                                 lastReadReceiptId = lastReadReceiptId,
                                 readReceiptType = if (sendPublicReadReceipts) ReceiptType.READ else ReceiptType.READ_PRIVATE,
+                                onLiveEndRead = { readId ->
+                                    // An older request completing late must not replace a newer read acknowledgement.
+                                    if (timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier() == readId) {
+                                        locallyReadThrough.value = readId
+                                    }
+                                },
                             )
                         }
                     } else {
@@ -414,8 +417,11 @@ class TimelinePresenter(
             roomInfo.fullyReadEventId,
             roomInfo.numUnreadMessages,
             suppressJumpToUnread.value,
+            locallyReadThrough.value,
         ) {
-            if (!displayJumpToUnread || suppressJumpToUnread.value) {
+            val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
+            val caughtUpLocally = newestEventId != null && newestEventId == locallyReadThrough.value
+            if (!displayJumpToUnread || suppressJumpToUnread.value || caughtUpLocally || roomInfo.numUnreadMessages == 0L) {
                 jumpToUnread.value = JumpToUnreadState.Hidden
                 return@LaunchedEffect
             }
@@ -592,11 +598,15 @@ class TimelinePresenter(
         timelineItems: ImmutableList<TimelineItem>,
         lastReadReceiptId: MutableState<EventId?>,
         readReceiptType: ReceiptType,
+        onLiveEndRead: (UniqueId) -> Unit,
     ) = launch(dispatchers.computation) {
         // If we are at the bottom of timeline, we mark the room as read.
         if (firstVisibleIndex == 0) {
             timelineController.invokeOnCurrentTimeline {
-                markAsRead(receiptType = readReceiptType)
+                val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
+                markAsRead(receiptType = readReceiptType).onSuccess {
+                    if (newestEventId != null) onLiveEndRead(newestEventId)
+                }
             }
         } else {
             // Get last valid EventId seen by the user, as the first index might refer to a Virtual item

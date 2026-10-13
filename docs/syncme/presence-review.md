@@ -78,3 +78,15 @@ Timeline following now keys off each newest event identity and retains the user'
 pre-insertion follow intent during bursts. Read updates observe laid-out item identities,
 including new messages while the list remains stationary. History readers are not
 pulled to the bottom by incoming messages.
+
+
+## SyncMe 248 unread-arrow correction
+
+The upward arrow targets the fully-read marker; it is separate from the downward
+live-edge button. A retained virtual read marker previously made the upward arrow
+visible even after unread counts reached zero. It now requires unread messages and
+hides after a successful live-edge read acknowledgement, without waiting for stale
+RoomInfo to catch up. Failed read acknowledgements do not hide genuine unread state;
+a later unseen event can show the arrow again. Late older acknowledgements cannot
+overwrite the current read position. No message/key deletion or forced session reset
+is involved. Version 247 completed CI successfully before this additional correction.
