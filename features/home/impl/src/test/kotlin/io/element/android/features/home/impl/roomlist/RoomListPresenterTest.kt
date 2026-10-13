@@ -563,6 +563,7 @@ class RoomListPresenterTest {
             // If called again, it will cancel the current one, which should not result in a test failure
             state.eventSink(RoomListEvent.UpdateVisibleRange(IntRange(0, 11)))
             advanceTimeBy(1.seconds)
+            assertThat(awaitItem().contentState).isInstanceOf(RoomListContentState.Rooms::class.java)
             subscribeToVisibleRoomsLambda.assertions().isCalledOnce()
         }
     }
@@ -595,11 +596,13 @@ class RoomListPresenterTest {
 
             state.eventSink(RoomListEvent.UpdateVisibleRange(IntRange(0, 10)))
             advanceTimeBy(1.seconds)
+            assertThat(awaitItem().contentState).isInstanceOf(RoomListContentState.Rooms::class.java)
             subscribeToVisibleRoomsLambda.assertions().isCalledOnce()
 
             // If called again, it will subscribe to the next items
             state.eventSink(RoomListEvent.UpdateVisibleRange(IntRange(0, 11)))
             advanceTimeBy(1.seconds)
+            assertThat(awaitItem().contentState).isInstanceOf(RoomListContentState.Rooms::class.java)
             subscribeToVisibleRoomsLambda.assertions().isCalledExactly(2)
         }
     }
