@@ -147,6 +147,7 @@ class TimelinePresenter(
         val timelineMode = remember { timelineController.mainTimelineMode() }
 
         val lastReadReceiptId = rememberSaveable { mutableStateOf<EventId?>(null) }
+        val lastReadReceiptType = remember { mutableStateOf<ReceiptType?>(null) }
         val readReceiptMutex = remember { Mutex() }
 
         val roomInfo by room.roomInfoFlow.collectAsState()
@@ -230,6 +231,7 @@ class TimelinePresenter(
                                 timelineItems = visibleItems,
                                 lifecycle = lifecycle,
                                 lastReadReceiptId = lastReadReceiptId,
+                                lastReadReceiptType = lastReadReceiptType,
                                 readReceiptMutex = readReceiptMutex,
                                 readReceiptType = if (sendPublicReadReceipts) ReceiptType.READ else ReceiptType.READ_PRIVATE,
                                 onLiveEndRead = { readId ->
@@ -607,6 +609,7 @@ class TimelinePresenter(
         timelineItems: ImmutableList<TimelineItem>,
         lifecycle: Lifecycle,
         lastReadReceiptId: MutableState<EventId?>,
+        lastReadReceiptType: MutableState<ReceiptType?>,
         readReceiptMutex: Mutex,
         readReceiptType: ReceiptType,
         onLiveEndRead: (UniqueId) -> Unit,
@@ -618,14 +621,17 @@ class TimelinePresenter(
             val eventId = getLastEventIdBeforeOrAt(firstVisibleIndex, timelineItems) ?: return@withLock
             val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
             // Never mark the SDK's live end: it may already contain a newer, unrendered event.
-            if (eventId != lastReadReceiptId.value) {
+            if (eventId != lastReadReceiptId.value || readReceiptType != lastReadReceiptType.value) {
                 timelineController.invokeOnCurrentTimeline {
                     sendReadReceipt(eventId = eventId, receiptType = readReceiptType).onSuccess {
                         lastReadReceiptId.value = eventId
+                        lastReadReceiptType.value = readReceiptType
                     }
                 }
             }
-            if (eventId == lastReadReceiptId.value && firstVisibleIndex == 0 && newestEventId != null) onLiveEndRead(newestEventId)
+            if (eventId == lastReadReceiptId.value && readReceiptType == lastReadReceiptType.value && firstVisibleIndex == 0 && newestEventId != null) {
+                onLiveEndRead(newestEventId)
+            }
         }
     }
 

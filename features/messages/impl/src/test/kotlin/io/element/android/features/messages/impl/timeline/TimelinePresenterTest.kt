@@ -2024,6 +2024,29 @@ class TimelinePresenterTest {
         }
     }
 
+    @Test
+    fun `enabling public receipts does not reuse an acknowledgement sent privately`() = runTest {
+        val sent = mutableListOf<ReceiptType>()
+        val preferences = InMemorySessionPreferencesStore(isSendPublicReadReceiptsEnabled = false)
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(listOf(MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem(content = aMessageContent())))),
+            sendReadReceiptLambda = { _, type ->
+                sent.add(type)
+                Result.success(Unit)
+            },
+        )
+        createTimelinePresenter(timeline, sessionPreferencesStore = preferences).test {
+            val state = consumeItemsUntilPredicate { it.timelineItems.isNotEmpty() }.last()
+            state.eventSink(TimelineEvent.OnScrollFinished(0))
+            advanceUntilIdle()
+            preferences.setSendPublicReadReceipts(true)
+            state.eventSink(TimelineEvent.OnScrollFinished(0))
+            advanceUntilIdle()
+            assertThat(sent).containsExactly(ReceiptType.READ_PRIVATE, ReceiptType.READ).inOrder()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     private suspend fun TimelinePresenter.test(
         lifecycleOwner: FakeLifecycleOwner = FakeLifecycleOwner(Lifecycle.State.RESUMED),
         validate: suspend TurbineTestContext<TimelineState>.() -> Unit,
