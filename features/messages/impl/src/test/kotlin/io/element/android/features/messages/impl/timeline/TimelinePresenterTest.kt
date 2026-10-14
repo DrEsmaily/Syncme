@@ -1747,6 +1747,8 @@ class TimelinePresenterTest {
                         A_UNIQUE_ID,
                         anEventTimelineItem(
                             sender = A_USER_ID,
+                            isOwn = true,
+                            content = aMessageContent(),
                             receipts = persistentListOf(
                                 Receipt(
                                     userId = A_USER_ID,

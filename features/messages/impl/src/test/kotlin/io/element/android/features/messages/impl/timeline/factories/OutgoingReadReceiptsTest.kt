@@ -77,7 +77,7 @@ class OutgoingReadReceiptsTest {
 
     @Test
     fun `receipt does not cross into another thread`() {
-        val thread = TimelineItemThreadInfo.ThreadResponse(ThreadId("thread"))
+        val thread = TimelineItemThreadInfo.ThreadResponse(ThreadId("\$thread"))
         val result = listOf(
             message(false, reader("alice")).copy(threadInfo = thread),
             message(true),
