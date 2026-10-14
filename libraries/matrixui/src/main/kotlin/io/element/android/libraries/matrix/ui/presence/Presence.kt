@@ -23,8 +23,10 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.user.LastSeenCategory
 import io.element.android.libraries.matrix.api.user.OnlineMemberCount
 import io.element.android.libraries.matrix.api.user.UserPresence
+import io.element.android.libraries.matrix.api.user.lastSeenCategory
 import io.element.android.libraries.ui.strings.CommonPlurals
 import io.element.android.libraries.ui.strings.CommonStrings
 
@@ -45,7 +47,13 @@ fun UserPresence.toPresenceText(): String? = when (this) {
     UserPresence.Unknown -> null
     UserPresence.Online -> stringResource(CommonStrings.syncme_presence_online)
     UserPresence.Away -> stringResource(CommonStrings.syncme_presence_away)
-    is UserPresence.Offline -> stringResource(CommonStrings.syncme_presence_offline)
+    is UserPresence.Offline -> when (lastSeenCategory(System.currentTimeMillis())) {
+        LastSeenCategory.Recently -> stringResource(CommonStrings.syncme_presence_last_seen_recently)
+        LastSeenCategory.WithinWeek -> stringResource(CommonStrings.syncme_presence_last_seen_week)
+        LastSeenCategory.WithinMonth -> stringResource(CommonStrings.syncme_presence_last_seen_month)
+        LastSeenCategory.LongAgo -> stringResource(CommonStrings.syncme_presence_last_seen_long_ago)
+        null -> null
+    }
 }
 
 @Composable
@@ -59,6 +67,7 @@ fun OnlineMemberCount?.toPresenceText(): String? = this?.let {
 
 @Composable
 fun PresenceIndicator(presence: UserPresence, modifier: Modifier = Modifier) {
+    if (presence != UserPresence.Online && presence != UserPresence.Away) return
     val label = presence.toPresenceText() ?: return
     val color = when (presence) {
         UserPresence.Online -> ElementTheme.colors.iconSuccessPrimary
@@ -88,3 +97,27 @@ internal fun AwayPresencePreview() = ElementPreview { PresenceStatus(UserPresenc
 @PreviewsDayNight
 @Composable
 internal fun OfflinePresencePreview() = ElementPreview { PresenceStatus(UserPresence.Offline(null)) }
+
+@PreviewsDayNight
+@Composable
+internal fun RecentlySeenPresencePreview() = ElementPreview {
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 86_400_000L))
+}
+
+@PreviewsDayNight
+@Composable
+internal fun SeenWithinWeekPresencePreview() = ElementPreview {
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 5 * 86_400_000L))
+}
+
+@PreviewsDayNight
+@Composable
+internal fun SeenWithinMonthPresencePreview() = ElementPreview {
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 15 * 86_400_000L))
+}
+
+@PreviewsDayNight
+@Composable
+internal fun SeenLongAgoPresencePreview() = ElementPreview {
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 40 * 86_400_000L))
+}

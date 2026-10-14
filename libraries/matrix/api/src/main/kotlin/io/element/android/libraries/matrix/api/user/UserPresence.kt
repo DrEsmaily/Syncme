@@ -8,19 +8,32 @@ sealed interface UserPresence {
     data class Offline(val lastSeenAt: Long?) : UserPresence
 }
 
+enum class LastSeenCategory { Recently, WithinWeek, WithinMonth, LongAgo }
+
+/** Approximate buckets from server time only; missing or invalid timestamps remain unknown. */
+fun UserPresence.Offline.lastSeenCategory(nowMillis: Long): LastSeenCategory? {
+    val seen = lastSeenAt ?: return null
+    if (seen <= 0L || seen > nowMillis) return null
+    val elapsed = nowMillis - seen
+    val day = 86_400_000L
+    return when {
+        elapsed <= 3 * day -> LastSeenCategory.Recently
+        elapsed <= 7 * day -> LastSeenCategory.WithinWeek
+        elapsed <= 30 * day -> LastSeenCategory.WithinMonth
+        else -> LastSeenCategory.LongAgo
+    }
+}
+
 fun UserPresence.presenceLabel(nowMillis: Long): String? = when (this) {
     UserPresence.Unknown -> null
     UserPresence.Online -> "Online"
     UserPresence.Away -> "Away"
-    is UserPresence.Offline -> {
-        val seen = lastSeenAt
-        when {
-            seen == null || seen > nowMillis || seen <= 0L -> "Offline"
-            nowMillis - seen < 60_000L -> "Last seen just now"
-            nowMillis - seen < 3_600_000L -> "Last seen ${(nowMillis - seen) / 60_000L} min ago"
-            nowMillis - seen < 86_400_000L -> "Last seen ${(nowMillis - seen) / 3_600_000L} hours ago"
-            else -> "Last seen ${(nowMillis - seen) / 86_400_000L} days ago"
-        }
+    is UserPresence.Offline -> when (lastSeenCategory(nowMillis)) {
+        LastSeenCategory.Recently -> "Last seen recently"
+        LastSeenCategory.WithinWeek -> "Last seen within a week"
+        LastSeenCategory.WithinMonth -> "Last seen within a month"
+        LastSeenCategory.LongAgo -> "Last seen a long time ago"
+        null -> null
     }
 }
 
