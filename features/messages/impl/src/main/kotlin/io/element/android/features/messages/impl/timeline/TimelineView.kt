@@ -78,6 +78,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.ResolveVerifiedUserSendFailureView
@@ -439,23 +442,26 @@ private fun BoxScope.TimelineScrollHelper(
 
     val latestOnScrollFinishAt by rememberUpdatedState(onScrollFinishAt)
     val latestItems by rememberUpdatedState(timelineItems)
-    LaunchedEffect(lazyListState, newEventState) {
-        // Observe laid-out item identities, not only scroll completion. New messages can be
-        // visible without any scrolling (short conversations and a persistent typing row).
-        snapshotFlow {
-            val items = latestItems
-            val firstKey = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull()?.key
-            val firstIndex = items.indexOfFirst { it.identifier() == firstKey }
-            if (lazyListState.isScrollInProgress || firstIndex < 0) {
-                null
-            } else {
-                // Observe the model in the snapshot too: layout and model can update separately,
-                // and a local echo can acquire its server event ID without changing its list key.
-                val event = items.drop(firstIndex).filterIsInstance<TimelineItem.Event>().firstOrNull()
-                event?.let { Triple(firstIndex, it.identifier(), it.eventId) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lazyListState, newEventState, lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            // Observe laid-out item identities, not only scroll completion. New messages can be
+            // visible without any scrolling (short conversations and a persistent typing row).
+            snapshotFlow {
+                val items = latestItems
+                val firstKey = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull()?.key
+                val firstIndex = items.indexOfFirst { it.identifier() == firstKey }
+                if (lazyListState.isScrollInProgress || firstIndex < 0) {
+                    null
+                } else {
+                    // Observe the model in the snapshot too: layout and model can update separately,
+                    // and a local echo can acquire its server event ID without changing its list key.
+                    val event = items.drop(firstIndex).filterIsInstance<TimelineItem.Event>().firstOrNull()
+                    event?.let { Triple(firstIndex, it.identifier(), it.eventId) }
+                }
+            }.distinctUntilChanged().collect { visibleEvent ->
+                if (visibleEvent != null) latestOnScrollFinishAt(visibleEvent.first)
             }
-        }.distinctUntilChanged().collect { visibleEvent ->
-            if (visibleEvent != null) latestOnScrollFinishAt(visibleEvent.first)
         }
     }
 

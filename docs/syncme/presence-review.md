@@ -105,3 +105,8 @@ Regression tests cover unchanged list keys when the server event ID arrives, fai
 Keep the original right alignment. Project each SDK receipt backwards to the nearest loaded outgoing message at or before its actual read position. Incoming replies no longer move the avatar underneath themselves. This is a presentation-only projection, before grouping and without changing SDK receipts or cached source items. Readers are deduplicated per thread; newer unread messages are never selected. If the outgoing target is outside the loaded window, its avatar waits for pagination. Deleted messages are skipped. Public/private settings remain unchanged.
 
 Tests cover incoming replies, newer unread messages, multiple readers, pagination, thread separation, deleted targets and existing outgoing receipts. Device visual confirmation remains required.
+
+
+### Build 251: automatic read receipts require the active chat
+
+The viewport observer now runs only while its screen lifecycle is RESUMED and restarts on return. The presenter independently rejects hidden-screen callbacks and rechecks lifecycle after waiting for a pending receipt. Work belongs to the composition scope, not the session. Automatic receipts target the captured visible event ID, including at index zero, instead of marking the SDK live end (which may already include an unrendered message). Public/private preferences and build 250 avatar placement are preserved. Tests cover paused/background callbacks, a queued callback during departure, resume without scrolling, and exact-event receipts. This closes concrete early-read paths; confirmation of the reported two-phone behavior still requires installing this build on the recipient.

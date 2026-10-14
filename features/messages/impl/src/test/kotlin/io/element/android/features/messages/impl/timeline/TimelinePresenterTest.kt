@@ -8,7 +8,9 @@
 
 package io.element.android.features.messages.impl.timeline
 
+import androidx.lifecycle.Lifecycle
 import app.cash.turbine.ReceiveTurbine
+import app.cash.turbine.TurbineTestContext
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.location.test.FakeActiveLiveLocationShareManager
 import io.element.android.features.messages.impl.FakeMessagesNavigator
@@ -79,6 +81,7 @@ import io.element.android.libraries.matrix.ui.components.aMatrixUserList
 import io.element.android.libraries.preferences.test.InMemorySessionPreferencesStore
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.test.FakeAnalyticsService
+import io.element.android.tests.testutils.FakeLifecycleOwner
 import io.element.android.tests.testutils.WarmUpRule
 import io.element.android.tests.testutils.awaitLastSequentialItem
 import io.element.android.tests.testutils.consumeItemsUntilPredicate
@@ -88,8 +91,8 @@ import io.element.android.tests.testutils.lambda.assert
 import io.element.android.tests.testutils.lambda.lambdaError
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
-import io.element.android.tests.testutils.test
 import io.element.android.tests.testutils.testCoroutineDispatchers
+import io.element.android.tests.testutils.testWithLifecycleOwner
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -173,7 +176,7 @@ class TimelinePresenterTest {
         val timeline = FakeTimeline(
             timelineItems = flowOf(
                 listOf(
-                    MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem())
+                    MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem(content = aMessageContent()))
                 )
             ),
             markAsReadResult = markAsReadResult,
@@ -189,12 +192,13 @@ class TimelinePresenterTest {
             sessionPreferencesStore = sessionPreferencesStore,
         )
         presenter.test {
-            val initialState = awaitFirstItem()
+            val initialState = consumeItemsUntilPredicate { it.timelineItems.isNotEmpty() }.last()
             initialState.eventSink.invoke(TimelineEvent.OnScrollFinished(0))
             runCurrent()
-            assert(markAsReadResult)
+            assert(markAsReadResult).isNeverCalled()
+            assert(sendReadReceiptLambda)
                 .isCalledOnce()
-                .with(value(expectedReceiptType))
+                .with(value(AN_EVENT_ID), value(expectedReceiptType))
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -252,7 +256,6 @@ class TimelinePresenterTest {
                     )
                 )
             ),
-            markAsReadResult = { Result.success(Unit) },
             sendReadReceiptLambda = sendReadReceiptsLambda,
         )
         val sessionPreferencesStore = InMemorySessionPreferencesStore(isSendPublicReadReceiptsEnabled = false)
@@ -263,7 +266,6 @@ class TimelinePresenterTest {
         presenter.test {
             skipItems(1)
             awaitItem().run {
-                eventSink.invoke(TimelineEvent.OnScrollFinished(0))
                 eventSink.invoke(TimelineEvent.OnScrollFinished(1))
             }
             advanceUntilIdle()
@@ -369,7 +371,7 @@ class TimelinePresenterTest {
         val timelineItems = MutableStateFlow(emptyList<MatrixTimelineItem>())
         val timeline = FakeTimeline(
             timelineItems = timelineItems,
-            markAsReadResult = { Result.success(Unit) },
+            sendReadReceiptLambda = { _, _ -> Result.success(Unit) },
         )
         val presenter = createTimelinePresenter(timeline)
         presenter.test {
@@ -525,7 +527,7 @@ class TimelinePresenterTest {
         val timelineItems = MutableStateFlow(emptyList<MatrixTimelineItem>())
         val timeline = FakeTimeline(
             timelineItems = timelineItems,
-            markAsReadResult = { Result.success(Unit) },
+            sendReadReceiptLambda = { _, _ -> Result.success(Unit) },
         )
         val presenter = createTimelinePresenter(timeline)
         presenter.test {
@@ -1904,7 +1906,7 @@ class TimelinePresenterTest {
             MatrixTimelineItem.Virtual(UniqueId("marker"), VirtualTimelineItem.ReadMarker),
             MatrixTimelineItem.Event(UniqueId("latest"), anEventTimelineItem(content = aMessageContent())),
         ))
-        val timeline = FakeTimeline(timelineItems = items, markAsReadResult = { Result.success(Unit) })
+        val timeline = FakeTimeline(timelineItems = items, sendReadReceiptLambda = { _, _ -> Result.success(Unit) })
         val room = FakeJoinedRoom(liveTimeline = timeline, baseRoom = FakeBaseRoom(
             roomPermissions = roomPermissions(),
             initialRoomInfo = aRoomInfo(numUnreadMessages = 1),
@@ -1931,7 +1933,7 @@ class TimelinePresenterTest {
             MatrixTimelineItem.Virtual(UniqueId("marker"), VirtualTimelineItem.ReadMarker),
             MatrixTimelineItem.Event(UniqueId("latest"), anEventTimelineItem(content = aMessageContent())),
         ))
-        val timeline = FakeTimeline(timelineItems = items, markAsReadResult = { Result.failure(IllegalStateException("offline")) })
+        val timeline = FakeTimeline(timelineItems = items, sendReadReceiptLambda = { _, _ -> Result.failure(IllegalStateException("offline")) })
         val room = FakeJoinedRoom(liveTimeline = timeline, baseRoom = FakeBaseRoom(
             roomPermissions = roomPermissions(),
             initialRoomInfo = aRoomInfo(numUnreadMessages = 1),
@@ -1949,6 +1951,83 @@ class TimelinePresenterTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun `hidden chat cannot send receipts and resumes reading when opened`() = runTest {
+        val lifecycleOwner = FakeLifecycleOwner(Lifecycle.State.RESUMED)
+        val sent = mutableListOf<EventId>()
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(listOf(MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem(content = aMessageContent())))),
+            sendReadReceiptLambda = { eventId, _ ->
+                sent.add(eventId)
+                Result.success(Unit)
+            },
+        )
+        createTimelinePresenter(timeline).test(lifecycleOwner) {
+            val state = consumeItemsUntilPredicate { it.timelineItems.isNotEmpty() }.last()
+            // STARTED: obscured / paused screen. CREATED: background or retained back-stack screen.
+            for (hiddenState in listOf(Lifecycle.State.STARTED, Lifecycle.State.CREATED)) {
+                lifecycleOwner.givenState(hiddenState)
+                state.eventSink(TimelineEvent.OnScrollFinished(0))
+                advanceUntilIdle()
+                assertThat(sent).isEmpty()
+            }
+            lifecycleOwner.givenState(Lifecycle.State.RESUMED)
+            state.eventSink(TimelineEvent.OnScrollFinished(0))
+            advanceUntilIdle()
+            assertThat(sent).containsExactly(AN_EVENT_ID)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `leaving the chat before a queued receipt executes prevents the send`() = runTest(StandardTestDispatcher()) {
+        val lifecycleOwner = FakeLifecycleOwner(Lifecycle.State.RESUMED)
+        val sent = mutableListOf<EventId>()
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(listOf(MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem(content = aMessageContent())))),
+            sendReadReceiptLambda = { eventId, _ ->
+                sent.add(eventId)
+                Result.success(Unit)
+            },
+        )
+        createTimelinePresenter(timeline).test(lifecycleOwner) {
+            val state = consumeItemsUntilPredicate { it.timelineItems.isNotEmpty() }.last()
+            state.eventSink(TimelineEvent.OnScrollFinished(0))
+            lifecycleOwner.givenState(Lifecycle.State.CREATED)
+            advanceUntilIdle()
+            assertThat(sent).isEmpty()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `delivery of a newer SDK event cannot make a viewport receipt mark the live end as read`() = runTest {
+        val sent = mutableListOf<EventId>()
+        val markAll = lambdaRecorder<ReceiptType, Result<Unit>> { Result.success(Unit) }
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(listOf(MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem(content = aMessageContent())))),
+            markAsReadResult = markAll,
+            getLatestEventIdResult = { Result.success(AN_EVENT_ID_2) },
+            sendReadReceiptLambda = { eventId, _ ->
+                sent.add(eventId)
+                Result.success(Unit)
+            },
+        )
+        createTimelinePresenter(timeline).test {
+            val state = consumeItemsUntilPredicate { it.timelineItems.isNotEmpty() }.last()
+            state.eventSink(TimelineEvent.OnScrollFinished(0))
+            advanceUntilIdle()
+            assert(markAll).isNeverCalled()
+            assertThat(sent).containsExactly(AN_EVENT_ID)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    private suspend fun TimelinePresenter.test(
+        lifecycleOwner: FakeLifecycleOwner = FakeLifecycleOwner(Lifecycle.State.RESUMED),
+        validate: suspend TurbineTestContext<TimelineState>.() -> Unit,
+    ) = testWithLifecycleOwner(lifecycleOwner, validate)
 
     private suspend fun <T> ReceiveTurbine<T>.awaitFirstItem(): T {
         return awaitItem()

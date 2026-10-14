@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -140,6 +142,7 @@ class TimelinePresenter(
         }
 
         val localScope = rememberCoroutineScope()
+        val lifecycle = LocalLifecycleOwner.current.lifecycle
 
         val timelineMode = remember { timelineController.mainTimelineMode() }
 
@@ -214,16 +217,18 @@ class TimelinePresenter(
                     }
                 }
                 is TimelineEvent.OnScrollFinished -> {
-                    if (isLive) {
+                    if (isLive && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                         if (event.firstIndex == 0) {
                             newEventState.value = NewEventState.None
                         }
                         Timber.tag(tag).d("## sendReadReceiptIfNeeded firstVisibleIndex: ${event.firstIndex}")
-                        sessionCoroutineScope.launch {
+                        val visibleItems = timelineItems
+                        localScope.launch {
                             val sendPublicReadReceipts = sessionPreferencesStore.isSendPublicReadReceiptsEnabled().first()
                             sendReadReceiptIfNeeded(
                                 firstVisibleIndex = event.firstIndex,
-                                timelineItems = timelineItems,
+                                timelineItems = visibleItems,
+                                lifecycle = lifecycle,
                                 lastReadReceiptId = lastReadReceiptId,
                                 readReceiptMutex = readReceiptMutex,
                                 readReceiptType = if (sendPublicReadReceipts) ReceiptType.READ else ReceiptType.READ_PRIVATE,
@@ -235,7 +240,7 @@ class TimelinePresenter(
                                 },
                             )
                         }
-                    } else {
+                    } else if (!isLive) {
                         newEventState.value = NewEventState.None
                     }
                 }
@@ -600,32 +605,27 @@ class TimelinePresenter(
     private fun CoroutineScope.sendReadReceiptIfNeeded(
         firstVisibleIndex: Int,
         timelineItems: ImmutableList<TimelineItem>,
+        lifecycle: Lifecycle,
         lastReadReceiptId: MutableState<EventId?>,
         readReceiptMutex: Mutex,
         readReceiptType: ReceiptType,
         onLiveEndRead: (UniqueId) -> Unit,
     ) = launch(dispatchers.computation) {
         readReceiptMutex.withLock {
-            // Serialize sends so duplicate viewport updates cannot race a pending receipt.
-            // If we are at the bottom of timeline, we mark the room as read.
-            if (firstVisibleIndex == 0) {
+            // A retained chat can still receive timeline updates while hidden. Check again
+            // after suspension / waiting for the previous request, not just in the event sink.
+            if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@withLock
+            val eventId = getLastEventIdBeforeOrAt(firstVisibleIndex, timelineItems) ?: return@withLock
+            val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
+            // Never mark the SDK's live end: it may already contain a newer, unrendered event.
+            if (eventId != lastReadReceiptId.value) {
                 timelineController.invokeOnCurrentTimeline {
-                    val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
-                    markAsRead(receiptType = readReceiptType).onSuccess {
-                        if (newestEventId != null) onLiveEndRead(newestEventId)
-                    }
-                }
-            } else {
-                // Get last valid EventId seen by the user, as the first index might refer to a Virtual item
-                val eventId = getLastEventIdBeforeOrAt(firstVisibleIndex, timelineItems)
-                if (eventId != null && eventId != lastReadReceiptId.value) {
-                    timelineController.invokeOnCurrentTimeline {
-                        sendReadReceipt(eventId = eventId, receiptType = readReceiptType).onSuccess {
-                            lastReadReceiptId.value = eventId
-                        }
+                    sendReadReceipt(eventId = eventId, receiptType = readReceiptType).onSuccess {
+                        lastReadReceiptId.value = eventId
                     }
                 }
             }
+            if (eventId == lastReadReceiptId.value && firstVisibleIndex == 0 && newestEventId != null) onLiveEndRead(newestEventId)
         }
     }
 

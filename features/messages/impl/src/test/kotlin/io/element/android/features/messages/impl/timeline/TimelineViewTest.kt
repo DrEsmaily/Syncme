@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import androidx.lifecycle.Lifecycle
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.messages.impl.timeline.components.MessageShieldData
 import io.element.android.features.messages.impl.timeline.components.aCriticalShield
@@ -50,9 +51,11 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.tests.testutils.EnsureNeverCalledWithParam
 import io.element.android.tests.testutils.EnsureNeverCalledWithTwoParams
 import io.element.android.tests.testutils.EventsRecorder
+import io.element.android.tests.testutils.FakeLifecycleOwner
 import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import io.element.android.tests.testutils.setSafeContent
+import io.element.android.tests.testutils.withFakeLifecycleOwner
 import io.element.android.wysiwyg.link.Link
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -62,7 +65,9 @@ import org.junit.Test
 class TimelineViewTest : RobolectricTest() {
     @Test
     fun `server event ID arriving with unchanged list keys emits a read update`() = runAndroidComposeUiTest {
-        val initial = listOf(aTimelineItemEvent().copy(eventId = null, transactionId = io.element.android.libraries.matrix.api.core.TransactionId("local-echo"))).toImmutableList()
+        val initial = listOf(
+            aTimelineItemEvent().copy(eventId = null, transactionId = io.element.android.libraries.matrix.api.core.TransactionId("local-echo"))
+        ).toImmutableList()
         val state = mutableStateOf(aTimelineState(timelineItems = initial, newEventState = NewEventState.FromOther))
         val scroll = LazyListState()
         val readUpdates = mutableListOf<Int>()
@@ -91,6 +96,51 @@ class TimelineViewTest : RobolectricTest() {
                 timelineItems = listOf(initial.single().copy(eventId = AN_EVENT_ID)).toImmutableList(),
             )
         }
+        waitForIdle()
+        runOnIdle { assertThat(readUpdates).contains(0) }
+    }
+
+    @Test
+    fun `hidden timeline updates do not emit reads and reopening observes the current viewport`() = runAndroidComposeUiTest {
+        val initial = listOf(
+            aTimelineItemEvent().copy(eventId = null, transactionId = io.element.android.libraries.matrix.api.core.TransactionId("local-echo"))
+        ).toImmutableList()
+        val state = mutableStateOf(aTimelineState(timelineItems = initial, newEventState = NewEventState.FromOther))
+        val lifecycleOwner = FakeLifecycleOwner(Lifecycle.State.RESUMED)
+        val scroll = LazyListState()
+        val readUpdates = mutableListOf<Int>()
+        setSafeContent(clearAndroidUiDispatcher = true) {
+            withFakeLifecycleOwner(lifecycleOwner) {
+                TimelineView(
+                    state = state.value.copy(eventSink = { if (it is TimelineEvent.OnScrollFinished) readUpdates.add(it.firstIndex) }),
+                    lazyListState = scroll,
+                    timelineProtectionState = aTimelineProtectionState(),
+                    onUserDataClick = {},
+                    onLinkClick = {},
+                    onContentClick = {},
+                    onMessageLongClick = {},
+                    onSwipeToReply = {},
+                    onReactionClick = { _, _ -> },
+                    onReactionLongClick = { _, _ -> },
+                    onMoreReactionsClick = {},
+                    onReadReceiptClick = {},
+                    onGalleryItemClick = { _, _ -> },
+                    onJoinCallClick = {},
+                )
+            }
+        }
+        waitForIdle()
+        for (hiddenState in listOf(Lifecycle.State.STARTED, Lifecycle.State.CREATED)) {
+            runOnIdle { lifecycleOwner.givenState(hiddenState) }
+            waitForIdle()
+            runOnIdle {
+                readUpdates.clear()
+                state.value = state.value.copy(timelineItems = listOf(aTimelineItemEvent()).toImmutableList())
+            }
+            waitForIdle()
+            runOnIdle { assertThat(readUpdates).isEmpty() }
+        }
+        runOnIdle { lifecycleOwner.givenState(Lifecycle.State.RESUMED) }
         waitForIdle()
         runOnIdle { assertThat(readUpdates).contains(0) }
     }
