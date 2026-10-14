@@ -181,14 +181,27 @@ class RustTimeline(
         .onCompletion { timelineItemsSubscriber.unsubscribeIfNeeded() }
 
     override suspend fun sendReadReceipt(eventId: EventId, receiptType: ReceiptType): Result<Unit> = withContext(dispatcher) {
+        DecryptionDiagnostics.record(DecryptionDiagnostics.Stage.RECEIPT_REQUEST, eventId.value, receiptType)
         runCatchingExceptions {
             inner.sendReadReceipt(receiptType.toRustReceiptType(), eventId.value)
+        }.also { result ->
+            DecryptionDiagnostics.record(
+                if (result.isSuccess) DecryptionDiagnostics.Stage.RECEIPT_COMPLETED else DecryptionDiagnostics.Stage.RECEIPT_FAILED,
+                eventId.value,
+                receiptType,
+            )
         }
     }
 
     override suspend fun markAsRead(receiptType: ReceiptType): Result<Unit> = withContext(dispatcher) {
+        DecryptionDiagnostics.record(DecryptionDiagnostics.Stage.RECEIPT_REQUEST, detail = receiptType)
         runCatchingExceptions {
             inner.markAsRead(receiptType.toRustReceiptType())
+        }.also { result ->
+            DecryptionDiagnostics.record(
+                if (result.isSuccess) DecryptionDiagnostics.Stage.RECEIPT_COMPLETED else DecryptionDiagnostics.Stage.RECEIPT_FAILED,
+                detail = receiptType,
+            )
         }
     }
 

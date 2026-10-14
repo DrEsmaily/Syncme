@@ -61,6 +61,41 @@ import org.junit.Test
 
 class TimelineViewTest : RobolectricTest() {
     @Test
+    fun `server event ID arriving with unchanged list keys emits a read update`() = runAndroidComposeUiTest {
+        val initial = listOf(aTimelineItemEvent().copy(eventId = null)).toImmutableList()
+        val state = mutableStateOf(aTimelineState(timelineItems = initial, newEventState = NewEventState.FromOther))
+        val scroll = LazyListState()
+        val readUpdates = mutableListOf<Int>()
+        setSafeContent(clearAndroidUiDispatcher = true) {
+            TimelineView(
+                state = state.value.copy(eventSink = { if (it is TimelineEvent.OnScrollFinished) readUpdates.add(it.firstIndex) }),
+                lazyListState = scroll,
+                timelineProtectionState = aTimelineProtectionState(),
+                onUserDataClick = {},
+                onLinkClick = {},
+                onContentClick = {},
+                onMessageLongClick = {},
+                onSwipeToReply = {},
+                onReactionClick = { _, _ -> },
+                onReactionLongClick = { _, _ -> },
+                onMoreReactionsClick = {},
+                onReadReceiptClick = {},
+                onGalleryItemClick = { _, _ -> },
+                onJoinCallClick = {},
+            )
+        }
+        waitForIdle()
+        runOnIdle {
+            readUpdates.clear()
+            state.value = state.value.copy(
+                timelineItems = listOf((initial.single() as TimelineItem.Event).copy(eventId = AN_EVENT_ID)).toImmutableList(),
+            )
+        }
+        waitForIdle()
+        runOnIdle { assertThat(readUpdates).contains(0) }
+    }
+
+    @Test
     fun `burst of incoming messages keeps live bottom and emits read updates`() = runAndroidComposeUiTest {
         val initial = List(20) { aTimelineItemEvent() }.toImmutableList()
         val state = mutableStateOf(aTimelineState(timelineItems = initial, newEventState = NewEventState.FromOther))

@@ -80,6 +80,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -142,6 +144,7 @@ class TimelinePresenter(
         val timelineMode = remember { timelineController.mainTimelineMode() }
 
         val lastReadReceiptId = rememberSaveable { mutableStateOf<EventId?>(null) }
+        val readReceiptMutex = remember { Mutex() }
 
         val roomInfo by room.roomInfoFlow.collectAsState()
 
@@ -222,6 +225,7 @@ class TimelinePresenter(
                                 firstVisibleIndex = event.firstIndex,
                                 timelineItems = timelineItems,
                                 lastReadReceiptId = lastReadReceiptId,
+                                readReceiptMutex = readReceiptMutex,
                                 readReceiptType = if (sendPublicReadReceipts) ReceiptType.READ else ReceiptType.READ_PRIVATE,
                                 onLiveEndRead = { readId ->
                                     // An older request completing late must not replace a newer read acknowledgement.
@@ -597,24 +601,29 @@ class TimelinePresenter(
         firstVisibleIndex: Int,
         timelineItems: ImmutableList<TimelineItem>,
         lastReadReceiptId: MutableState<EventId?>,
+        readReceiptMutex: Mutex,
         readReceiptType: ReceiptType,
         onLiveEndRead: (UniqueId) -> Unit,
     ) = launch(dispatchers.computation) {
-        // If we are at the bottom of timeline, we mark the room as read.
-        if (firstVisibleIndex == 0) {
-            timelineController.invokeOnCurrentTimeline {
-                val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
-                markAsRead(receiptType = readReceiptType).onSuccess {
-                    if (newestEventId != null) onLiveEndRead(newestEventId)
-                }
-            }
-        } else {
-            // Get last valid EventId seen by the user, as the first index might refer to a Virtual item
-            val eventId = getLastEventIdBeforeOrAt(firstVisibleIndex, timelineItems)
-            if (eventId != null && eventId != lastReadReceiptId.value) {
-                lastReadReceiptId.value = eventId
+        readReceiptMutex.withLock {
+            // Serialize sends so duplicate viewport updates cannot race a pending receipt.
+            // If we are at the bottom of timeline, we mark the room as read.
+            if (firstVisibleIndex == 0) {
                 timelineController.invokeOnCurrentTimeline {
-                    sendReadReceipt(eventId = eventId, receiptType = readReceiptType)
+                    val newestEventId = timelineItems.firstOrNull { it is TimelineItem.Event }?.identifier()
+                    markAsRead(receiptType = readReceiptType).onSuccess {
+                        if (newestEventId != null) onLiveEndRead(newestEventId)
+                    }
+                }
+            } else {
+                // Get last valid EventId seen by the user, as the first index might refer to a Virtual item
+                val eventId = getLastEventIdBeforeOrAt(firstVisibleIndex, timelineItems)
+                if (eventId != null && eventId != lastReadReceiptId.value) {
+                    timelineController.invokeOnCurrentTimeline {
+                        sendReadReceipt(eventId = eventId, receiptType = readReceiptType).onSuccess {
+                            lastReadReceiptId.value = eventId
+                        }
+                    }
                 }
             }
         }

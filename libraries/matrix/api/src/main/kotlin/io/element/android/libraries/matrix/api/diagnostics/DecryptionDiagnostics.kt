@@ -31,6 +31,10 @@ object DecryptionDiagnostics {
         EVENT_UNDECRYPTABLE,
         EVENT_SESSION,
         UTD_CALLBACK,
+        RECEIPT_REQUEST,
+        RECEIPT_COMPLETED,
+        RECEIPT_FAILED,
+        RECEIPT_OBSERVED,
     }
 
     @Volatile var enabled = false
@@ -90,13 +94,16 @@ object DecryptionDiagnostics {
             item.localSendState is LocalEventSendState.Sent -> Stage.SEND_SENT
             else -> Stage.EVENT_AVAILABLE
         }
-        val signature = "$stage:${megolm?.utdCause}"
+        val signature = "$stage:${megolm?.utdCause}:${item.receipts}"
         synchronized(lastEvents) {
             if (lastEvents[id] == signature) return
             lastEvents[id] = signature
             if (lastEvents.size > 2048) lastEvents.remove(lastEvents.keys.first())
         }
         record(stage, id, megolm?.utdCause)
+        item.receipts.forEach { receipt ->
+            record(Stage.RECEIPT_OBSERVED, id, relatedIdentifier = receipt.userId.value)
+        }
         // Session identifiers are public metadata, but export only a fingerprint for grouping failures.
         val session = megolm?.sessionId ?: runCatching {
             val json = item.timelineItemDebugInfoProvider().originalJson ?: return@runCatching null

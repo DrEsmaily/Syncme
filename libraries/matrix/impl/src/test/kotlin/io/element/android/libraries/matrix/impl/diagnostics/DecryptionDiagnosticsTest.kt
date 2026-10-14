@@ -83,4 +83,23 @@ class DecryptionDiagnosticsTest : RobolectricTest() {
         assertThat(report).doesNotContain("test-session")
         assertThat(report).doesNotContain("PRIVATE")
     }
+    @Test
+    fun `receipt updates are recorded without exposing reader or event identifiers`() {
+        SyncMeDiagnosticsControl.setDecryptionEnabled(context, true)
+        val event = io.element.android.libraries.matrix.test.timeline.anEventTimelineItem().copy(
+            eventId = io.element.android.libraries.matrix.api.core.EventId("\$private-event"),
+            receipts = kotlinx.collections.immutable.persistentListOf(
+                io.element.android.libraries.matrix.api.timeline.item.event.Receipt(
+                    io.element.android.libraries.matrix.api.core.UserId("@private-reader:example.org"),
+                    1L,
+                )
+            ),
+        )
+        DecryptionDiagnostics.observe(event)
+        DecryptionDiagnostics.observe(event)
+        val report = DecryptionDiagnostics.report()
+        assertThat(report.split(" RECEIPT_OBSERVED ").size - 1).isEqualTo(1)
+        assertThat(report).doesNotContain("private-reader")
+        assertThat(report).doesNotContain("private-event")
+    }
 }

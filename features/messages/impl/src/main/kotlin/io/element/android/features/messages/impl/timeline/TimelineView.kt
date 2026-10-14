@@ -443,17 +443,19 @@ private fun BoxScope.TimelineScrollHelper(
         // Observe laid-out item identities, not only scroll completion. New messages can be
         // visible without any scrolling (short conversations and a persistent typing row).
         snapshotFlow {
-            if (lazyListState.isScrollInProgress) {
-                emptyList()
-            } else {
-                lazyListState.layoutInfo.visibleItemsInfo.map { it.key }
-            }
-        }.distinctUntilChanged().collect { visibleKeys ->
             val items = latestItems
-            if (items.any { it is TimelineItem.Event }) {
-                val firstIndex = items.indexOfFirst { it.identifier() == visibleKeys.firstOrNull() }
-                if (firstIndex >= 0) latestOnScrollFinishAt(firstIndex)
+            val firstKey = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull()?.key
+            val firstIndex = items.indexOfFirst { it.identifier() == firstKey }
+            if (lazyListState.isScrollInProgress || firstIndex < 0) {
+                null
+            } else {
+                // Observe the model in the snapshot too: layout and model can update separately,
+                // and a local echo can acquire its server event ID without changing its list key.
+                val event = items.drop(firstIndex).filterIsInstance<TimelineItem.Event>().firstOrNull()
+                event?.let { Triple(firstIndex, it.identifier(), it.eventId) }
             }
+        }.distinctUntilChanged().collect { visibleEvent ->
+            if (visibleEvent != null) latestOnScrollFinishAt(visibleEvent.first)
         }
     }
 

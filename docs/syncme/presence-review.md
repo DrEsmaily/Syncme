@@ -90,3 +90,12 @@ RoomInfo to catch up. Failed read acknowledgements do not hide genuine unread st
 a later unseen event can show the arrow again. Late older acknowledgements cannot
 overwrite the current read position. No message/key deletion or forced session reset
 is involved. Version 247 completed CI successfully before this additional correction.
+
+## Build 249: read receipt investigation
+
+The reported missing reader avatar on build 248 is not yet reproduced end to end.
+This candidate fixes model/layout observation gaps (including local echo event ID resolution) and only deduplicates successfully sent read receipts. Receipt sends are serialized to preserve duplicate suppression while allowing retries after failure.
+
+The existing default-off diagnostics now records receipt request/completion/failure and SDK-mapped reader receipts. Completion means the SDK call returned successfully, not proof of server transmission or delivery. Event and reader identifiers are fingerprinted; no message content, exception text or keys are recorded. Public/private receipt preferences remain respected.
+
+Regression tests cover unchanged list keys when the server event ID arrives, failed-send retry, and diagnostic identifier redaction. Device confirmation on both phones remains required.

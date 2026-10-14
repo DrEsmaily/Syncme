@@ -309,6 +309,37 @@ class TimelinePresenterTest {
     }
 
     @Test
+    fun `failed receipt is retried for the same visible event`() = runTest {
+        var attempts = 0
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(
+                listOf(
+                    MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem()),
+                    MatrixTimelineItem.Event(A_UNIQUE_ID_2, anEventTimelineItem(eventId = AN_EVENT_ID_2)),
+                )
+            ),
+            sendReadReceiptLambda = { _, _ ->
+                attempts++
+                if (attempts == 1) Result.failure(IllegalStateException("offline")) else Result.success(Unit)
+            },
+        )
+        createTimelinePresenter(timeline).test {
+            skipItems(1)
+            val state = awaitItem()
+            state.eventSink(TimelineEvent.OnScrollFinished(1))
+            advanceUntilIdle()
+            assertThat(attempts).isEqualTo(1)
+            state.eventSink(TimelineEvent.OnScrollFinished(1))
+            advanceUntilIdle()
+            assertThat(attempts).isEqualTo(2)
+            state.eventSink(TimelineEvent.OnScrollFinished(1))
+            advanceUntilIdle()
+            assertThat(attempts).isEqualTo(2)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - on scroll finished will not send read receipt only virtual events exist before the index`() = runTest {
         val sendReadReceiptsLambda = lambdaRecorder { _: EventId, _: ReceiptType ->
             Result.success(Unit)
