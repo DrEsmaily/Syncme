@@ -23,10 +23,9 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.UserId
-import io.element.android.libraries.matrix.api.user.LastSeenCategory
 import io.element.android.libraries.matrix.api.user.OnlineMemberCount
 import io.element.android.libraries.matrix.api.user.UserPresence
-import io.element.android.libraries.matrix.api.user.lastSeenCategory
+import io.element.android.libraries.matrix.api.user.presenceLabel
 import io.element.android.libraries.ui.strings.CommonPlurals
 import io.element.android.libraries.ui.strings.CommonStrings
 
@@ -47,13 +46,7 @@ fun UserPresence.toPresenceText(): String? = when (this) {
     UserPresence.Unknown -> null
     UserPresence.Online -> stringResource(CommonStrings.syncme_presence_online)
     UserPresence.Away -> stringResource(CommonStrings.syncme_presence_away)
-    is UserPresence.Offline -> when (lastSeenCategory(System.currentTimeMillis())) {
-        LastSeenCategory.Recently -> stringResource(CommonStrings.syncme_presence_last_seen_recently)
-        LastSeenCategory.WithinWeek -> stringResource(CommonStrings.syncme_presence_last_seen_week)
-        LastSeenCategory.WithinMonth -> stringResource(CommonStrings.syncme_presence_last_seen_month)
-        LastSeenCategory.LongAgo -> stringResource(CommonStrings.syncme_presence_last_seen_long_ago)
-        null -> null
-    }
+    is UserPresence.Offline -> presenceLabel(System.currentTimeMillis())
 }
 
 @Composable
@@ -101,23 +94,23 @@ internal fun OfflinePresencePreview() = ElementPreview { PresenceStatus(UserPres
 @PreviewsDayNight
 @Composable
 internal fun RecentlySeenPresencePreview() = ElementPreview {
-    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 86_400_000L))
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 3_600_000L))
 }
 
 @PreviewsDayNight
 @Composable
-internal fun SeenWithinWeekPresencePreview() = ElementPreview {
+internal fun SeenDaysAgoPresencePreview() = ElementPreview {
     PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 5 * 86_400_000L))
 }
 
 @PreviewsDayNight
 @Composable
-internal fun SeenWithinMonthPresencePreview() = ElementPreview {
+internal fun SeenWeeksAgoPresencePreview() = ElementPreview {
     PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 15 * 86_400_000L))
 }
 
 @PreviewsDayNight
 @Composable
-internal fun SeenLongAgoPresencePreview() = ElementPreview {
+internal fun SeenMonthsAgoPresencePreview() = ElementPreview {
     PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 40 * 86_400_000L))
 }

@@ -13,10 +13,6 @@
     <string name="common_switch_account">Switch accounts</string>
     <string name="syncme_presence_online">Online</string>
     <string name="syncme_presence_away">Away</string>
-    <string name="syncme_presence_last_seen_recently">Last seen recently</string>
-    <string name="syncme_presence_last_seen_week">Last seen within a week</string>
-    <string name="syncme_presence_last_seen_month">Last seen within a month</string>
-    <string name="syncme_presence_last_seen_long_ago">Last seen a long time ago</string>
     <plurals name="syncme_presence_online_count">
         <item quantity="one">%1$d online</item>
         <item quantity="other">%1$d online</item>

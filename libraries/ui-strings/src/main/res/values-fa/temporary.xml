@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="syncme_presence_last_seen_recently">آخرین بازدید اخیراً</string>
-    <string name="syncme_presence_last_seen_week">آخرین بازدید در یک هفتهٔ اخیر</string>
-    <string name="syncme_presence_last_seen_month">آخرین بازدید در یک ماه اخیر</string>
-    <string name="syncme_presence_last_seen_long_ago">آخرین بازدید خیلی وقت پیش</string>
-</resources>

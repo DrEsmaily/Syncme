@@ -22,15 +22,20 @@ class UserPresenceTest {
     }
     @Test fun approximateLastSeenBoundaries() {
         val day = 86_400_000L
-        val now = 100 * day
+        val now = 1_000 * day
         val cases = listOf(
             0L to "Last seen recently",
-            3 * day to "Last seen recently",
-            3 * day + 1 to "Last seen within a week",
-            7 * day to "Last seen within a week",
-            7 * day + 1 to "Last seen within a month",
-            30 * day to "Last seen within a month",
-            30 * day + 1 to "Last seen a long time ago",
+            day - 1 to "Last seen recently",
+            day to "Last seen 1 day ago",
+            2 * day to "Last seen 2 days ago",
+            7 * day - 1 to "Last seen 6 days ago",
+            7 * day to "Last seen 1 week ago",
+            14 * day - 1 to "Last seen 1 week ago",
+            14 * day to "Last seen 2 weeks ago",
+            30 * day - 1 to "Last seen 4 weeks ago",
+            30 * day to "Last seen 1 month ago",
+            60 * day to "Last seen 2 months ago",
+            365 * day to "Last seen 12 months ago",
         )
         cases.forEach { (elapsed, expected) ->
             assertEquals(expected, UserPresence.Offline(now - elapsed).presenceLabel(now))

@@ -8,34 +8,29 @@ sealed interface UserPresence {
     data class Offline(val lastSeenAt: Long?) : UserPresence
 }
 
-enum class LastSeenCategory { Recently, WithinWeek, WithinMonth, LongAgo }
-
-/** Approximate buckets from server time only; missing or invalid timestamps remain unknown. */
-fun UserPresence.Offline.lastSeenCategory(nowMillis: Long): LastSeenCategory? {
-    val seen = lastSeenAt ?: return null
-    if (seen <= 0L || seen > nowMillis) return null
-    val elapsed = nowMillis - seen
-    val day = 86_400_000L
-    return when {
-        elapsed <= 3 * day -> LastSeenCategory.Recently
-        elapsed <= 7 * day -> LastSeenCategory.WithinWeek
-        elapsed <= 30 * day -> LastSeenCategory.WithinMonth
-        else -> LastSeenCategory.LongAgo
-    }
-}
-
+/** English-only last seen, using completed 24-hour days and 30-day months. */
 fun UserPresence.presenceLabel(nowMillis: Long): String? = when (this) {
     UserPresence.Unknown -> null
     UserPresence.Online -> "Online"
     UserPresence.Away -> "Away"
-    is UserPresence.Offline -> when (lastSeenCategory(nowMillis)) {
-        LastSeenCategory.Recently -> "Last seen recently"
-        LastSeenCategory.WithinWeek -> "Last seen within a week"
-        LastSeenCategory.WithinMonth -> "Last seen within a month"
-        LastSeenCategory.LongAgo -> "Last seen a long time ago"
-        null -> null
+    is UserPresence.Offline -> {
+        val seen = lastSeenAt
+        if (seen == null || seen <= 0L || seen > nowMillis) {
+            null
+        } else {
+            val days = (nowMillis - seen) / 86_400_000L
+            when {
+                days == 0L -> "Last seen recently"
+                days < 7 -> lastSeenElapsed(days, "day")
+                days < 30 -> lastSeenElapsed(days / 7, "week")
+                else -> lastSeenElapsed(days / 30, "month")
+            }
+        }
     }
 }
+
+private fun lastSeenElapsed(count: Long, unit: String): String =
+    "Last seen $count $unit${if (count == 1L) "" else "s"} ago"
 
 /** An incomplete count is a lower bound, and must never be presented as an exact total. */
 data class OnlineMemberCount(val online: Int, val isComplete: Boolean)
