@@ -314,8 +314,8 @@ class TimelinePresenterTest {
         val timeline = FakeTimeline(
             timelineItems = flowOf(
                 listOf(
-                    MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem()),
-                    MatrixTimelineItem.Event(A_UNIQUE_ID_2, anEventTimelineItem(eventId = AN_EVENT_ID_2)),
+                    MatrixTimelineItem.Event(A_UNIQUE_ID, anEventTimelineItem(content = aMessageContent("first"))),
+                    MatrixTimelineItem.Event(A_UNIQUE_ID_2, anEventTimelineItem(eventId = AN_EVENT_ID_2, content = aMessageContent("second"))),
                 )
             ),
             sendReadReceiptLambda = { _, _ ->

@@ -62,7 +62,7 @@ import org.junit.Test
 class TimelineViewTest : RobolectricTest() {
     @Test
     fun `server event ID arriving with unchanged list keys emits a read update`() = runAndroidComposeUiTest {
-        val initial = listOf(aTimelineItemEvent().copy(eventId = null)).toImmutableList()
+        val initial = listOf(aTimelineItemEvent().copy(eventId = null, transactionId = io.element.android.libraries.matrix.api.core.TransactionId("local-echo"))).toImmutableList()
         val state = mutableStateOf(aTimelineState(timelineItems = initial, newEventState = NewEventState.FromOther))
         val scroll = LazyListState()
         val readUpdates = mutableListOf<Int>()
@@ -88,7 +88,7 @@ class TimelineViewTest : RobolectricTest() {
         runOnIdle {
             readUpdates.clear()
             state.value = state.value.copy(
-                timelineItems = listOf((initial.single() as TimelineItem.Event).copy(eventId = AN_EVENT_ID)).toImmutableList(),
+                timelineItems = listOf(initial.single().copy(eventId = AN_EVENT_ID)).toImmutableList(),
             )
         }
         waitForIdle()
