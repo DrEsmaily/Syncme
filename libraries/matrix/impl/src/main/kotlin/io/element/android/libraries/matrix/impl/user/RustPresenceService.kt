@@ -42,6 +42,7 @@ internal class RustPresenceService(
     private val scope: CoroutineScope,
     private val publishOwnPresence: suspend (String) -> Unit,
     private val refreshIntervalMillis: (Int) -> Long = { if (it <= 8) 15_000 else 60_000 },
+    private val publicationRetryMillis: Long = 2_000,
 ) {
     private val base = homeserver.trimEnd('/').toHttpUrl()
     private val http = OkHttpClient.Builder()
@@ -97,13 +98,20 @@ internal class RustPresenceService(
             combine(stableVisibility, syncState) { foreground, sync -> foreground to sync }
                 .distinctUntilChanged().collectLatest { (foreground, sync) ->
                 if (foreground == null || (foreground && sync != SyncState.Running)) return@collectLatest
-                try {
-                    // The SDK owns publication, including presence in its future sync requests.
-                    publishOwnPresence(if (foreground) "online" else "unavailable")
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    // Best effort only. Never fabricate self presence from a lifecycle hint.
+                var retryMillis = publicationRetryMillis
+                while (kotlin.coroutines.coroutineContext.isActive) {
+                    try {
+                        // The SDK owns publication, including presence in its future sync requests.
+                        publishOwnPresence(if (foreground) "online" else "unavailable")
+                        break
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        // Retry transient failures even if visibility and sync remain unchanged.
+                        // collectLatest cancels this retry when the desired state changes.
+                        delay(retryMillis)
+                        retryMillis = (retryMillis * 2).coerceAtMost(30_000)
+                    }
                 }
             }
         }
