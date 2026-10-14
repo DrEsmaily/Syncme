@@ -436,7 +436,11 @@ fun TimelineItemEventRow(
                 receipts = event.readReceiptState.receipts,
             ),
             onReadReceiptsClick = { onReadReceiptClick(event) },
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier.padding(
+                top = 4.dp,
+                start = if (!event.isMine && !timelineRoomInfo.isDm) BUBBLE_INCOMING_OFFSET else 0.dp,
+            ),
+            horizontalArrangement = if (event.isMine) Arrangement.End else Arrangement.Start,
         )
     }
 }

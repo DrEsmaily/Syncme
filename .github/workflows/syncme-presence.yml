@@ -1,4 +1,4 @@
-name: SyncMe 249 presence and regression checks
+name: SyncMe 250 presence and regression checks
 on:
   push:
     branches: [syncme-presence-system]
@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 env:
   GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
-  SYNCME_BUILD_NUMBER: '249'
-  SYNCME_VERSION_CODE: '20261016'
+  SYNCME_BUILD_NUMBER: '250'
+  SYNCME_VERSION_CODE: '20261017'
 jobs:
   verify-and-build:
     runs-on: ubuntu-latest
@@ -67,19 +67,19 @@ jobs:
           apks=(app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk)
           test "${#apks[@]}" -eq 1
           mkdir -p build-checkpoint
-          apk=build-checkpoint/SyncMe-249-ARM64.apk
+          apk=build-checkpoint/SyncMe-250-ARM64.apk
           cp "${apks[0]}" "$apk"
           unzip -t "$apk" > build-checkpoint/apk-zip-validation.txt
           aapt_bin="$(find "${ANDROID_HOME}/build-tools" -type f -name aapt | sort -V | tail -1)"
           "$aapt_bin" dump badging "$apk" > build-checkpoint/manifest.txt
-          grep '^package:' build-checkpoint/manifest.txt | grep -F "versionName='249'" | grep -F "versionCode='202610162'"
+          grep '^package:' build-checkpoint/manifest.txt | grep -F "versionName='250'" | grep -F "versionCode='202610172'"
           grep '^package:' build-checkpoint/manifest.txt | grep -F '.syncmerelease'
           grep '^native-code:' build-checkpoint/manifest.txt | grep -F 'arm64-v8a'
           python3 - <<'PY'
           import os, pathlib, subprocess, tempfile, zipfile
           tool = sorted(pathlib.Path(os.environ['ANDROID_HOME']).glob('build-tools/*/dexdump'))[-1]
           found = False
-          with zipfile.ZipFile('build-checkpoint/SyncMe-249-ARM64.apk') as apk, tempfile.TemporaryDirectory() as tmp:
+          with zipfile.ZipFile('build-checkpoint/SyncMe-250-ARM64.apk') as apk, tempfile.TemporaryDirectory() as tmp:
               for name in apk.namelist():
                   if name.startswith('classes') and name.endswith('.dex'):
                       dex = pathlib.Path(tmp) / name
@@ -101,7 +101,7 @@ jobs:
       - name: Upload candidate and exact provenance
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: SyncMe-249-ARM64
+          name: SyncMe-250-ARM64
           path: build-checkpoint/
           if-no-files-found: error
           retention-days: 30
@@ -109,7 +109,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: SyncMe-249-test-results
+          name: SyncMe-250-test-results
           path: |
             libraries/matrix/api/build/reports/tests/
             libraries/matrix/impl/build/reports/tests/
