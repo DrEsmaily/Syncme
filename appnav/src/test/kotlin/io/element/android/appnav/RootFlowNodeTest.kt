@@ -142,7 +142,7 @@ class RootFlowNodeTest : RobolectricTest() {
                             imageLoaderHolder = FakeImageLoaderHolder(),
                             analyticsColdStartWatcher = FakeAnalyticsColdStartWatcher(),
                             featureFlagService = FakeFeatureFlagService(),
-                            announcementService = FakeAnnouncementService(),
+                            announcementService = FakeAnnouncementService(onAnnouncementDismissedResult = {}),
                         )
                     }
                 )

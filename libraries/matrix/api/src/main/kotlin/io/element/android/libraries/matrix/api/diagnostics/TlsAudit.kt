@@ -159,7 +159,7 @@ object TlsAudit {
     fun readReports(): String {
         val folder = reportDir ?: return "TLS audit not initialized."
         // Drain pending writes before taking the snapshot.
-        writer.submit { Unit }.get()
+        writer.submit {}.get()
         val files = folder.listFiles { f -> f.isFile && f.name.startsWith("tls-") && f.name.endsWith(".txt") }
             ?.sortedBy { it.name }
             ?.takeLast(MAX_FILES)

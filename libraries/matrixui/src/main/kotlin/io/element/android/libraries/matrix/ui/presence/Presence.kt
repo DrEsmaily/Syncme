@@ -65,7 +65,6 @@ fun PresenceIndicator(presence: UserPresence, modifier: Modifier = Modifier) {
     val color = when (presence) {
         UserPresence.Online -> ElementTheme.colors.iconSuccessPrimary
         UserPresence.Away -> ElementTheme.colors.iconWarningPrimary
-        else -> ElementTheme.colors.iconSecondary
     }
     Box(modifier.size(10.dp).background(color, CircleShape).semantics { contentDescription = label })
 }
