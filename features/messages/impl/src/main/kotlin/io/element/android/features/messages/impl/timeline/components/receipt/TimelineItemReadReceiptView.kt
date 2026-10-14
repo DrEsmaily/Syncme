@@ -56,10 +56,9 @@ fun TimelineItemReadReceiptView(
     state: ReadReceiptViewState,
     onReadReceiptsClick: () -> Unit,
     modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.End,
 ) {
     if (state.receipts.isNotEmpty()) {
-        ReadReceiptsRow(modifier = modifier, horizontalArrangement = horizontalArrangement) {
+        ReadReceiptsRow(modifier = modifier) {
             ReadReceiptsAvatars(
                 receipts = state.receipts,
                 onClick = onReadReceiptsClick,
@@ -68,7 +67,7 @@ fun TimelineItemReadReceiptView(
     } else {
         when (state.sendState) {
             is LocalEventSendState.Sending -> {
-                ReadReceiptsRow(modifier = modifier, horizontalArrangement = horizontalArrangement) {
+                ReadReceiptsRow(modifier) {
                     Icon(
                         modifier = Modifier.padding(2.dp),
                         imageVector = CompoundIcons.Circle(),
@@ -83,7 +82,7 @@ fun TimelineItemReadReceiptView(
             null,
             is LocalEventSendState.Sent -> {
                 if (state.isLastOutgoingMessage) {
-                    ReadReceiptsRow(modifier = modifier, horizontalArrangement = horizontalArrangement) {
+                    ReadReceiptsRow(modifier = modifier) {
                         Icon(
                             modifier = Modifier.padding(2.dp),
                             imageVector = CompoundIcons.CheckCircle(),
@@ -100,7 +99,6 @@ fun TimelineItemReadReceiptView(
 @Composable
 private fun ReadReceiptsRow(
     modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal,
     content: @Composable () -> Unit = {},
 ) {
     Row(
@@ -108,7 +106,7 @@ private fun ReadReceiptsRow(
             .fillMaxWidth()
             .height(AvatarSize.TimelineReadReceipt.dp + 8.dp)
             .padding(horizontal = 18.dp),
-        horizontalArrangement = horizontalArrangement,
+        horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(

@@ -99,3 +99,9 @@ This candidate fixes model/layout observation gaps (including local echo event I
 The existing default-off diagnostics now records receipt request/completion/failure and SDK-mapped reader receipts. Completion means the SDK call returned successfully, not proof of server transmission or delivery. Event and reader identifiers are fingerprinted; no message content, exception text or keys are recorded. Public/private receipt preferences remain respected.
 
 Regression tests cover unchanged list keys when the server event ID arrives, failed-send retry, and diagnostic identifier redaction. Device confirmation on both phones remains required.
+
+## Build 250: anchor reader avatars to outgoing messages
+
+Keep the original right alignment. Project each SDK receipt backwards to the nearest loaded outgoing message at or before its actual read position. Incoming replies no longer move the avatar underneath themselves. This is a presentation-only projection, before grouping and without changing SDK receipts or cached source items. Readers are deduplicated per thread; newer unread messages are never selected. If the outgoing target is outside the loaded window, its avatar waits for pagination. Deleted messages are skipped. Public/private settings remain unchanged.
+
+Tests cover incoming replies, newer unread messages, multiple readers, pagination, thread separation, deleted targets and existing outgoing receipts. Device visual confirmation remains required.
