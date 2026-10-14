@@ -25,6 +25,7 @@ import org.junit.Test
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 class RustPresenceServiceTest : RobolectricTest() {
@@ -36,6 +37,8 @@ class RustPresenceServiceTest : RobolectricTest() {
     private val rateLimited = AtomicBoolean(false)
     private val presence = AtomicReference("online")
     private val published = CopyOnWriteArrayList<String>()
+    private val publicationAttempts = CopyOnWriteArrayList<String>()
+    private val publicationFailures = AtomicInteger(0)
     private val paths = CopyOnWriteArrayList<String>()
     private val slowSnapshots = AtomicBoolean(false)
     private lateinit var server: MockWebServer
@@ -62,8 +65,15 @@ class RustPresenceServiceTest : RobolectricTest() {
             sync,
             visibility,
             scope,
-            publishOwnPresence = { published.add(it) },
+            publishOwnPresence = {
+                publicationAttempts.add(it)
+                if (publicationFailures.getAndUpdate { remaining -> (remaining - 1).coerceAtLeast(0) } > 0) {
+                    throw java.io.IOException("Temporary publication failure")
+                }
+                published.add(it)
+            },
             refreshIntervalMillis = { 200 },
+            publicationRetryMillis = 200,
         )
     }
 
@@ -161,6 +171,52 @@ class RustPresenceServiceTest : RobolectricTest() {
         delay(250)
         sync.value = SyncState.Running
         eventually { published.count { it == "online" } == 2 }
+    }
+
+    @Test
+    fun `failed online publication retries without another lifecycle or sync change`() = runBlocking {
+        eventually { published.count { it == "online" } == 1 }
+        visibility.value = false
+        eventually { "unavailable" in published }
+        publicationFailures.set(2)
+        visibility.value = true
+        eventually { published.count { it == "online" } == 2 }
+        assertThat(publicationAttempts.count { it == "online" }).isEqualTo(4)
+        delay(500)
+        assertThat(publicationAttempts.count { it == "online" }).isEqualTo(4)
+    }
+
+    @Test
+    fun `sync stopping cancels retries for online publication`() = runBlocking {
+        eventually { published.count { it == "online" } == 1 }
+        visibility.value = false
+        eventually { "unavailable" in published }
+        publicationFailures.set(100)
+        visibility.value = true
+        eventually { publicationAttempts.count { it == "online" } >= 2 }
+        sync.value = SyncState.Offline
+        delay(300)
+        val attemptsWhileOffline = publicationAttempts.size
+        delay(700)
+        assertThat(publicationAttempts).hasSize(attemptsWhileOffline)
+        publicationFailures.set(0)
+        sync.value = SyncState.Running
+        eventually { published.count { it == "online" } == 2 }
+    }
+
+    @Test
+    fun `returning to foreground cancels retries for away publication`() = runBlocking {
+        eventually { published.count { it == "online" } == 1 }
+        publicationFailures.set(100)
+        visibility.value = false
+        eventually { "unavailable" in publicationAttempts }
+        visibility.value = true
+        publicationFailures.set(0)
+        eventually { published.count { it == "online" } == 2 }
+        val awayAttempts = publicationAttempts.count { it == "unavailable" }
+        delay(700)
+        assertThat(publicationAttempts.count { it == "unavailable" }).isEqualTo(awayAttempts)
+        assertThat(published).doesNotContain("unavailable")
     }
 
     private suspend fun eventually(condition: () -> Boolean) = withTimeout(6000) {
