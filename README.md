@@ -31,7 +31,9 @@ SyncMe is an independent fork of Element X Android, built with Matrix Rust SDK, 
 
 ## تصاویر
 
-نشان بالا فایل واقعی لانچر SyncMe در همین مخزن است. تصاویر رابط کاربریِ قدیمی Element X به‌عنوان تصویر SyncMe نمایش داده نمی‌شوند؛ تصاویر واقعی نسخهٔ فعلی باید پس از دریافت یا ثبت روی دستگاه اضافه شوند.
+نشان بالا فایل واقعی لانچر SyncMe است. تصویر زیر، عکس واقعی صفحهٔ ورود SyncMe است که صاحب پروژه ارائه کرده؛ شمارهٔ بیلد در تصویر دیده نمی‌شود.
+
+<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/develop/docs/syncme/images/welcome.jpg" alt="صفحهٔ ورود واقعی SyncMe با نشان SM و دکمهٔ Login" width="288" /></p>
 
 ## ادامهٔ توسعه و تاریخچه
 
