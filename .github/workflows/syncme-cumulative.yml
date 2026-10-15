@@ -37,7 +37,7 @@ jobs:
           cache-read-only: false
       - name: Record cumulative history before building
         run: |
-          cat docs/syncme/cumulative-release-notes-fa.md >> "$GITHUB_STEP_SUMMARY"
+          cat docs/syncme/cumulative-release-notes.md >> "$GITHUB_STEP_SUMMARY"
           cat docs/syncme/history/current-lineage.md >> "$GITHUB_STEP_SUMMARY"
       - name: Preserve the existing SyncMe application ID
         run: |
@@ -101,7 +101,7 @@ jobs:
           sha256sum "$apk" > build-checkpoint/SHA256.txt
           cp docs/syncme/presence-review.md build-checkpoint/Review.md
           cp -R docs/syncme build-checkpoint/Documentation
-          cp docs/syncme/cumulative-release-notes-fa.md build-checkpoint/SyncMe-254-Cumulative-Notes.md
+          cp docs/syncme/cumulative-release-notes.md build-checkpoint/SyncMe-254-Cumulative-Notes.md
           cp .github/SYNCME_CONTINUATION_MASTER.txt build-checkpoint/Original-Continuation-Master.txt
           {
             echo "Commit: $GITHUB_SHA"

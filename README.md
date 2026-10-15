@@ -2,70 +2,71 @@
 
 # SyncMe for Android
 
-**SyncMe** یک پیام‌رسان اندرویدی مبتنی بر Matrix و انشعابی مستقل از [Element X Android](https://github.com/element-hq/element-x-android) است.
-رابط اختصاصی، برچسب‌های شخصی گفتگو، حضور مشترک کاربران و ابزارهای تشخیص اختیاری، در این مخزن توسعه می‌یابند.
+**SyncMe** is an independent Android Matrix messenger forked from [Element X Android](https://github.com/element-hq/element-x-android).
+It adds a customized interface, personal conversation tags, shared presence indicators and optional diagnostic tools on top of the Matrix Rust SDK, Jetpack Compose and Appyx foundation.
 
-SyncMe is an independent fork of Element X Android, built with Matrix Rust SDK, Jetpack Compose and Appyx. This repository contains SyncMe-specific development; it is not an official Element distribution.
+This is the SyncMe development repository, not an official Element distribution.
 
-## آخرین نسخه و دانلود
+## Latest build and downloads
 
-- **آخرین APK تأییدشده: SyncMe 253، ARM64** — [اجرا و دانلود فایل](https://github.com/DrEsmaily/element-x-android/actions/runs/38658866967)، کد `d101f1244a03c82f545dd9da0de1c477ae887ba7`.
-- **SyncMe 254**: بازسازی همان کد با مستندات تجمیعی؛ [وضعیت ساخت و دانلود](https://github.com/DrEsmaily/element-x-android/actions/workflows/syncme-cumulative.yml). تا سبزشدن اجرای جدید، نسخهٔ 253 آخرین بیلد تأییدشده است.
-- [گزارش تجمیعی فارسی از شروع توسعه تا نسخهٔ فعلی](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes-fa.md)
-- [جزئیات تمام commitهای نسخهٔ فعلی و مسیر فایل‌های تغییرکرده](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
-- [ده بیلد موفق محفوظ و شناسهٔ فایل‌هایشان](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
+- **Latest verified APK: SyncMe 253, ARM64** — [build and download](https://github.com/DrEsmaily/element-x-android/actions/runs/38658866967), application source `d101f1244a03c82f545dd9da0de1c477ae887ba7`.
+- **SyncMe 254** rebuilds that application source with complete cumulative documentation. [Build status and downloads](https://github.com/DrEsmaily/element-x-android/actions/workflows/syncme-cumulative.yml). Until the new run succeeds, 253 remains the latest verified APK.
+- [Cumulative release and continuation notes](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes.md)
+- [Complete current-lineage commit messages and changed paths](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
+- [Ten protected successful builds and artifact identities](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
 
-دانلود artifact از Actions ممکن است به ورود به GitHub نیاز داشته باشد. فایل‌های Actions تاریخ انقضا دارند؛ این انتشار یک نسخهٔ پشتیبان دیگر از ده بیلد قبلی با نگهداری ۹۰روزه تهیه می‌کند. این نسخهٔ پشتیبان، میزبانی دائمی دانلود نیست.
+Actions artifact downloads may require signing in to GitHub. They expire: this workflow also makes an additional copy of the ten previous builds with 90-day retention. That copy is a backup, not permanent download hosting.
 
-## قابلیت‌های اضافه‌شده و سفارشی‌شده در SyncMe
+## Features added or customized in SyncMe
 
-این‌ها تغییرات SyncMe نسبت به نسخهٔ پایهٔ Element X هستند؛ جزئیات پیاده‌سازی و محدودیت هر مورد در گزارش تجمیعی آمده است.
+These are recorded differences from the upstream version used as this fork's base. They are not claims of inventing these features across all messengers, or comparisons with every future Element release.
 
-| قابلیت | کجا و چه کاری انجام می‌دهد؟ |
+| Feature | Where it appears and what it does |
 |---|---|
-| **نمایش آنلاین و Away** | نشانگر مشترک حضور در خانه، سربرگ گفتگو، پروفایل و فهرست اعضا؛ Online سبز و Away نارنجی، بر اساس پاسخ واقعی Matrix. |
-| **آخرین مشاهده و تعداد آنلاین** | متن انگلیسی آخرین مشاهده و شمارش اعضای آنلاین گروه؛ در دادهٔ ناقص با قید «حداقل»، بدون حدس‌زدن وضعیت ناشناخته. |
-| **درصد و حجم آپلود** | نمایش درصد واقعی، حجم منتقل‌شده/کل و نوار پیشرفت داخل گفتگو، با دادهٔ صف ارسال SDK و چیدمان متناسب حباب. |
-| **کنترل‌های ارسال رسانه** | تغییرات انتخاب کیفیت و نگهداری اصل فایل، لغو آپلود از منوی پیام و اصلاح‌های نمایش وضعیت ارسال. |
-| **برچسب‌های شخصی گفتگو** | ساخت، تغییر نام و مدیریت مستقل، انتساب گفتگو و فیلترهای پایدار خانه؛ حداکثر سه برچسب شخصی. |
-| **طراحی و هویت SyncMe** | نام و نشان SM، خوشامدگویی اختصاصی، رنگ‌های کبالت و زمینه‌های مشکی، تغییرات منوها، واکنش‌ها و تنظیمات. |
-| **گزارش‌های تشخیصی اختیاری** | ابزارهای startup، TLS و رمزگشایی در Developer Options؛ پیش‌فرض خاموش و با ثبت محدود. |
-| **رفتار تکمیلی رسید خواندن** | آواتار خواننده زیر پیام خروجی مرتبط، retry رسید ناموفق و محدودکردن رسید خودکار به گفتگوی فعال و پیام مشاهده‌شده. |
-| **بستن گروه با مجوز مدیر** | اقدام تأییدشدهٔ سمت کلاینت؛ تضمین حذف تمام نسخه‌های پیام از دستگاه‌ها و سرورهای فدره‌شده نیست. |
+| **Online and Away presence** | Shared indicators on home DM avatars, chat headers, profiles and People; green Online and orange Away, based on actual Matrix responses. |
+| **Last seen and group online counts** | English approximate last-seen labels and group counts qualified as “at least” when data is incomplete; unknown status is not guessed. |
+| **Upload percentage and transferred size** | Real percentage, transferred/total bytes and a progress bar within conversations, driven by SDK send-queue state and fitted to the message bubble. |
+| **Media-send controls** | Customized quality/original-file behavior, upload cancellation through message actions, and pending-upload presentation. |
+| **Personal conversation tags** | Dedicated create, rename and management flows, conversation assignments and persistent home filters; up to three personal tags. |
+| **SyncMe identity and interface** | SM artwork, dedicated welcome screen, cobalt accents, black surfaces, simpler navigation, and customized menus, reactions and settings. |
+| **Optional diagnostics** | Startup, TLS and decryption tools in Developer Options; default-off, bounded capture. |
+| **Refined read-receipt behavior** | Reader avatars under the relevant outgoing message, retries after failure, and automatic receipts restricted to the active chat and visible event. |
+| **Permission-based group closure** | A confirmed client-side management action; it does not erase every federated or device-local copy of history. |
 
-### امکانات به‌ارث‌رسیده از Element X و Matrix
+### Inherited from Element X and Matrix
 
-ورود و حساب Matrix، گفتگوی مستقیم و گروهی، زیرساخت رمزنگاری سرتاسری، پیام و رسانه، همگام‌سازی و پروتکل رسید خواندن از پایهٔ اصلی آمده‌اند. تغییرات بالا لایه‌های اضافه‌شده یا سفارشی‌شدهٔ SyncMe هستند، نه ادعای ساخت این زیرساخت از صفر.
+Matrix accounts/login, direct and group conversations, the end-to-end encryption foundation, message/media transport, synchronization and the receipt protocol come from the upstream platform. SyncMe adds or customizes the layers above rather than claiming the underlying messenger stack was built from scratch.
 
-### اصلاحات فنی و محدودیت‌های فعلی
+### Technical fixes and current limits
 
-SyncMe اصلاحاتی در پایان بازنشانی هویت، مدیریت توکن FCM، چرخهٔ حضور/رسید و چیدمان پیام دارد. TLS فعلی اعتماد سیستم/انقضا/EKU و hostname را بررسی می‌کند، ولی مرحلهٔ آنلاین ابطال OCSP/CRL حذف شده است؛ [جزئیات فنی و آزمون‌ها](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
+SyncMe includes identity-reset completion fixes, bounded FCM token handling, presence/receipt lifecycle corrections and regression coverage.
+Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCSP/CRL revocation checking; see the [technical review and limits](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
 
-موفقیت CI با تأیید روی گوشی برابر نیست. بارگذاری فایل بزرگ تحت VPN، حضور چند دستگاه، اعلان پس‌زمینه و رسید دو گوشی به آزمون واقعی نیاز دارند. آزمایش‌های شاخه‌های قدیمی خودبه‌خود قابلیت نسخهٔ فعلی نیستند.
+Successful CI is separate from device verification. Large-file uploads under VPN, multi-device presence, background notifications and two-phone receipt behavior require runtime testing. Historical experiments on other branches are not automatically features of the current application.
 
-## تصاویر
+## Real SyncMe screenshot
 
-نشان بالا فایل واقعی لانچر SyncMe است. تصویر زیر، عکس واقعی صفحهٔ ورود SyncMe است که صاحب پروژه ارائه کرده؛ شمارهٔ بیلد در تصویر دیده نمی‌شود.
+The icon above is the actual launcher asset. The project owner supplied this real SyncMe welcome-screen screenshot; its build number is not visible.
 
-<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/develop/docs/syncme/images/welcome.jpg" alt="صفحهٔ ورود واقعی SyncMe با نشان SM و دکمهٔ Login" width="288" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
 
-## ادامهٔ توسعه و تاریخچه
+## Development and preserved history
 
-کد آخرین بیلد موفق در شاخهٔ `fix/settings-display-cleanup` و بازسازی مستندشده در `syncme-cumulative-build-20261015` قرار دارد.
-برای ادامه ابتدا گزارش تجمیعی، گزارش حضور و گزارش ریشه‌یابی را بخوانید. تمام ۴۲۲ اجرای موجود در snapshot اولیه، ۷۹۷ commit اختصاصی شاخه‌های بیلد و نسخه‌های یادداشت‌های تاریخی در پوشهٔ `docs/syncme/history` شاخهٔ بازسازی فهرست شده‌اند.
+The latest verified application source is on `fix/settings-display-cleanup`; its documented rebuild is on `syncme-cumulative-build-20261015`.
+Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
-نسخه‌های قدیمی توضیحات ممکن است رفتار منسوخ یا کار ناتمام را توصیف کنند؛ تاریخ، commit و گزارش جدیدتر ملاک هستند.
-پاک‌سازی Actions تاریخچهٔ Git را حذف نمی‌کند. ده اجرای موفق قبلی و بیلد مستندشدهٔ جدید باید حفظ شوند.
+Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The ten original successful builds and the new cumulative build are protected.
 
-## ساخت و مشارکت
+## Building and contributing
 
-Android 7.0+ (API 24)، JDK 21 و ابزار Android لازم‌اند. راهنمای [مشارکت](CONTRIBUTING.md) و [راه‌اندازی توسعه](docs/_developer_onboarding.md) را ببینید.
-workflow اختصاصی SyncMe آزمون‌های regression را اجرا کرده و `:app:assembleGplayRelease` را با شناسهٔ بستهٔ موجود `.syncmerelease` می‌سازد؛ ARM64، شمارهٔ نسخه، manifest و کلاس JNI بررسی می‌شوند.
-گزارش خطای SyncMe را در [همین مخزن](https://github.com/DrEsmaily/element-x-android/issues) ثبت کنید.
+The application requires Android 7.0+ (API 24). Development uses JDK 21 and the Android toolchain. See [contributing](CONTRIBUTING.md) and [developer onboarding](docs/_developer_onboarding.md).
 
-## منشأ و حقوق سازندگان
+The dedicated SyncMe workflow runs regressions, builds `:app:assembleGplayRelease`, retains the existing `.syncmerelease` application identity, checks ARM64/version/manifest/JNI metadata and bundles cumulative documentation and checksums.
+Report SyncMe-specific issues in [this repository](https://github.com/DrEsmaily/element-x-android/issues).
 
-پایهٔ این پروژه [element-hq/element-x-android](https://github.com/element-hq/element-x-android) است؛ تاریخچه و انتساب سازندگان حفظ شده‌اند. فایل‌های [LICENSE](LICENSE) و [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL) مرجع شرایط مجوزند. استفاده از نام SyncMe این شرایط را تغییر نمی‌دهد.
+## Upstream attribution
+
+SyncMe is derived from [element-hq/element-x-android](https://github.com/element-hq/element-x-android). Original history, attribution and the [LICENSE](LICENSE) and [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL) files are preserved. SyncMe branding does not change those license terms.
 
 ## Copyright and License
 
