@@ -1,104 +1,55 @@
-[![Latest build](https://github.com/element-hq/element-x-android/actions/workflows/build.yml/badge.svg?query=branch%3Adevelop)](https://github.com/element-hq/element-x-android/actions/workflows/build.yml?query=branch%3Adevelop)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=element-x-android&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=element-x-android)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=element-x-android&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=element-x-android)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=element-x-android&metric=bugs)](https://sonarcloud.io/summary/new_code?id=element-x-android)
-[![codecov](https://codecov.io/github/element-hq/element-x-android/branch/develop/graph/badge.svg?token=ecwvia7amV)](https://codecov.io/github/element-hq/element-x-android)
-[![Element X Android Matrix room #element-x-android:matrix.org](https://img.shields.io/matrix/element-x-android:matrix.org.svg?label=%23element-x-android:matrix.org&logo=matrix&server_fqdn=matrix.org)](https://matrix.to/#/#element-x-android:matrix.org)
-[![Localazy](https://img.shields.io/endpoint?url=https%3A%2F%2Fconnect.localazy.com%2Fstatus%2Felement%2Fdata%3Fcontent%3Dall%26title%3Dlocalazy%26logo%3Dtrue)](https://localazy.com/p/element)
+<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/syncme-cumulative-build-20261015/appicon/element/src/main/res/drawable-nodpi/syncme_launcher.webp" alt="SyncMe app icon" width="144" /></p>
 
-# Element X Android
+# SyncMe for Android
 
-Element X Android is the next-generation [Matrix](https://matrix.org/) client provided by [Element](https://element.io/).
+**SyncMe** یک پیام‌رسان اندرویدی مبتنی بر Matrix و انشعابی مستقل از [Element X Android](https://github.com/element-hq/element-x-android) است.
+رابط اختصاصی، برچسب‌های شخصی گفتگو، حضور مشترک کاربران و ابزارهای تشخیص اختیاری، در این مخزن توسعه می‌یابند.
 
-Compared to the previous-generation [Element Classic](https://github.com/element-hq/element-android), the application is a total rewrite, using the [Matrix Rust SDK](https://github.com/matrix-org/matrix-rust-sdk) underneath and targeting devices running Android 7+. The UI layer is written using [Jetpack Compose](https://developer.android.com/jetpack/compose), and the navigation is managed using [Appyx](https://github.com/bumble-tech/appyx).
+SyncMe is an independent fork of Element X Android, built with Matrix Rust SDK, Jetpack Compose and Appyx. This repository contains SyncMe-specific development; it is not an official Element distribution.
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=io.element.android.x)[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/io.element.android.x)
+## آخرین نسخه و دانلود
 
-## Table of contents
+- **آخرین APK تأییدشده: SyncMe 253، ARM64** — [اجرا و دانلود فایل](https://github.com/DrEsmaily/element-x-android/actions/runs/38658866967)، کد `d101f1244a03c82f545dd9da0de1c477ae887ba7`.
+- **SyncMe 254**: بازسازی همان کد با مستندات تجمیعی؛ [وضعیت ساخت و دانلود](https://github.com/DrEsmaily/element-x-android/actions/workflows/syncme-cumulative.yml). تا سبزشدن اجرای جدید، نسخهٔ 253 آخرین بیلد تأییدشده است.
+- [گزارش تجمیعی فارسی از شروع توسعه تا نسخهٔ فعلی](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes-fa.md)
+- [جزئیات تمام commitهای نسخهٔ فعلی و مسیر فایل‌های تغییرکرده](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
+- [ده بیلد موفق محفوظ و شناسهٔ فایل‌هایشان](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
 
-<!--- TOC -->
+دانلود artifact از Actions ممکن است به ورود به GitHub نیاز داشته باشد. فایل‌های Actions تاریخ انقضا دارند؛ این انتشار یک نسخهٔ پشتیبان دیگر از ده بیلد قبلی با نگهداری ۹۰روزه تهیه می‌کند. این نسخهٔ پشتیبان، میزبانی دائمی دانلود نیست.
 
-* [Screenshots](#screenshots)
-* [Translations](#translations)
-* [Rust SDK](#rust-sdk)
-* [Status](#status)
-* [Minimum SDK version](#minimum-sdk-version)
-* [Contributing](#contributing)
-* [Build instructions](#build-instructions)
-* [Support](#support)
-* [Copyright and License](#copyright-and-license)
+## وضعیت تجمیعی برنامه
 
-<!--- END -->
+- هویت SyncMe در نام، لانچر، خوشامدگویی و صفحهٔ خانه؛ رابط ساده‌تر، رنگ‌های اختصاصی و تنظیمات نسخهٔ 253 با About پنهان و مسیر توسعه‌دهنده از لمس پنج‌بارهٔ نسخه.
+- برچسب‌های شخصی پایدار، مدیریت و تغییر نام و انتساب گفتگو؛ حذف برچسب باعث حذف پیام‌ها نمی‌شود.
+- نمایش پیشرفت ارسال از وضعیت SDK، اصلاح‌های چیدمان واکنش‌ها/حباب‌ها/منوها، پس‌زمینهٔ مشکی رسانه و تغییرات بازشدن گفتگو.
+- وضعیت حضور مشترک میان خانه، گفتگو، پروفایل و اعضا، بدون `/sync` موازی؛ شمارش آنلاین با بیان صریح دادهٔ ناقص، بازیابی انتشار ناموفق و متن انگلیسی آخرین مشاهده.
+- اصلاح دنبال‌کردن پیام‌های تازه، نشانگر unread، retry رسید ناموفق، آواتار خواننده زیر پیام خروجی و محدودکردن رسید خودکار به گفتگوی فعال و رویداد قابل مشاهده.
+- جداسازی موفقیت بازنشانی هویت از فعال‌شدن backup، مدیریت محدود توکن FCM و گزارش‌های تشخیصی اختیاری و پیش‌فرض خاموش.
+- TLS فعلی با بررسی اعتماد سیستم/انقضا/EKU و hostname کار می‌کند، اما مرحلهٔ آنلاین ابطال OCSP/CRL حذف شده است؛ [جزئیات سیاست و آزمون‌ها](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
 
-## Screenshots
+موفقیت CI با تأیید روی گوشی برابر نیست. مشکلات تاریخی فایل بزرگ تحت VPN، رفتار حضور چند دستگاه، اعلان پس‌زمینه و رسید دو گوشی باید در شرایط واقعی بررسی شوند. آزمایش‌های قدیمی شاخه‌های دیگر، خودبه‌خود قابلیت نسخهٔ فعلی محسوب نمی‌شوند.
 
-Here are some screenshots of the application:
+## تصاویر
 
-<!--
-Commands run before taking the screenshots:
-adb shell settings put system time_12_24 24
-adb shell am broadcast -a com.android.systemui.demo -e command enter
-adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1337
-adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e level 4
-adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4
-adb shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false
-adb shell am broadcast -a com.android.systemui.demo -e command battery -e plugged false -e level 100
+نشان بالا فایل واقعی لانچر SyncMe در همین مخزن است. تصاویر رابط کاربریِ قدیمی Element X به‌عنوان تصویر SyncMe نمایش داده نمی‌شوند؛ تصاویر واقعی نسخهٔ فعلی باید پس از دریافت یا ثبت روی دستگاه اضافه شوند.
 
-And to exit demo mode:
-adb shell am broadcast -a com.android.systemui.demo -e command exit
--->
+## ادامهٔ توسعه و تاریخچه
 
-|<img src="./docs/images-lfs/screen_1_light.png" width="280" />|<img src="./docs/images-lfs/screen_2_light.png" width="280" />|<img src="./docs/images-lfs/screen_3_light.png" width="280" />|<img src="./docs/images-lfs/screen_4_light.png" width="280" />|
-|-|-|-|-|
-|<img src="./docs/images-lfs/screen_1_dark.png" width="280" />|<img src="./docs/images-lfs/screen_2_dark.png" width="280" />|<img src="./docs/images-lfs/screen_3_dark.png" width="280" />|<img src="./docs/images-lfs/screen_4_dark.png" width="280" />|
+کد آخرین بیلد موفق در شاخهٔ `fix/settings-display-cleanup` و بازسازی مستندشده در `syncme-cumulative-build-20261015` قرار دارد.
+برای ادامه ابتدا گزارش تجمیعی، گزارش حضور و گزارش ریشه‌یابی را بخوانید. تمام ۴۲۲ اجرای موجود در snapshot اولیه، ۷۹۷ commit اختصاصی شاخه‌های بیلد و نسخه‌های یادداشت‌های تاریخی در پوشهٔ `docs/syncme/history` شاخهٔ بازسازی فهرست شده‌اند.
 
-## Translations
+نسخه‌های قدیمی توضیحات ممکن است رفتار منسوخ یا کار ناتمام را توصیف کنند؛ تاریخ، commit و گزارش جدیدتر ملاک هستند.
+پاک‌سازی Actions تاریخچهٔ Git را حذف نمی‌کند. ده اجرای موفق قبلی و بیلد مستندشدهٔ جدید باید حفظ شوند.
 
-Element X Android supports many languages. You can help us to translate the app in your language by joining our [Localazy project](https://localazy.com/p/element). You can also help us to improve the existing translations.
+## ساخت و مشارکت
 
-Note that for now, we keep control on the French and German translations.
+Android 7.0+ (API 24)، JDK 21 و ابزار Android لازم‌اند. راهنمای [مشارکت](CONTRIBUTING.md) و [راه‌اندازی توسعه](docs/_developer_onboarding.md) را ببینید.
+workflow اختصاصی SyncMe آزمون‌های regression را اجرا کرده و `:app:assembleGplayRelease` را با شناسهٔ بستهٔ موجود `.syncmerelease` می‌سازد؛ ARM64، شمارهٔ نسخه، manifest و کلاس JNI بررسی می‌شوند.
+گزارش خطای SyncMe را در [همین مخزن](https://github.com/DrEsmaily/element-x-android/issues) ثبت کنید.
 
-Translations can be checked screen per screen using our tool Element X Android Gallery, available at https://element-hq.github.io/element-x-android/. Note that this page is updated every Tuesday.
+## منشأ و حقوق سازندگان
 
-More instructions about translating the application can be found at [CONTRIBUTING.md](CONTRIBUTING.md#strings).
-
-## Rust SDK
-
-Element X leverages the [Matrix Rust SDK](https://github.com/matrix-org/matrix-rust-sdk) through an FFI layer that the final client can directly import and use.
-
-We're doing this as a way to share code between platforms and while we've seen promising results it's still in the experimental stage and bound to change.
-
-## Status
-
-This project is actively developed and supported. New users are recommended to use Element X instead of the previous-generation app.
-
-## Minimum SDK version
-
-Element X Android requires a minimum SDK version of 24 (Android 7.0, Nougat). We aim to support devices running Android 7.0 and above, which covers a wide range of devices still in use today.
-
-Element Android Enterprise requires a minimum SDK version of 33 (Android 13, Tiramisu). For Element Enterprise, we support only devices that still receive security updates, which means devices running Android 13 and above. Android does not have a documented support policy, but some information can be found at [https://endoflife.date/android](https://endoflife.date/android).
-
-## Contributing
-
-Want to get actively involved in the project? You're more than welcome! A good way to start is to check the issues that are labelled with the [good first issue](https://github.com/element-hq/element-x-android/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) label. Let us know by commenting the issue that you're starting working on it.
-
-But first make sure to read our [contribution guide](CONTRIBUTING.md) first.
-
-You can also come chat with the community in the Matrix [room](https://matrix.to/#/#element-x-android:matrix.org) dedicated to the project.
-
-## Build instructions
-
-Just clone the project and open it in Android Studio. Make sure to select the
-`app` configuration when building (as we also have sample apps in the project).
-
-To build against a local copy of the Rust SDK, see the [Developer
-onboarding](docs/_developer_onboarding.md#building-the-sdk-locally) instructions.
-
-## Support
-
-When you are experiencing an issue on Element X Android, please first search in [GitHub issues](https://github.com/element-hq/element-x-android/issues)
-and then in [#element-x-android:matrix.org](https://matrix.to/#/#element-x-android:matrix.org).
-If after your research you still have a question, ask at [#element-x-android:matrix.org](https://matrix.to/#/#element-x-android:matrix.org). Otherwise feel free to create a GitHub issue if you encounter a bug or a crash, by explaining clearly in detail what happened. You can also perform bug reporting from the application settings. This is especially recommended when you encounter a crash.
+پایهٔ این پروژه [element-hq/element-x-android](https://github.com/element-hq/element-x-android) است؛ تاریخچه و انتساب سازندگان حفظ شده‌اند. فایل‌های [LICENSE](LICENSE) و [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL) مرجع شرایط مجوزند. استفاده از نام SyncMe این شرایط را تغییر نمی‌دهد.
 
 ## Copyright and License
 
