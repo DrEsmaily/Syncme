@@ -1,0 +1,142 @@
+{
+  "21954d5fb3b4e4475d52b282203c827e2e9d6393": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "0002ed0c4ca9bb67899620c0c52f4c11eb991bbc",
+    "archive_path": "source-notes/21954d5fb3b4-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "44bf5ad2d021c1aeea70dd9eb7fc32a8e4a155ae": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "017212357c89f1ac9c7f841bd6a0c33951281aee",
+    "archive_path": "source-notes/44bf5ad2d021-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "c23b3f1fc43f7679cc5e6fabfb3c59dcd0ac9b85": {
+    "path": ".github/SYNCME_BUILD_NOTES_234.md",
+    "first_seen_sha": "03ca2af56f1bfbbfe61592f515138de9d2ffa231",
+    "archive_path": "source-notes/c23b3f1fc43f-SYNCME_BUILD_NOTES_234.md"
+  },
+  "581aa27b52f1d3387173c9806860dc4980b04c70": {
+    "path": ".github/SYNCME_BUILD_NOTES_235.md",
+    "first_seen_sha": "03ca2af56f1bfbbfe61592f515138de9d2ffa231",
+    "archive_path": "source-notes/581aa27b52f1-SYNCME_BUILD_NOTES_235.md"
+  },
+  "4ad67e1b1ecae6667937c1c811acd66a8eea53fe": {
+    "path": ".github/SYNCME_BUILD_NOTES_236.md",
+    "first_seen_sha": "03ca2af56f1bfbbfe61592f515138de9d2ffa231",
+    "archive_path": "source-notes/4ad67e1b1eca-SYNCME_BUILD_NOTES_236.md"
+  },
+  "d8b8b2e8828db2b4640238efb830499dc37ea2d0": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "03ca2af56f1bfbbfe61592f515138de9d2ffa231",
+    "archive_path": "source-notes/d8b8b2e8828d-presence-review.md"
+  },
+  "f713733b9a74c48e02373000eff0dd4633f80c8c": {
+    "path": "docs/syncme/root-cause-review.md",
+    "first_seen_sha": "03ca2af56f1bfbbfe61592f515138de9d2ffa231",
+    "archive_path": "source-notes/f713733b9a74-root-cause-review.md"
+  },
+  "7190c5d70dc6073fe8e8634392578f6e05de6dfe": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "04e94c2b7b9edd4de48146740848c23bb321d494",
+    "archive_path": "source-notes/7190c5d70dc6-presence-review.md"
+  },
+  "1c24d19480d3453ebf81a49c0753078b7709a868": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "05237823ac30c450a8e0d9dec42e72285a8858ff",
+    "archive_path": "source-notes/1c24d19480d3-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "43e664de9b9644a0a1d17382a4b3357220456346": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "06981eab6c374c1eab88a90b4a1ced93b8f42960",
+    "archive_path": "source-notes/43e664de9b96-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "fe2d25b43b2f09d85a39b0d5905a393913d83322": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "0a5b4b280f051023f85268a125858e27a844d991",
+    "archive_path": "source-notes/fe2d25b43b2f-presence-review.md"
+  },
+  "c8bd99cc355934198aad832024d78de44bb35aa0": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "10f3da9c16bbb8432621f5d9c28f7b95c8cbb8e7",
+    "archive_path": "source-notes/c8bd99cc3559-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "a4bf6f09036a543e0689e9f6afc789d6a05f893d": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "2225a537dbde1b01850fd3dfc3964d67ebc1611f",
+    "archive_path": "source-notes/a4bf6f09036a-presence-review.md"
+  },
+  "8e48f4148938e35e2c42b4352f5467a2bd471aae": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "26d1040b7a6df0bc9c99415de936fd44b097cc75",
+    "archive_path": "source-notes/8e48f4148938-presence-review.md"
+  },
+  "626fcc9eff4b4773bd082452dda222cda7901709": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "291b4f246703307885449006eb501be20b242f99",
+    "archive_path": "source-notes/626fcc9eff4b-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "6c76604b90b7af4c08b0e8d3482b5c00fdfce022": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "2c6565e54d302d53aafe4cb214363ebfe3dfdae6",
+    "archive_path": "source-notes/6c76604b90b7-presence-review.md"
+  },
+  "50855b9bcc77fe33e7c02d9a9733bfc1b981e310": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "2e74fe619a8709b03717bbe079535533ad874834",
+    "archive_path": "source-notes/50855b9bcc77-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "dfa57a69f4ba3b4cfa5c689bf7c0992a7f04872d": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "2ea93bb85a9aca69601701d3a1027234a8c14609",
+    "archive_path": "source-notes/dfa57a69f4ba-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "a293d78017895040f1f46d85c9f370d437540161": {
+    "path": ".github/SYNCME_BUILD_NOTES_237.md",
+    "first_seen_sha": "30bf04aa7146dc379dd8f007c863d49f896e8b90",
+    "archive_path": "source-notes/a293d7801789-SYNCME_BUILD_NOTES_237.md"
+  },
+  "8c6acac405b78c2e60f01d71ddd4824315a742f5": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "3e2e0acac60a7fcf638f39b4de2b68b1f66557b9",
+    "archive_path": "source-notes/8c6acac405b7-presence-review.md"
+  },
+  "8beaca02160bbf17d2c699b8bbf8072c34c985fa": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "3eee311e00436dea13e3c7f9db6f26872b9b1373",
+    "archive_path": "source-notes/8beaca02160b-presence-review.md"
+  },
+  "7c047d14bb3e2cd001d2913edc0d64079989be22": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "514f1a9ccfbca4b13e5a1ea6ffc31762a9c9a099",
+    "archive_path": "source-notes/7c047d14bb3e-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "7c93ed90b707723524543930e669f56ff868c7a3": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "5191fafede317b1d4b62c829e6f32ad84663daf0",
+    "archive_path": "source-notes/7c93ed90b707-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "4230197c58e46932716ced3073783c6fe1563cc8": {
+    "path": "docs/syncme/presence-review.md",
+    "first_seen_sha": "5b7bd224d96decbd843d8d351217822d777781b3",
+    "archive_path": "source-notes/4230197c58e4-presence-review.md"
+  },
+  "44f677d017ac1e0ad4706af6346ca8b956c85e7a": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "7fefb4b55dfe6bb16e6b1afb8a5e65c59674868b",
+    "archive_path": "source-notes/44f677d017ac-SYNCME_CONTINUATION_MASTER.txt"
+  },
+  "8cc52dc2e88059cf06f84366d562a81e9d9e1ced": {
+    "path": ".github/SYNCME_PRESENCE_181.md",
+    "first_seen_sha": "99a612f8a93e41608c691086a27c92deedf98c44",
+    "archive_path": "source-notes/8cc52dc2e880-SYNCME_PRESENCE_181.md"
+  },
+  "25d641f050bed3daf24d08f84dc9e153fb6a03e1": {
+    "path": "docs/syncme/root-cause-review.md",
+    "first_seen_sha": "d70e42e84c7387d7792f23ac1bd8d9e9ca268584",
+    "archive_path": "source-notes/25d641f050be-root-cause-review.md"
+  },
+  "0c0540d7a0fd1c35e890037aae29a11f9291e25d": {
+    "path": ".github/SYNCME_CONTINUATION_MASTER.txt",
+    "first_seen_sha": "e02c49f1e95f46223617ebc4d08cd9a4635eaa1c",
+    "archive_path": "source-notes/0c0540d7a0fd-SYNCME_CONTINUATION_MASTER.txt"
+  }
+}

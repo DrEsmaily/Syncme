@@ -1,0 +1,1 @@
+8d963e0fbf078af5433d5a7595d5c9581d4b2a7c4784c3e31af3f65bdb514509  build-checkpoint/SyncMe-245-ARM64.apk

@@ -1,0 +1,215 @@
+[
+  {
+    "id": 38658866967,
+    "name": "SyncMe 253 presence and regression checks",
+    "sha": "d101f1244a03c82f545dd9da0de1c477ae887ba7",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38658866967",
+    "artifacts": [
+      {
+        "id": 11938871350,
+        "name": "SyncMe-253-test-results",
+        "size_in_bytes": 124723,
+        "expired": false,
+        "expires_at": "2027-01-13T00:14:20Z"
+      },
+      {
+        "id": 11938377649,
+        "name": "SyncMe-253-ARM64",
+        "size_in_bytes": 70259605,
+        "expired": false,
+        "expires_at": "2026-11-14T00:30:14Z"
+      }
+    ]
+  },
+  {
+    "id": 38633766604,
+    "name": "SyncMe 252 presence and regression checks",
+    "sha": "2ec6e522478f1f36fd8901ca009ed9db1c684a0a",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38633766604",
+    "artifacts": [
+      {
+        "id": 11929260121,
+        "name": "SyncMe-252-test-results",
+        "size_in_bytes": 100197,
+        "expired": false,
+        "expires_at": "2027-01-12T20:38:24Z"
+      },
+      {
+        "id": 11929230127,
+        "name": "SyncMe-252-ARM64",
+        "size_in_bytes": 70259618,
+        "expired": false,
+        "expires_at": "2026-11-13T20:59:42Z"
+      }
+    ]
+  },
+  {
+    "id": 38586470729,
+    "name": "SyncMe 251 presence and regression checks",
+    "sha": "5a09db9dd6dced5fa6a02bf92023f44c1f65e666",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38586470729",
+    "artifacts": [
+      {
+        "id": 11906930130,
+        "name": "SyncMe-251-test-results",
+        "size_in_bytes": 99821,
+        "expired": false,
+        "expires_at": "2027-01-12T15:06:52Z"
+      },
+      {
+        "id": 11906501003,
+        "name": "SyncMe-251-ARM64",
+        "size_in_bytes": 70257752,
+        "expired": false,
+        "expires_at": "2026-11-13T15:18:24Z"
+      }
+    ]
+  },
+  {
+    "id": 38547146922,
+    "name": "SyncMe 250 presence and regression checks",
+    "sha": "5b7bd224d96decbd843d8d351217822d777781b3",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38547146922",
+    "artifacts": [
+      {
+        "id": 11884899231,
+        "name": "SyncMe-250-test-results",
+        "size_in_bytes": 99645,
+        "expired": false,
+        "expires_at": "2027-01-12T10:05:50Z"
+      },
+      {
+        "id": 11884874555,
+        "name": "SyncMe-250-ARM64",
+        "size_in_bytes": 70259236,
+        "expired": false,
+        "expires_at": "2026-11-13T10:16:58Z"
+      }
+    ]
+  },
+  {
+    "id": 38513962735,
+    "name": "SyncMe 249 presence and regression checks",
+    "sha": "ede710d5a367b5f435ed06a700d9037a05c9f858",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38513962735",
+    "artifacts": [
+      {
+        "id": 11871620663,
+        "name": "SyncMe-249-test-results",
+        "size_in_bytes": 96349,
+        "expired": false,
+        "expires_at": "2027-01-12T04:56:03Z"
+      },
+      {
+        "id": 11871341015,
+        "name": "SyncMe-249-ARM64",
+        "size_in_bytes": 70258454,
+        "expired": false,
+        "expires_at": "2026-11-13T05:09:27Z"
+      }
+    ]
+  },
+  {
+    "id": 38400798130,
+    "name": "SyncMe 248 presence and regression checks",
+    "sha": "2c6565e54d302d53aafe4cb214363ebfe3dfdae6",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38400798130",
+    "artifacts": [
+      {
+        "id": 11815422695,
+        "name": "SyncMe-248-ARM64",
+        "size_in_bytes": 70256808,
+        "expired": false,
+        "expires_at": "2026-11-12T13:05:40Z"
+      },
+      {
+        "id": 11815352702,
+        "name": "SyncMe-248-test-results",
+        "size_in_bytes": 96139,
+        "expired": false,
+        "expires_at": "2027-01-11T12:54:30Z"
+      }
+    ]
+  },
+  {
+    "id": 38362221920,
+    "name": "SyncMe 247 presence and regression checks",
+    "sha": "4595162f9147ea16fc04171e7e43326bfdcd8b52",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38362221920",
+    "artifacts": [
+      {
+        "id": 11795743006,
+        "name": "SyncMe-247-test-results",
+        "size_in_bytes": 96077,
+        "expired": false,
+        "expires_at": "2027-01-11T07:22:17Z"
+      },
+      {
+        "id": 11795723066,
+        "name": "SyncMe-247-ARM64",
+        "size_in_bytes": 70256363,
+        "expired": false,
+        "expires_at": "2026-11-12T07:36:40Z"
+      }
+    ]
+  },
+  {
+    "id": 38345740737,
+    "name": "SyncMe 246 presence and regression checks",
+    "sha": "2225a537dbde1b01850fd3dfc3964d67ebc1611f",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38345740737",
+    "artifacts": [
+      {
+        "id": 11789016561,
+        "name": "SyncMe-246-test-results",
+        "size_in_bytes": 80884,
+        "expired": false,
+        "expires_at": "2027-01-11T04:17:37Z"
+      },
+      {
+        "id": 11788941626,
+        "name": "SyncMe-246-ARM64",
+        "size_in_bytes": 70246395,
+        "expired": false,
+        "expires_at": "2026-11-12T04:32:46Z"
+      }
+    ]
+  },
+  {
+    "id": 38314674913,
+    "name": "SyncMe 245 offline TLS and reset regression checks",
+    "sha": "b0db4b16b5403a113035279b447cf4bdf921cf77",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38314674913",
+    "artifacts": [
+      {
+        "id": 11776940027,
+        "name": "SyncMe-245-ARM64",
+        "size_in_bytes": 70240656,
+        "expired": false,
+        "expires_at": "2026-11-11T22:18:27Z"
+      },
+      {
+        "id": 11775779923,
+        "name": "SyncMe-245-test-results",
+        "size_in_bytes": 36035,
+        "expired": false,
+        "expires_at": "2027-01-10T22:06:05Z"
+      }
+    ]
+  },
+  {
+    "id": 38287593658,
+    "name": "SyncMe 244 Reset Rust Crypto Diagnostics ARM64 APK",
+    "sha": "eb8042a1e353fc88913108db0f902d4353ca9167",
+    "url": "https://github.com/DrEsmaily/element-x-android/actions/runs/38287593658",
+    "artifacts": [
+      {
+        "id": 11764548432,
+        "name": "SyncMe-243-ARM64-Reset-Full-Diagnostics",
+        "size_in_bytes": 70240704,
+        "expired": false,
+        "expires_at": "2027-01-10T17:56:45Z"
+      }
+    ]
+  }
+]

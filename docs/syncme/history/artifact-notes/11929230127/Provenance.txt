@@ -1,0 +1,4 @@
+Commit: 2ec6e522478f1f36fd8901ca009ed9db1c684a0a
+Run: https://github.com/DrEsmaily/element-x-android/actions/runs/38633766604
+Device runtime confirmation: not performed
+b433fc723c3d01dc5eef4fb928f4970d4b17de66e883d97152f17098c9519574  build-checkpoint/SyncMe-252-ARM64.apk

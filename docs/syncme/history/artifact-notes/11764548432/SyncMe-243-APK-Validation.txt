@@ -1,0 +1,5 @@
+Build 243 expected Android versionName: 243
+Build 243 expected ARM64 versionCode: 202609102
+Source APK: app/build/outputs/apk/gplay/release/app-gplay-arm64-v8a-release.apk
+-rw-r--r-- 1 runner runner 71M Oct 12 18:14 build-checkpoint/SyncMe-243-ARM64-Reset-Full-Diagnostics.apk
+f46e5044d166cf5ebe585f45c53a15b48e1975a7f1963a89109e37a2e9983c13  build-checkpoint/SyncMe-243-ARM64-Reset-Full-Diagnostics.apk

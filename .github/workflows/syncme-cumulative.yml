@@ -1,0 +1,170 @@
+name: SyncMe 254 cumulative history and verified APK
+on:
+  push:
+    branches: [syncme-cumulative-build-20261015]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: syncme-cumulative-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
+  SYNCME_BUILD_NUMBER: '254'
+  SYNCME_VERSION_CODE: '20261021'
+jobs:
+  verify-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+        with:
+          cache-read-only: false
+      - name: Record cumulative history before building
+        run: |
+          cat docs/syncme/cumulative-release-notes-fa.md >> "$GITHUB_STEP_SUMMARY"
+          cat docs/syncme/history/current-lineage.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve the existing SyncMe application ID
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          source = p.read_text()
+          marker = 'getByName("release") {'
+          assert source.count(marker) == 1
+          p.write_text(source.replace(marker, marker + '\n            applicationIdSuffix = ".syncmerelease"'))
+          PY
+      - name: Run presence, UI presenters, TLS, reset and Firebase regressions
+        run: >-
+          ./gradlew
+          :features:preferences:impl:testDebugUnitTest --tests '*VersionFormatterTest' --tests '*PreferencesRootPresenterTest*developer settings*' --tests '*PreferencesRootViewTest*About*' --tests '*PreferencesRootViewTest*Developer settings*' --tests '*PreferencesRootViewTest*version sends*'
+          :features:login:impl:testDebugUnitTest --tests '*ConfirmAccountProviderPresenterTest'
+          :appnav:testDebugUnitTest --tests '*RootFlowNodeTest'
+          :libraries:matrix:api:testDebugUnitTest --tests '*UserPresenceTest' --tests '*OnlineMemberCountTest'
+          :libraries:matrix:impl:testDebugUnitTest --tests '*Presence*Test' --tests '*DecryptionDiagnosticsTest' --tests '*UtdTrackerTest'
+          :features:roomdetails:impl:testDebugUnitTest --tests '*RoomMemberList*Test' --tests '*RoomDetailsPresenterTest'
+          :features:home:impl:testDebugUnitTest --tests '*RoomListPresenterTest' --tests '*RoomListRoomSummaryFactoryTest'
+          :features:userprofile:impl:testDebugUnitTest --tests '*UserProfilePresenterTest'
+          :features:messages:impl:testDebugUnitTest --tests '*TimelineViewTest' --tests '*TimelinePresenterTest' --tests '*OutgoingReadReceiptsTest' --tests '*TimelineItemsFactoryTest'
+          :libraries:rustls-tls:testDebugUnitTest
+          :features:securebackup:impl:testDebugUnitTest --tests '*ResetIdentity*Test'
+          :libraries:pushproviders:firebase:testDebugUnitTest
+          --no-configuration-cache --stacktrace
+      - name: Build the checked source
+        run: ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease --no-configuration-cache --stacktrace
+      - name: Verify and package the actual APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk)
+          test "${#apks[@]}" -eq 1
+          mkdir -p build-checkpoint
+          apk=build-checkpoint/SyncMe-254-ARM64.apk
+          cp "${apks[0]}" "$apk"
+          unzip -t "$apk" > build-checkpoint/apk-zip-validation.txt
+          aapt_bin="$(find "${ANDROID_HOME}/build-tools" -type f -name aapt | sort -V | tail -1)"
+          "$aapt_bin" dump badging "$apk" > build-checkpoint/manifest.txt
+          grep '^package:' build-checkpoint/manifest.txt | grep -F "versionName='254'" | grep -F "versionCode='202610212'"
+          grep '^package:' build-checkpoint/manifest.txt | grep -F '.syncmerelease'
+          grep '^native-code:' build-checkpoint/manifest.txt | grep -F 'arm64-v8a'
+          python3 - <<'PY'
+          import os, pathlib, subprocess, tempfile, zipfile
+          tool = sorted(pathlib.Path(os.environ['ANDROID_HOME']).glob('build-tools/*/dexdump'))[-1]
+          found = False
+          with zipfile.ZipFile('build-checkpoint/SyncMe-254-ARM64.apk') as apk, tempfile.TemporaryDirectory() as tmp:
+              for name in apk.namelist():
+                  if name.startswith('classes') and name.endswith('.dex'):
+                      dex = pathlib.Path(tmp) / name
+                      dex.write_bytes(apk.read(name))
+                      output = subprocess.check_output([str(tool), '-f', str(dex)]).decode('utf-8', errors='replace')
+                      descriptor = "Lorg/rustls/platformverifier/CertificateVerifier;"
+                      if descriptor in output:
+                          found = True
+          assert found, 'JNI verifier class missing from optimized APK'
+          PY
+          sha256sum "$apk" > build-checkpoint/SHA256.txt
+          cp docs/syncme/presence-review.md build-checkpoint/Review.md
+          cp -R docs/syncme build-checkpoint/Documentation
+          cp docs/syncme/cumulative-release-notes-fa.md build-checkpoint/SyncMe-254-Cumulative-Notes.md
+          cp .github/SYNCME_CONTINUATION_MASTER.txt build-checkpoint/Original-Continuation-Master.txt
+          {
+            echo "Commit: $GITHUB_SHA"
+            echo "Run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Device runtime confirmation: not performed"
+            cat build-checkpoint/SHA256.txt
+          } | tee build-checkpoint/Provenance.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload candidate and exact provenance
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-254-ARM64
+          path: build-checkpoint/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload regression results even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-254-test-results
+          path: |
+            features/preferences/impl/build/reports/tests/
+            features/login/impl/build/reports/tests/
+            appnav/build/reports/tests/
+            libraries/matrix/api/build/reports/tests/
+            libraries/matrix/impl/build/reports/tests/
+            features/roomdetails/impl/build/reports/tests/
+            features/userprofile/impl/build/reports/tests/
+            features/home/impl/build/reports/tests/
+            features/messages/impl/build/reports/tests/
+            libraries/rustls-tls/build/reports/tests/
+            libraries/pushproviders/firebase/build/reports/tests/
+            features/securebackup/impl/build/reports/tests/
+          if-no-files-found: warn
+
+      - name: Preserve documentation even if compilation fails
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-254-Cumulative-Documentation
+          path: docs/syncme/
+          if-no-files-found: error
+          retention-days: 90
+
+  preserve-ten-builds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Download all artifacts from the ten protected successful builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for run_id in 38658866967 38633766604 38586470729 38547146922 38513962735 38400798130 38362221920 38345740737 38314674913 38287593658; do
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --dir "protected-builds/$run_id"
+          done
+          find protected-builds -type f -name '*.apk' -print | sort > protected-builds/APK-INVENTORY.txt
+          test "$(wc -l < protected-builds/APK-INVENTORY.txt)" -eq 10
+          find protected-builds -type f -name '*.apk' -exec sha256sum {} + > protected-builds/APK-SHA256.txt
+      - name: Store an additional copy of the ten protected builds
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-preserved-ten-successful-builds
+          path: protected-builds/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
