@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/syncme-cumulative-build-20261015/appicon/element/src/main/res/drawable-nodpi/syncme_launcher.webp" alt="SyncMe app icon" width="144" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/SyncMe/syncme-cumulative-build-20261015/appicon/element/src/main/res/drawable-nodpi/syncme_launcher.webp" alt="SyncMe app icon" width="144" /></p>
 
 # SyncMe for Android
 
@@ -9,11 +9,11 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest build and downloads
 
-- **Latest verified APK: SyncMe 254, ARM64** — [build and download](https://github.com/DrEsmaily/element-x-android/actions/runs/38776679128). A documented rebuild of the verified SyncMe 253 application source.
+- **Latest verified APK: SyncMe 254, ARM64** — [build and download](https://github.com/DrEsmaily/SyncMe/actions/runs/38776679128). A documented rebuild of the verified SyncMe 253 application source.
 - **254 verification:** regression tests, APK manifest/version/ABI/JNI checks and SHA-256 completed successfully. English cumulative notes and the supplied real screenshot are bundled. CI remains separate from device confirmation.
-- [Cumulative release and continuation notes](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes.md)
-- [Complete current-lineage commit messages and changed paths](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
-- [Ten protected successful builds and artifact identities](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
+- [Cumulative release and continuation notes](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes.md)
+- [Complete current-lineage commit messages and changed paths](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
+- [Ten protected successful builds and artifact identities](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
 
 Actions artifact downloads may require signing in to GitHub. They expire: this workflow also makes an additional copy of the ten previous builds with 90-day retention. That copy is a backup, not permanent download hosting.
 
@@ -40,7 +40,7 @@ Matrix accounts/login, direct and group conversations, the end-to-end encryption
 ### Technical fixes and current limits
 
 SyncMe includes identity-reset completion fixes, bounded FCM token handling, presence/receipt lifecycle corrections and regression coverage.
-Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCSP/CRL revocation checking; see the [technical review and limits](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
+Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCSP/CRL revocation checking; see the [technical review and limits](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
 
 Successful CI is separate from device verification. Large-file uploads under VPN, multi-device presence, background notifications and two-phone receipt behavior require runtime testing. Historical experiments on other branches are not automatically features of the current application.
 
@@ -48,24 +48,24 @@ Successful CI is separate from device verification. Large-file uploads under VPN
 
 The icon above is the actual launcher asset. The project owner supplied this real SyncMe welcome-screen screenshot; its build number is not visible.
 
-<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/SyncMe/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
 
 ## Ten previous successful builds retained
 
 | Build title | Original execution and download | Cumulative details through that build |
 |---|---|---|
-| 253 | [Run 38658866967](https://github.com/DrEsmaily/element-x-android/actions/runs/38658866967) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38658866967.md) |
-| 252 | [Run 38633766604](https://github.com/DrEsmaily/element-x-android/actions/runs/38633766604) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38633766604.md) |
-| 251 | [Run 38586470729](https://github.com/DrEsmaily/element-x-android/actions/runs/38586470729) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38586470729.md) |
-| 250 | [Run 38547146922](https://github.com/DrEsmaily/element-x-android/actions/runs/38547146922) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38547146922.md) |
-| 249 | [Run 38513962735](https://github.com/DrEsmaily/element-x-android/actions/runs/38513962735) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38513962735.md) |
-| 248 | [Run 38400798130](https://github.com/DrEsmaily/element-x-android/actions/runs/38400798130) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38400798130.md) |
-| 247 | [Run 38362221920](https://github.com/DrEsmaily/element-x-android/actions/runs/38362221920) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38362221920.md) |
-| 246 | [Run 38345740737](https://github.com/DrEsmaily/element-x-android/actions/runs/38345740737) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38345740737.md) |
-| 245 | [Run 38314674913](https://github.com/DrEsmaily/element-x-android/actions/runs/38314674913) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38314674913.md) |
-| 244 (APK labelled 243) | [Run 38287593658](https://github.com/DrEsmaily/element-x-android/actions/runs/38287593658) | [History and details](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38287593658.md) |
+| 253 | [Run 38658866967](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38658866967.md) |
+| 252 | [Run 38633766604](https://github.com/DrEsmaily/SyncMe/actions/runs/38633766604) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38633766604.md) |
+| 251 | [Run 38586470729](https://github.com/DrEsmaily/SyncMe/actions/runs/38586470729) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38586470729.md) |
+| 250 | [Run 38547146922](https://github.com/DrEsmaily/SyncMe/actions/runs/38547146922) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38547146922.md) |
+| 249 | [Run 38513962735](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38513962735.md) |
+| 248 | [Run 38400798130](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38400798130.md) |
+| 247 | [Run 38362221920](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38362221920.md) |
+| 246 | [Run 38345740737](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38345740737.md) |
+| 245 | [Run 38314674913](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38314674913.md) |
+| 244 (APK labelled 243) | [Run 38287593658](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38287593658.md) |
 
-[Exact proposed cleanup list — awaiting approval](docs/syncme/cleanup-proposal.md)
+[Completed cleanup: 429 old executions removed, 11 successful builds preserved](docs/syncme/cleanup-proposal.md)
 
 ## Development and preserved history
 
@@ -79,7 +79,7 @@ Older descriptions can record superseded behavior or unfinished work. Always che
 The application requires Android 7.0+ (API 24). Development uses JDK 21 and the Android toolchain. See [contributing](CONTRIBUTING.md) and [developer onboarding](docs/_developer_onboarding.md).
 
 The dedicated SyncMe workflow runs regressions, builds `:app:assembleGplayRelease`, retains the existing `.syncmerelease` application identity, checks ARM64/version/manifest/JNI metadata and bundles cumulative documentation and checksums.
-Report SyncMe-specific issues in [this repository](https://github.com/DrEsmaily/element-x-android/issues).
+Report SyncMe-specific issues in [this repository](https://github.com/DrEsmaily/SyncMe/issues).
 
 ## Upstream attribution
 
