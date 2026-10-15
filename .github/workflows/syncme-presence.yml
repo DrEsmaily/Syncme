@@ -47,7 +47,7 @@ jobs:
       - name: Run presence, UI presenters, TLS, reset and Firebase regressions
         run: >-
           ./gradlew
-          :features:preferences:impl:testDebugUnitTest --tests '*VersionFormatterTest' --tests '*PreferencesRootViewTest*About*' --tests '*PreferencesRootViewTest*Developer settings*' --tests '*PreferencesRootViewTest*version sends*'
+          :features:preferences:impl:testDebugUnitTest --tests '*VersionFormatterTest' --tests '*PreferencesRootPresenterTest*developer settings*' --tests '*PreferencesRootViewTest*About*' --tests '*PreferencesRootViewTest*Developer settings*' --tests '*PreferencesRootViewTest*version sends*'
           :features:login:impl:testDebugUnitTest --tests '*ConfirmAccountProviderPresenterTest'
           :appnav:testDebugUnitTest --tests '*RootFlowNodeTest'
           :libraries:matrix:api:testDebugUnitTest --tests '*UserPresenceTest' --tests '*OnlineMemberCountTest'

@@ -16,7 +16,6 @@ import io.element.android.compound.theme.Theme
 import io.element.android.features.preferences.impl.account.aPreferencesAccountState
 import io.element.android.features.preferences.impl.userstatus.aUserStatusState
 import io.element.android.features.preferences.impl.utils.ShowDeveloperSettingsProvider
-import io.element.android.libraries.core.meta.BuildType
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
@@ -28,7 +27,6 @@ import io.element.android.libraries.matrix.test.A_SESSION_ID
 import io.element.android.libraries.matrix.test.A_SESSION_ID_2
 import io.element.android.libraries.matrix.test.A_USER_NAME
 import io.element.android.libraries.matrix.test.FakeMatrixClient
-import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.preferences.test.InMemoryAppPreferencesStore
 import io.element.android.libraries.sessionstorage.api.SessionStore
@@ -145,7 +143,7 @@ class PreferencesRootPresenterTest {
     @Test
     fun `present - developer settings is hidden by default in release builds`() = runTest {
         createPreferencesRootPresenter(
-            showDeveloperSettingsProvider = ShowDeveloperSettingsProvider(aBuildMeta(BuildType.RELEASE))
+            showDeveloperSettingsProvider = ShowDeveloperSettingsProvider()
         ).test {
             val loadedState = awaitFirstItem()
             assertThat(loadedState.showDeveloperSettings).isFalse()
@@ -155,7 +153,7 @@ class PreferencesRootPresenterTest {
     @Test
     fun `present - developer settings can be enabled in release builds`() = runTest {
         createPreferencesRootPresenter(
-            showDeveloperSettingsProvider = ShowDeveloperSettingsProvider(aBuildMeta(BuildType.RELEASE))
+            showDeveloperSettingsProvider = ShowDeveloperSettingsProvider()
         ).test {
             val loadedState = awaitFirstItem()
             repeat(times = ShowDeveloperSettingsProvider.DEVELOPER_SETTINGS_COUNTER) {
@@ -287,7 +285,7 @@ class PreferencesRootPresenterTest {
 
     private fun CoroutineScope.createPreferencesRootPresenter(
         matrixClient: FakeMatrixClient = FakeMatrixClient(),
-        showDeveloperSettingsProvider: ShowDeveloperSettingsProvider = ShowDeveloperSettingsProvider(aBuildMeta(BuildType.DEBUG)),
+        showDeveloperSettingsProvider: ShowDeveloperSettingsProvider = ShowDeveloperSettingsProvider(),
         featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         sessionStore: SessionStore = InMemorySessionStore(),
         appPreferencesStore: AppPreferencesStore = InMemoryAppPreferencesStore(),
