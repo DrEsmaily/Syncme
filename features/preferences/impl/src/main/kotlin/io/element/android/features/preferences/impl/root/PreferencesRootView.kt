@@ -366,16 +366,7 @@ private fun ColumnScope.GeneralSection(
     onOpenLabs: () -> Unit,
     onOpenDeveloperSettings: () -> Unit,
 ) {
-    HorizontalDivider(
-        thickness = 1.dp,
-        color = ElementTheme.colors.bgSubtleSecondary,
-    )
-    // SyncMe intentionally hides Analytics and Labs from the user-facing settings menu.
-    ListItem(
-        content = { Text(stringResource(id = CommonStrings.common_about)) },
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Info())),
-        onClick = onOpenAbout,
-    )
+    // About is hidden from the settings menu.
     // SyncMe developer options appear only after five taps on the version.
     AnimatedVisibility(
         visible = state.showDeveloperSettings,

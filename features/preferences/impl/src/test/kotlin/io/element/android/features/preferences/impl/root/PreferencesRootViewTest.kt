@@ -322,18 +322,10 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on About invokes the expected callback`() = runAndroidComposeUiTest {
+    fun `About is hidden from settings`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    eventSink = eventsRecorder,
-                ),
-                onOpenAbout = callback,
-            )
-            val text = activity!!.getString(CommonStrings.common_about)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
+        setView(aPreferencesRootState(eventSink = eventsRecorder))
+        assertNoNodeWithText(CommonStrings.common_about)
     }
 
     @Test

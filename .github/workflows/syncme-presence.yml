@@ -1,7 +1,7 @@
-name: SyncMe 252 presence and regression checks
+name: SyncMe 253 presence and regression checks
 on:
   push:
-    branches: [syncme-presence-system, fix/presence-publication-retry]
+    branches: [syncme-presence-system, fix/presence-publication-retry, fix/settings-display-cleanup]
   workflow_dispatch:
 permissions:
   contents: read
@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 env:
   GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
-  SYNCME_BUILD_NUMBER: '252'
-  SYNCME_VERSION_CODE: '20261019'
+  SYNCME_BUILD_NUMBER: '253'
+  SYNCME_VERSION_CODE: '20261020'
 jobs:
   verify-and-build:
     runs-on: ubuntu-latest
@@ -47,6 +47,8 @@ jobs:
       - name: Run presence, UI presenters, TLS, reset and Firebase regressions
         run: >-
           ./gradlew
+          :features:preferences:impl:testDebugUnitTest --tests '*VersionFormatterTest' --tests '*PreferencesRootViewTest*About*' --tests '*PreferencesRootViewTest*Developer settings*' --tests '*PreferencesRootViewTest*version sends*'
+          :features:login:impl:testDebugUnitTest --tests '*ConfirmAccountProviderPresenterTest'
           :appnav:testDebugUnitTest --tests '*RootFlowNodeTest'
           :libraries:matrix:api:testDebugUnitTest --tests '*UserPresenceTest' --tests '*OnlineMemberCountTest'
           :libraries:matrix:impl:testDebugUnitTest --tests '*Presence*Test' --tests '*DecryptionDiagnosticsTest' --tests '*UtdTrackerTest'
@@ -68,19 +70,19 @@ jobs:
           apks=(app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk)
           test "${#apks[@]}" -eq 1
           mkdir -p build-checkpoint
-          apk=build-checkpoint/SyncMe-252-ARM64.apk
+          apk=build-checkpoint/SyncMe-253-ARM64.apk
           cp "${apks[0]}" "$apk"
           unzip -t "$apk" > build-checkpoint/apk-zip-validation.txt
           aapt_bin="$(find "${ANDROID_HOME}/build-tools" -type f -name aapt | sort -V | tail -1)"
           "$aapt_bin" dump badging "$apk" > build-checkpoint/manifest.txt
-          grep '^package:' build-checkpoint/manifest.txt | grep -F "versionName='252'" | grep -F "versionCode='202610192'"
+          grep '^package:' build-checkpoint/manifest.txt | grep -F "versionName='253'" | grep -F "versionCode='202610202'"
           grep '^package:' build-checkpoint/manifest.txt | grep -F '.syncmerelease'
           grep '^native-code:' build-checkpoint/manifest.txt | grep -F 'arm64-v8a'
           python3 - <<'PY'
           import os, pathlib, subprocess, tempfile, zipfile
           tool = sorted(pathlib.Path(os.environ['ANDROID_HOME']).glob('build-tools/*/dexdump'))[-1]
           found = False
-          with zipfile.ZipFile('build-checkpoint/SyncMe-252-ARM64.apk') as apk, tempfile.TemporaryDirectory() as tmp:
+          with zipfile.ZipFile('build-checkpoint/SyncMe-253-ARM64.apk') as apk, tempfile.TemporaryDirectory() as tmp:
               for name in apk.namelist():
                   if name.startswith('classes') and name.endswith('.dex'):
                       dex = pathlib.Path(tmp) / name
@@ -102,7 +104,7 @@ jobs:
       - name: Upload candidate and exact provenance
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: SyncMe-252-ARM64
+          name: SyncMe-253-ARM64
           path: build-checkpoint/
           if-no-files-found: error
           retention-days: 30
@@ -110,8 +112,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: SyncMe-252-test-results
+          name: SyncMe-253-test-results
           path: |
+            features/preferences/impl/build/reports/tests/
+            features/login/impl/build/reports/tests/
+            appnav/build/reports/tests/
             libraries/matrix/api/build/reports/tests/
             libraries/matrix/impl/build/reports/tests/
             features/roomdetails/impl/build/reports/tests/
