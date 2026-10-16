@@ -44,9 +44,9 @@ Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCS
 
 Successful CI is separate from device verification. Large-file uploads under VPN, multi-device presence, background notifications and two-phone receipt behavior require runtime testing. Historical experiments on other branches are not automatically features of the current application.
 
-## Real SyncMe screenshot
+## SyncMe screenshot
 
-The icon above is the actual launcher asset. The project owner supplied this real SyncMe welcome-screen screenshot; its build number is not visible.
+The icon above is the actual launcher asset. The SyncMe welcome-screen screenshot.
 
 <p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/SyncMe/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
 
