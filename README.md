@@ -44,11 +44,35 @@ Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCS
 
 Successful CI is separate from device verification. Large-file uploads under VPN, multi-device presence, background notifications and two-phone receipt behavior require runtime testing. Historical experiments on other branches are not automatically features of the current application.
 
-## SyncMe screenshot
+## SyncMe screenshots
 
-The icon above is the actual launcher asset. The SyncMe welcome-screen screenshot.
+### Welcome, presence and conversation filters
 
-<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/SyncMe/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
+| Welcome | Online and Away indicators | Personal tag filter |
+|:---:|:---:|:---:|
+| <img src="docs/syncme/images/welcome.jpg" alt="SyncMe welcome screen" width="240" /> | <img src="docs/syncme/images/home-presence.jpg" alt="SyncMe home with green Online indicators, orange Away indicators and unread counts" width="240" /> | <img src="docs/syncme/images/home-tags.jpg" alt="Conversations filtered by the Close Friends tag" width="240" /> |
+| Dedicated SyncMe welcome screen | Presence and unread counts in the conversation list | Filter conversations by a personal tag |
+
+### Messaging, upload progress and read receipts
+
+| Upload progress | Group messaging and reader avatars | Unread marker |
+|:---:|:---:|:---:|
+| <img src="docs/syncme/images/upload-progress.jpg" alt="File upload showing percentage, transferred bytes and a progress bar in a direct conversation" width="240" /> | <img src="docs/syncme/images/group-chat.jpg" alt="Public group conversation with an online member count and reader avatars below an outgoing message" width="240" /> | <img src="docs/syncme/images/group-unread.jpg" alt="Public group conversation showing the online count and NEW unread divider" width="240" /> |
+| Percentage and transferred size during an upload | Group presence and reader avatars | A visible divider for unread messages |
+
+### Personal tags and conversation actions
+
+| Manage tags | Conversation actions |
+|:---:|:---:|
+| <img src="docs/syncme/images/manage-tags.jpg" alt="Manage tags screen with Favorite, Close Friends and a Create new tag button" width="240" /> | <img src="docs/syncme/images/conversation-actions.jpg" alt="Conversation action sheet with Favorite and Close Friends tag toggles" width="240" /> |
+| Create and organize up to three personal tags | Assign tags from the conversation menu |
+
+### Find people and start conversations
+
+| Start a chat | Search for a person | Confirm a new contact |
+|:---:|:---:|:---:|
+| <img src="docs/syncme/images/start-chat.jpg" alt="Start chat screen with search, New room and Room directory" width="240" /> | <img src="docs/syncme/images/people-search.jpg" alt="People search showing a matching contact" width="240" /> | <img src="docs/syncme/images/new-contact-confirmation.jpg" alt="Confirmation sheet before starting a chat with a new contact" width="240" /> |
+| Search, create a room or browse the directory | Find a contact by name | Confirm before continuing with a new contact |
 
 ## Ten previous successful builds retained
 
