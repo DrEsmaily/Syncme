@@ -46,33 +46,30 @@ Successful CI is separate from device verification. Large-file uploads under VPN
 
 ## SyncMe screenshots
 
-### Welcome, presence and conversation filters
+Explore SyncMe's welcome screen, conversation filters, presence indicators, personal tags and messaging interface.
 
-| Welcome | Online and Away indicators | Personal tag filter |
-|:---:|:---:|:---:|
-| <img src="docs/syncme/images/welcome.jpg" alt="SyncMe welcome screen" width="240" /> | <img src="docs/syncme/images/home-presence.jpg" alt="SyncMe home with green Online indicators, orange Away indicators and unread counts" width="240" /> | <img src="docs/syncme/images/home-tags.jpg" alt="Conversations filtered by the Close Friends tag" width="240" /> |
-| Dedicated SyncMe welcome screen | Presence and unread counts in the conversation list | Filter conversations by a personal tag |
-
-### Messaging, upload progress and read receipts
-
-| Upload progress | Group messaging and reader avatars | Unread marker |
-|:---:|:---:|:---:|
-| <img src="docs/syncme/images/upload-progress.jpg" alt="File upload showing percentage, transferred bytes and a progress bar in a direct conversation" width="240" /> | <img src="docs/syncme/images/group-chat.jpg" alt="Public group conversation with an online member count and reader avatars below an outgoing message" width="240" /> | <img src="docs/syncme/images/group-unread.jpg" alt="Public group conversation showing the online count and NEW unread divider" width="240" /> |
-| Percentage and transferred size during an upload | Group presence and reader avatars | A visible divider for unread messages |
-
-### Personal tags and conversation actions
-
-| Manage tags | Conversation actions |
-|:---:|:---:|
-| <img src="docs/syncme/images/manage-tags.jpg" alt="Manage tags screen with Favorite, Close Friends and a Create new tag button" width="240" /> | <img src="docs/syncme/images/conversation-actions.jpg" alt="Conversation action sheet with Favorite and Close Friends tag toggles" width="240" /> |
-| Create and organize up to three personal tags | Assign tags from the conversation menu |
-
-### Find people and start conversations
-
-| Start a chat | Search for a person | Confirm a new contact |
-|:---:|:---:|:---:|
-| <img src="docs/syncme/images/start-chat.jpg" alt="Start chat screen with search, New room and Room directory" width="240" /> | <img src="docs/syncme/images/people-search.jpg" alt="People search showing a matching contact" width="240" /> | <img src="docs/syncme/images/new-contact-confirmation.jpg" alt="Confirmation sheet before starting a chat with a new contact" width="240" /> |
-| Search, create a room or browse the directory | Find a contact by name | Confirm before continuing with a new contact |
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/welcome.jpg" alt="SyncMe welcome screen" width="180" height="400" /><br /><sub>Welcome</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/home-presence.jpg" alt="SyncMe home with green Online indicators, orange Away indicators and unread counts" width="180" height="400" /><br /><sub>Online and Away presence</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/home-tags.jpg" alt="Conversations filtered by the Close Friends tag" width="180" height="400" /><br /><sub>Personal tag filter</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/upload-progress.jpg" alt="File upload showing percentage, transferred bytes and a progress bar in a direct conversation" width="180" height="400" /><br /><sub>Upload percentage and size</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/group-chat.jpg" alt="Public group conversation with an online member count and reader avatars below an outgoing message" width="180" height="400" /><br /><sub>Group presence and reader avatars</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/group-unread.jpg" alt="Public group conversation showing the online count and NEW unread divider" width="180" height="400" /><br /><sub>Unread message marker</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/manage-tags.jpg" alt="Manage tags screen with Favorite, Close Friends and a Create new tag button" width="180" height="400" /><br /><sub>Manage personal tags</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/conversation-actions.jpg" alt="Conversation action sheet with Favorite and Close Friends tag toggles" width="180" height="400" /><br /><sub>Conversation actions</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/start-chat.jpg" alt="Start chat screen with search, New room and Room directory" width="180" height="400" /><br /><sub>Start a chat</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/people-search.jpg" alt="People search showing a matching contact" width="180" height="400" /><br /><sub>Search for people</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/new-contact-confirmation.jpg" alt="Confirmation sheet before starting a chat with a new contact" width="180" height="400" /><br /><sub>Confirm a new contact</sub></td>
+    <td width="33%"></td>
+  </tr>
+</table>
 
 ## Ten previous successful builds retained
 
