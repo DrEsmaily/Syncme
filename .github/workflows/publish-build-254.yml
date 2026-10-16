@@ -1,0 +1,33 @@
+name: Publish verified SyncMe 254 release assets
+on:
+  push:
+    branches: [syncme-release-254-20261016]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  upload-release-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Download the exact verified build 254 artifact
+        run: gh run download 38776679128 --repo "$GITHUB_REPOSITORY" --name SyncMe-254-ARM64 --dir verified-build
+      - name: Verify and prepare public release downloads
+        run: |
+          python3 - <<'PY'
+          import hashlib,pathlib,shutil,zipfile
+          source=pathlib.Path('verified-build');out=pathlib.Path('release-assets');out.mkdir()
+          apk=source/'SyncMe-254-ARM64.apk'
+          expected='40ab71ea4dd140cb218392a13473f0a9eb3ce1f23968eff27e7ac748b47d1d20'
+          assert hashlib.sha256(apk.read_bytes()).hexdigest()==expected
+          shutil.copyfile(apk,out/apk.name)
+          (out/'SHA256SUMS.txt').write_text(expected+'  '+apk.name+'\n')
+          shutil.copyfile(source/'SyncMe-254-Cumulative-Notes.md',out/'SyncMe-254-Release-Notes.md')
+          with zipfile.ZipFile(out/'SyncMe-254-Documentation.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in source.rglob('*'):
+                  if p.is_file() and p.suffix!='.apk':z.write(p,p.relative_to(source))
+          PY
+      - name: Upload assets to the prepared draft release
+        run: gh release upload v1.0.0-build254 release-assets/* --repo "$GITHUB_REPOSITORY" --clobber
