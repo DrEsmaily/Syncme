@@ -9,13 +9,17 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest build and downloads
 
-- **Latest verified APK: SyncMe 254, ARM64** — [build and download](https://github.com/DrEsmaily/SyncMe/actions/runs/38776679128). A documented rebuild of the verified SyncMe 253 application source.
+**[Download SyncMe 254 APK for Android (ARM64)](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk)**
+
+- **Latest verified APK: SyncMe 254, ARM64** — [Direct APK download](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build254). A documented rebuild of the verified SyncMe 253 application source.
 - **254 verification:** regression tests, APK manifest/version/ABI/JNI checks and SHA-256 completed successfully. English cumulative notes and the supplied real screenshot are bundled. CI remains separate from device confirmation.
 - [Cumulative release and continuation notes](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes.md)
 - [Complete current-lineage commit messages and changed paths](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
 - [Ten protected successful builds and artifact identities](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
 
-Actions artifact downloads may require signing in to GitHub. They expire: this workflow also makes an additional copy of the ten previous builds with 90-day retention. That copy is a backup, not permanent download hosting.
+The public release provides a direct APK download without a GitHub account. On Android, open the downloaded APK and allow installation from your browser or file manager if prompted. This APK is for ARM64 devices running Android 7.0 or later.
+
+Actions artifacts remain available as build records and expire according to their retention settings; the additional backup of the ten previous builds has 90-day retention. The APK attached to the release is a separate download and is not subject to Actions artifact expiry.
 
 ## Features added or customized in SyncMe
 
