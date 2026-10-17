@@ -48,10 +48,11 @@ jobs:
                 assert '.'.join(('syncme', 'ir')).encode() not in raw.lower(),'Unexpected binary address reference'
                 fixed=raw
                dst.writestr(info,fixed)
+              dst.writestr("Documentation-Redactions.txt", 'Current documentation snapshots redact a retired server address. Original Git history and APK files are unchanged. Historical checksums describe the original captured files, not the redacted documentation copies.\n')
              changed=out.getvalue()
              # Only replace archives whose contents actually require correction.
              with zipfile.ZipFile(io.BytesIO(data)) as src,zipfile.ZipFile(io.BytesIO(changed)) as dst:
-              needs_update=any(src.read(n)!=dst.read(n) for n in src.namelist())
+              needs_update=set(src.namelist()) != set(dst.namelist()) or any(src.read(n)!=dst.read(n) for n in src.namelist())
             else:
              changed=clean(data);needs_update=changed!=data
             if not needs_update:continue
