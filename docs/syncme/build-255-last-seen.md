@@ -1,6 +1,16 @@
-# SyncMe 255 — clearer English last seen
+# SyncMe 1.1.0 — Build 255
 
-SyncMe 255 adds hour-level last-seen labels and a long-time-ago label after one year. It builds on the verified SyncMe 254 source, including the settings cleanup and earlier presence/receipt fixes.
+SyncMe 1.1.0 (Build 255) adds hour-level last-seen labels and a long-time-ago label after one year. It builds on the verified SyncMe 1.0.0 (Build 254) source, including the settings cleanup and earlier presence/receipt fixes.
+
+## Release identity
+
+- Product/release version: **1.1.0** (previous release: **1.0.0**, Build 254).
+- Build number: **255**.
+- Canonical release tag: `v1.1.0-build255`.
+- Android APK `versionName`: `255`; ARM64 `versionCode`: `202610222`. These are Android package identifiers, separate from the product release version above.
+- Exact APK source commit: `86bdd79687680da17dc7cbd6011e69cd828731aa`.
+- [Successful build and regression checks](https://github.com/DrEsmaily/SyncMe/actions/runs/39000390352).
+- APK SHA-256: `a916f9c4511394ebe6229f4181099fa4f3609379f1d4981cf85ac7d0255db9e4`.
 
 ## Display rules
 
@@ -25,13 +35,13 @@ The production change is confined to the shared last-seen formatter and its Comp
 
 Boundary tests cover zero elapsed time, one millisecond below and exactly at hour/day/week/month/year transitions, singular/plural counts, partial units, invalid timestamps and durations over a year. The workflow also runs the established settings/login, presence, room/user presenters, receipts, TLS, reset and Firebase regression checks before building the APK.
 
-The release workflow validates the APK ZIP, version `255`, version code `202610222`, existing `.syncmerelease` application ID, ARM64 ABI and retained JNI verifier class; it records the exact source commit, Actions run and SHA-256. It publishes a public release only after checks and packaging succeed. Automated checks do not replace physical two-phone validation; device testing is not claimed by this release.
+The release workflow validates the APK ZIP, Android version name `255`, version code `202610222`, existing `.syncmerelease` application ID, ARM64 ABI and retained JNI verifier class; it records the exact source commit, Actions run and SHA-256. It publishes a public release only after checks and packaging succeed. Automated checks do not replace physical two-phone validation; device testing is not claimed by this release.
 
 ## Downloads and provenance
 
-- [Direct ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build255/SyncMe-255-ARM64.apk)
-- [Release and attached SHA-256/provenance files](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build255)
+- [Direct ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SyncMe-255-ARM64.apk)
+- [Release and attached SHA-256/provenance files](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.0-build255)
 - [Build workflow](https://github.com/DrEsmaily/SyncMe/actions/workflows/syncme-last-seen.yml)
 - [Source branch](https://github.com/DrEsmaily/SyncMe/tree/syncme-255-last-seen)
 
-The direct link becomes available only after the successful workflow publishes the release. The APK targets ARM64 Android devices, Android 7.0 or later. Install it as an update over the existing SyncMe release; no account reset or data clearing is required.
+The APK has been published following successful regression, build and package checks. The APK targets ARM64 Android devices, Android 7.0 or later. Install it as an update over the existing SyncMe release; no account reset or data clearing is required.

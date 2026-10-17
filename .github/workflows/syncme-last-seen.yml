@@ -1,4 +1,4 @@
-name: SyncMe 255 last seen, verified APK and public release
+name: SyncMe 1.1.0 Build 255 — last seen, verified APK and public release
 on:
   push:
     branches: [syncme-255-last-seen]
@@ -146,9 +146,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v1.0.0-build255 \
+          gh release create v1.1.0-build255 \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "SyncMe 255 — clearer last seen" --latest \
+            --title "SyncMe 1.1.0 — Build 255" --latest \
             --notes-file docs/syncme/build-255-last-seen.md \
             build-checkpoint/SyncMe-255-ARM64.apk \
             build-checkpoint/SHA256.txt \
