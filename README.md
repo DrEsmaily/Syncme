@@ -96,13 +96,19 @@ SyncMe is derived from [element-hq/element-x-android](https://github.com/element
 
 ## Copyright and License
 
-Copyright (c) 2025 Element Creations Ltd.
+**SyncMe Modifications & Additions:**
+Copyright (c) 2026 DrEsmaily (SyncMe Project). All rights reserved for custom modifications, UI components, and added features.
+
+**Upstream Base Project (Element X Android):**
+Copyright (c) 2025 - 2026 Element Creations Ltd.
 Copyright (c) 2022 - 2025 New Vector Ltd.
 
-This software is dual licensed by Element Creations Ltd (Element). It can be used either:
+### License Terms
 
-(1) for free under the terms of the GNU Affero General Public License (as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version); OR
+**SyncMe** is free and open-source software distributed under the terms of the **GNU Affero General Public License v3.0 (AGPL-3.0)** (or, at your option, any later version), as published by the Free Software Foundation.
 
-(2) under the terms of a paid-for Element Commercial License agreement between you and Element (the terms of which may vary depending on what you and Element have agreed to).
+While the upstream `element-x-android` repository is dual-licensed by Element Creations Ltd under both the AGPL-3.0 and an Element Commercial License, this independent fork incorporates upstream code specifically under the terms of the **AGPL-3.0**. Consequently, the combined work and all SyncMe-specific modifications are licensed exclusively under the AGPL-3.0. 
 
-Unless required by applicable law or agreed to in writing, software distributed under the Licenses is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the Licenses for the specific language governing permissions and limitations under the Licenses.
+Original upstream attribution, commit history, and the `LICENSE` and `LICENSE-COMMERCIAL` files are preserved in the repository root for historical and legal compliance.
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the [GNU Affero General Public License](LICENSE) for the specific language governing permissions and limitations.
