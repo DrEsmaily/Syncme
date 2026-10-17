@@ -8,7 +8,7 @@ sealed interface UserPresence {
     data class Offline(val lastSeenAt: Long?) : UserPresence
 }
 
-/** English-only last seen, using completed 24-hour days and 30-day months. */
+/** English-only last seen using elapsed time, completed units, 30-day months and a 365-day year. */
 fun UserPresence.presenceLabel(nowMillis: Long): String? = when (this) {
     UserPresence.Unknown -> null
     UserPresence.Online -> "Online"
@@ -18,12 +18,16 @@ fun UserPresence.presenceLabel(nowMillis: Long): String? = when (this) {
         if (seen == null || seen <= 0L || seen > nowMillis) {
             null
         } else {
-            val days = (nowMillis - seen) / 86_400_000L
+            val elapsed = nowMillis - seen
+            val hours = elapsed / 3_600_000L
+            val days = elapsed / 86_400_000L
             when {
-                days == 0L -> "Last seen recently"
+                hours == 0L -> "Last seen recently"
+                days == 0L -> lastSeenElapsed(hours, "hour")
                 days < 7 -> lastSeenElapsed(days, "day")
                 days < 30 -> lastSeenElapsed(days / 7, "week")
-                else -> lastSeenElapsed(days / 30, "month")
+                days < 365 -> lastSeenElapsed(days / 30, "month")
+                else -> "Last seen long time ago"
             }
         }
     }

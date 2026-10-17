@@ -93,7 +93,7 @@ internal fun OfflinePresencePreview() = ElementPreview { PresenceStatus(UserPres
 @PreviewsDayNight
 @Composable
 internal fun RecentlySeenPresencePreview() = ElementPreview {
-    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 3_600_000L))
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 30 * 60_000L))
 }
 
 @PreviewsDayNight
@@ -112,4 +112,16 @@ internal fun SeenWeeksAgoPresencePreview() = ElementPreview {
 @Composable
 internal fun SeenMonthsAgoPresencePreview() = ElementPreview {
     PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 40 * 86_400_000L))
+}
+
+@PreviewsDayNight
+@Composable
+internal fun SeenHoursAgoPresencePreview() = ElementPreview {
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 5 * 3_600_000L))
+}
+
+@PreviewsDayNight
+@Composable
+internal fun SeenLongTimeAgoPresencePreview() = ElementPreview {
+    PresenceStatus(UserPresence.Offline(System.currentTimeMillis() - 400 * 86_400_000L))
 }
