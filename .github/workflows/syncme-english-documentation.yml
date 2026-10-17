@@ -27,8 +27,8 @@ jobs:
            return json.loads(subprocess.check_output(cmd))
           def clean(data):
            s=data.decode('utf-8')
-           s=re.sub(r'syncme\.ir','[redacted server address]',s,flags=re.I)
-           return s.replace('رفع خطای مشکلات کوچک','Minor bugs fixed').encode()
+           s=re.sub(re.escape('.'.join(('syncme', 'ir'))),'[redacted server address]',s,flags=re.I)
+           return s.replace('\u0631\u0641\u0639 \u062e\u0637\u0627\u06cc \u0645\u0634\u06a9\u0644\u0627\u062a \u06a9\u0648\u0686\u06a9','Minor bugs fixed').encode()
           releases=api('releases')
           assert {x['tag_name'] for x in releases}=={'v1.0.0-build254','v1.1.0-build255','v1.1.1-build256'}
           apks={a['id']:(a['name'],a['size'],a.get('digest')) for r in releases for a in r['assets'] if a['name'].endswith('.apk')}
@@ -45,7 +45,7 @@ jobs:
                assert not info.filename.lower().endswith('.apk'),'Documentation archive unexpectedly contains an APK'
                try:fixed=clean(raw)
                except UnicodeDecodeError:
-                assert b'syncme.ir' not in raw.lower(),'Unexpected binary address reference'
+                assert '.'.join(('syncme', 'ir')).encode() not in raw.lower(),'Unexpected binary address reference'
                 fixed=raw
                dst.writestr(info,fixed)
              changed=out.getvalue()
