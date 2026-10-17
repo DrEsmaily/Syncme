@@ -97,17 +97,17 @@ SyncMe is derived from [element-hq/element-x-android](https://github.com/element
 ## Copyright and License
 
 **SyncMe Modifications & Additions:**
-Copyright (c) 2026 DrEsmaily (SyncMe Project). All rights reserved for custom modifications, UI components, and added features.
+Copyright (c) 2026 DrEsmaily (SyncMe Project). SyncMe-specific modifications are licensed under AGPL-3.0-or-later.
 
 **Upstream Base Project (Element X Android):**
-Copyright (c) 2025 - 2026 Element Creations Ltd.
+Copyright (c) 2025 Element Creations Ltd.
 Copyright (c) 2022 - 2025 New Vector Ltd.
 
 ### License Terms
 
 **SyncMe** is free and open-source software distributed under the terms of the **GNU Affero General Public License v3.0 (AGPL-3.0)** (or, at your option, any later version), as published by the Free Software Foundation.
 
-While the upstream `element-x-android` repository is dual-licensed by Element Creations Ltd under both the AGPL-3.0 and an Element Commercial License, this independent fork incorporates upstream code specifically under the terms of the **AGPL-3.0**. Consequently, the combined work and all SyncMe-specific modifications are licensed exclusively under the AGPL-3.0. 
+While the upstream `element-x-android` repository is dual-licensed by Element Creations Ltd under both the AGPL-3.0 and an Element Commercial License, this independent fork incorporates upstream code specifically under the terms of the **AGPL-3.0**. The combined fork is distributed under AGPL-3.0-or-later. 
 
 Original upstream attribution, commit history, and the `LICENSE` and `LICENSE-COMMERCIAL` files are preserved in the repository root for historical and legal compliance.
 
