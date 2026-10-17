@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/syncme-cumulative-build-20261015/appicon/element/src/main/res/drawable-nodpi/syncme_launcher.webp" alt="SyncMe app icon" width="144" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/SyncMe/syncme-cumulative-build-20261015/appicon/element/src/main/res/drawable-nodpi/syncme_launcher.webp" alt="SyncMe app icon" width="144" /></p>
 
 # SyncMe for Android
 
@@ -9,13 +9,14 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest build and downloads
 
-- **Latest verified APK: SyncMe 253, ARM64** — [build and download](https://github.com/DrEsmaily/element-x-android/actions/runs/38658866967), application source `d101f1244a03c82f545dd9da0de1c477ae887ba7`.
-- **SyncMe 254** rebuilds that application source with complete cumulative documentation. [Build status and downloads](https://github.com/DrEsmaily/element-x-android/actions/workflows/syncme-cumulative.yml). Until the new run succeeds, 253 remains the latest verified APK.
-- [Cumulative release and continuation notes](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes.md)
-- [Complete current-lineage commit messages and changed paths](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
-- [Ten protected successful builds and artifact identities](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
+**[Download SyncMe 255 APK — ARM64](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build255/SyncMe-255-ARM64.apk)**
 
-Actions artifact downloads may require signing in to GitHub. They expire: this workflow also makes an additional copy of the ten previous builds with 90-day retention. That copy is a backup, not permanent download hosting.
+- **Version 255 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build255) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/39000390352) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build255/SHA256.txt).
+- **Clearer last seen:** recently below one hour, then elapsed hours, days, weeks and months; `Last seen long time ago` from one year. [Exact rules, examples and validation](https://github.com/DrEsmaily/SyncMe/blob/syncme-255-last-seen/docs/syncme/build-255-last-seen.md).
+- Regression tests and APK version/ABI/JNI/ZIP checks passed before publication. Physical device confirmation is separate from CI.
+- [Source](https://github.com/DrEsmaily/SyncMe/tree/syncme-255-last-seen) · [Previous APK: 254](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk).
+
+Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
 
 ## Features added or customized in SyncMe
 
@@ -40,7 +41,7 @@ Matrix accounts/login, direct and group conversations, the end-to-end encryption
 ### Technical fixes and current limits
 
 SyncMe includes identity-reset completion fixes, bounded FCM token handling, presence/receipt lifecycle corrections and regression coverage.
-Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCSP/CRL revocation checking; see the [technical review and limits](https://github.com/DrEsmaily/element-x-android/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
+Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCSP/CRL revocation checking; see the [technical review and limits](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
 
 Successful CI is separate from device verification. Large-file uploads under VPN, multi-device presence, background notifications and two-phone receipt behavior require runtime testing. Historical experiments on other branches are not automatically features of the current application.
 
@@ -48,11 +49,11 @@ Successful CI is separate from device verification. Large-file uploads under VPN
 
 The icon above is the actual launcher asset. The project owner supplied this real SyncMe welcome-screen screenshot; its build number is not visible.
 
-<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/element-x-android/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/SyncMe/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
 
 ## Development and preserved history
 
-The latest verified application source is on `fix/settings-display-cleanup`; its documented rebuild is on `syncme-cumulative-build-20261015`.
+The latest verified application source is on `syncme-255-last-seen`, based on the verified build 254 source on `syncme-cumulative-build-20261015`. See [build 255 rules and validation](docs/syncme/build-255-last-seen.md).
 Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
 Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The ten original successful builds and the new cumulative build are protected.
@@ -62,7 +63,7 @@ Older descriptions can record superseded behavior or unfinished work. Always che
 The application requires Android 7.0+ (API 24). Development uses JDK 21 and the Android toolchain. See [contributing](CONTRIBUTING.md) and [developer onboarding](docs/_developer_onboarding.md).
 
 The dedicated SyncMe workflow runs regressions, builds `:app:assembleGplayRelease`, retains the existing `.syncmerelease` application identity, checks ARM64/version/manifest/JNI metadata and bundles cumulative documentation and checksums.
-Report SyncMe-specific issues in [this repository](https://github.com/DrEsmaily/element-x-android/issues).
+Report SyncMe-specific issues in [this repository](https://github.com/DrEsmaily/SyncMe/issues).
 
 ## Upstream attribution
 
