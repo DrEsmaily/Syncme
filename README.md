@@ -2,7 +2,7 @@
 
 # SyncMe for Android
 
-**Version 1.1.0 · Build 255**
+**Version 1.1.1 · Build 256**
 
 **SyncMe** is an independent Android Matrix messenger forked from [Element X Android](https://github.com/element-hq/element-x-android).
 It adds a customized interface, personal conversation tags, shared presence indicators and optional diagnostic tools on top of the Matrix Rust SDK, Jetpack Compose and Appyx foundation.
@@ -11,12 +11,11 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest release and downloads
 
-**[Download SyncMe 1.1.0 · Build 255 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SyncMe-255-ARM64.apk)**
+**[Download SyncMe 1.1.1 · Build 256 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.1-build256/SyncMe-256-ARM64.apk)**
 
-- **Version 1.1.0 · Build 255 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.0-build255) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/39000390352) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SHA256.txt).
-- **Clearer last seen:** recently below one hour, then elapsed hours, days, weeks and months; `Last seen long time ago` from one year. [Exact rules, examples and validation](https://github.com/DrEsmaily/SyncMe/blob/syncme-255-last-seen/docs/syncme/build-255-last-seen.md).
-- Regression tests and APK version/ABI/JNI/ZIP checks passed before publication. Physical device confirmation is separate from CI.
-- [Source](https://github.com/DrEsmaily/SyncMe/tree/syncme-255-last-seen) · [Previous release: 1.0.0 · Build 254](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk).
+- **Version 1.1.1 · Build 256 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/39050084236) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.1-build256/SHA256.txt).
+- رفع خطای مشکلات کوچک
+- [Source](https://github.com/DrEsmaily/SyncMe/tree/syncme-256-minor-fixes) · [Previous release: 1.1.0 · Build 255](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SyncMe-255-ARM64.apk).
 
 Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
 
@@ -55,10 +54,11 @@ The icon above is the actual launcher asset. The project owner supplied this rea
 
 ## Latest 10 successful builds
 
-This rolling list includes the current build and the nine preceding successful builds. Release versions and build numbers are separate: **1.1.0 / Build 255** follows **1.0.0 / Build 254**.
+This rolling list includes the current build and the nine preceding successful builds. Release versions and build numbers are separate: **1.1.1 / Build 256** follows **1.1.0 / Build 255**.
 
 | Build | Verified execution | Downloads and documentation |
 |---|---|---|
+| 256 — Version 1.1.1 | [Run 39050084236](https://github.com/DrEsmaily/SyncMe/actions/runs/39050084236) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.1-build256/SyncMe-256-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256) |
 | 255 — Version 1.1.0 | [Run 39000390352](https://github.com/DrEsmaily/SyncMe/actions/runs/39000390352) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SyncMe-255-ARM64.apk) · [Release and full notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.0-build255) |
 | 254 — Version 1.0.0 | [Run 38776679128](https://github.com/DrEsmaily/SyncMe/actions/runs/38776679128) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk) · [Release and cumulative notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build254) |
 | 253 | [Run 38658866967](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38658866967.md) |
@@ -68,17 +68,16 @@ This rolling list includes the current build and the nine preceding successful b
 | 249 | [Run 38513962735](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38513962735.md) |
 | 248 | [Run 38400798130](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38400798130.md) |
 | 247 | [Run 38362221920](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38362221920.md) |
-| 246 | [Run 38345740737](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737) | [History and details](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/build-38345740737.md) |
 
 ### Earlier preserved archive
 
-The original protected snapshot covers builds **244–253**. Builds [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes 254 and 255; the archive records the earlier preservation operation.
+The original protected snapshot covers builds **244–253**. Builds [246](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737), [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes 254, 255 and 256; the archive records the earlier preservation operation.
 
 [Historical cleanup report and preservation record](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cleanup-proposal.md)
 
 ## Development and preserved history
 
-The latest verified application source is on `syncme-255-last-seen`, based on the verified build 254 source on `syncme-cumulative-build-20261015`. See [build 255 rules and validation](docs/syncme/build-255-last-seen.md).
+The latest verified application source is on [`syncme-256-minor-fixes`](https://github.com/DrEsmaily/SyncMe/tree/syncme-256-minor-fixes). Version 1.1.1 (Build 256) follows Version 1.1.0 (Build 255); [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256).
 Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
 Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original protected snapshot is documented separately from the rolling latest-build list and the persistent release downloads above.
