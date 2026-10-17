@@ -9,17 +9,14 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest build and downloads
 
-**[Download SyncMe 254 APK for Android (ARM64)](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk)**
+**[Download SyncMe 255 APK — ARM64](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build255/SyncMe-255-ARM64.apk)**
 
-- **Latest verified APK: SyncMe 254, ARM64** — [Direct APK download](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build254). A documented rebuild of the verified SyncMe 253 application source.
-- **254 verification:** regression tests, APK manifest/version/ABI/JNI checks and SHA-256 completed successfully. English cumulative notes and the supplied real screenshot are bundled. CI remains separate from device confirmation.
-- [Cumulative release and continuation notes](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cumulative-release-notes.md)
-- [Complete current-lineage commit messages and changed paths](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/current-lineage.md)
-- [Ten protected successful builds and artifact identities](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json)
+- **Version 255 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build255) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/39000390352) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build255/SHA256.txt).
+- **Clearer last seen:** recently below one hour, then elapsed hours, days, weeks and months; `Last seen long time ago` from one year. [Exact rules, examples and validation](https://github.com/DrEsmaily/SyncMe/blob/syncme-255-last-seen/docs/syncme/build-255-last-seen.md).
+- Regression tests and APK version/ABI/JNI/ZIP checks passed before publication. Physical device confirmation is separate from CI.
+- [Source](https://github.com/DrEsmaily/SyncMe/tree/syncme-255-last-seen) · [Previous APK: 254](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk).
 
-The public release provides a direct APK download without a GitHub account. On Android, open the downloaded APK and allow installation from your browser or file manager if prompted. This APK is for ARM64 devices running Android 7.0 or later.
-
-Actions artifacts remain available as build records and expire according to their retention settings; the additional backup of the ten previous builds has 90-day retention. The APK attached to the release is a separate download and is not subject to Actions artifact expiry.
+Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
 
 ## Features added or customized in SyncMe
 
@@ -94,7 +91,7 @@ Explore SyncMe's welcome screen, conversation filters, presence indicators, pers
 
 ## Development and preserved history
 
-The latest verified application source is on `fix/settings-display-cleanup`; its documented rebuild is on `syncme-cumulative-build-20261015`.
+The latest verified application source is on [`syncme-255-last-seen`](https://github.com/DrEsmaily/SyncMe/tree/syncme-255-last-seen). Build 255 extends the verified 254 source on `syncme-cumulative-build-20261015`; [build 255 notes](https://github.com/DrEsmaily/SyncMe/blob/syncme-255-last-seen/docs/syncme/build-255-last-seen.md) describe the exact changes.
 Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
 Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The ten original successful builds and the new cumulative build are protected.
