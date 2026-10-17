@@ -14,7 +14,7 @@ This is the SyncMe development repository, not an official Element distribution.
 **[Download SyncMe 1.1.1 · Build 256 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.1-build256/SyncMe-256-ARM64.apk)**
 
 - **Version 1.1.1 · Build 256 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/39050084236) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.1-build256/SHA256.txt).
-- Minor bugs fixed
+- minor bugs fixed 
 - [Source](https://github.com/DrEsmaily/SyncMe/tree/syncme-256-minor-fixes) · [Previous release: 1.1.0 · Build 255](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SyncMe-255-ARM64.apk).
 
 Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
@@ -46,11 +46,32 @@ Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCS
 
 Successful CI is separate from device verification. Large-file uploads under VPN, multi-device presence, background notifications and two-phone receipt behavior require runtime testing. Historical experiments on other branches are not automatically features of the current application.
 
-## Real SyncMe screenshot
+## SyncMe screenshots
 
-The icon above is the actual launcher asset. The project owner supplied this real SyncMe welcome-screen screenshot; its build number is not visible.
+Explore SyncMe's welcome screen, conversation filters, presence indicators, personal tags and messaging interface.
 
-<p align="center"><img src="https://raw.githubusercontent.com/DrEsmaily/SyncMe/develop/docs/syncme/images/welcome.jpg" alt="Real SyncMe welcome screen with SM artwork and Login button" width="288" /></p>
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/welcome.jpg" alt="SyncMe welcome screen" width="180" height="400" /><br /><sub>Welcome</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/home-presence.jpg" alt="SyncMe home with green Online indicators, orange Away indicators and unread counts" width="180" height="400" /><br /><sub>Online and Away presence</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/home-tags.jpg" alt="Conversations filtered by the Close Friends tag" width="180" height="400" /><br /><sub>Personal tag filter</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/upload-progress.jpg" alt="File upload showing percentage, transferred bytes and a progress bar in a direct conversation" width="180" height="400" /><br /><sub>Upload percentage and size</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/group-chat.jpg" alt="Public group conversation with an online member count and reader avatars below an outgoing message" width="180" height="400" /><br /><sub>Group presence and reader avatars</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/group-unread.jpg" alt="Public group conversation showing the online count and NEW unread divider" width="180" height="400" /><br /><sub>Unread message marker</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/manage-tags.jpg" alt="Manage tags screen with Favorite, Close Friends and a Create new tag button" width="180" height="400" /><br /><sub>Manage personal tags</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/conversation-actions.jpg" alt="Conversation action sheet with Favorite and Close Friends tag toggles" width="180" height="400" /><br /><sub>Conversation actions</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/start-chat.jpg" alt="Start chat screen with search, New room and Room directory" width="180" height="400" /><br /><sub>Start a chat</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><img src="docs/syncme/images/people-search.jpg" alt="People search showing a matching contact" width="180" height="400" /><br /><sub>Search for people</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/new-contact-confirmation.jpg" alt="Confirmation sheet before starting a chat with a new contact" width="180" height="400" /><br /><sub>Confirm a new contact</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/settings.jpg" alt="SyncMe settings showing account switching, account settings, appearance, screen lock and location sharing" width="180" height="400" /><br /><sub>Settings and account switching</sub></td>
+  </tr>
+</table>
 
 ## Latest 10 successful builds
 
@@ -80,7 +101,7 @@ The original protected snapshot covers builds **244–253**. Builds [246](https:
 The latest verified application source is on [`syncme-256-minor-fixes`](https://github.com/DrEsmaily/SyncMe/tree/syncme-256-minor-fixes). Version 1.1.1 (Build 256) follows Version 1.1.0 (Build 255); [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256).
 Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
-Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original protected snapshot is documented separately from the rolling latest-build list and the persistent release downloads above.
+Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255 and 256 provide persistent APK downloads.
 
 ## Building and contributing
 
