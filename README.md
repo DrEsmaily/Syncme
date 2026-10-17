@@ -14,7 +14,7 @@ This is the SyncMe development repository, not an official Element distribution.
 **[Download SyncMe 1.1.1 · Build 256 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.1-build256/SyncMe-256-ARM64.apk)**
 
 - **Version 1.1.1 · Build 256 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/39050084236) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.1-build256/SHA256.txt).
-- رفع خطای مشکلات کوچک
+- Minor bugs fixed
 - [Source](https://github.com/DrEsmaily/SyncMe/tree/syncme-256-minor-fixes) · [Previous release: 1.1.0 · Build 255](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SyncMe-255-ARM64.apk).
 
 Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.

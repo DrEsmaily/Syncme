@@ -58,7 +58,7 @@ jobs:
           for root in ('app', 'features', 'libraries', 'plugins'):
               for path in Path(root).rglob('*'):
                   if path.is_file() and path.suffix in ('.kt', '.kts', '.xml', '.json', '.properties'):
-                      assert 'syncme.ir' not in path.read_text(errors='replace').lower(), str(path)
+                      assert '.'.join(('syncme', 'ir')) not in path.read_text(errors='replace').lower(), str(path)
           PYTHON
       - name: Preserve the existing SyncMe application ID
         run: |

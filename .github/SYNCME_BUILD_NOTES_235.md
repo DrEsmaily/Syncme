@@ -46,7 +46,7 @@ The TLS audit reports Kotlin/OkHttp events, Matrix Rust SDK trace-derived metada
 3. Press Clear TLS Logs, restart and verify **old Rust events do not reappear**.
 4. Sign in/restore session, open chats, send/receive small and large media, and test notifications/calls.
 5. Confirm unusually frequent `RUST_REPORTED_NETWORK_ERROR` groups with complete request context before treating them as real connection failures.
-6. Test under blocked international networking with direct access to `syncme.ir`; use an independent network capture to verify *absence* of external requests.
+6. Test under blocked international networking with direct access to `[redacted server address]`; use an independent network capture to verify *absence* of external requests.
 
 ## Known limitations
 - No physical Android device or emulator runtime test is performed by this GitHub build workflow. Compile success is not functional verification.

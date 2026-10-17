@@ -13,7 +13,7 @@
 
 ## Changes relative to successful experimental Build 235
 1. **Tag manager chevrons removed.** The shared tag manager row no longer displays a right-facing chevron (`›`). This removes the chevrons circled in the supplied screenshots, on the built-in Favorite row and the tag creation/rename preview. Row taps and tag functionality are preserved.
-2. **Empty first-login homeserver field.** On first setup with no prior homeserver history, the editable account provider input is blank rather than displaying `syncme.ir`. Stored server history, enterprise-enforced providers, user-entered values, Matrix server selection and the actual sign-in process are left unchanged. Nothing is automatically connected merely to show the blank field.
+2. **Empty first-login homeserver field.** On first setup with no prior homeserver history, the editable account provider input is blank rather than displaying `[redacted server address]`. Stored server history, enterprise-enforced providers, user-entered values, Matrix server selection and the actual sign-in process are left unchanged. Nothing is automatically connected merely to show the blank field.
 3. **Independent Developer Options switches.** Under Settings > five taps on the version > Developer Options > SyncMe diagnostics: `Enable startup logs` and `Enable SSL / TLS logs`, independently persisted and OFF by default.
 4. **Startup logging truly opt-in.** With startup logs OFF, its in-app watchdog thread and dedicated file writes are not started. Enabling it starts capture, and disabling stops future recording.
 5. **TLS logging truly opt-in.** With TLS logs OFF, no dedicated TLS audit files are written and the five-second app-UID traffic sampler is not started; enabling the toggle activates dedicated Kotlin-layer recording. Detailed Rust HTTP tracing targets, native disk writer and cleartext StrictMode hooks follow the persisted setting on the next full app launch. **Restart SyncMe after turning TLS logging on or off** for the native tracing policy to match the switch.
@@ -31,7 +31,7 @@
 ## In-app test procedure
 1. Install the ARM64 APK. Check the last Settings line exactly shows `Build 236 • Optional Diagnostics`.
 2. Open Chats > Tags > Manage tags; verify Favorite row has no right arrow. Tap Create new tag; verify the preview also has no right arrow. Test normal navigation and tag creation.
-3. On a fresh installation with **no saved homeserver history**, open the login server field; it must be blank. Type `syncme.ir` and verify that login still works. An existing install may appropriately display a previously used server.
+3. On a fresh installation with **no saved homeserver history**, open the login server field; it must be blank. Type `[redacted server address]` and verify that login still works. An existing install may appropriately display a previously used server.
 4. Open Developer Options (tap Settings version 5 times). Verify both diagnostic switches start OFF and remain OFF after process restart.
 5. Turn ON only Startup: reproduce a chat-opening stall and verify startup log captures it. Turn it OFF: no new startup entries.
 6. Turn ON only SSL/TLS; fully restart app; verify Rust network summaries and UID byte counters appear. Turn it OFF and restart: no fresh SDK trace file writer or UID sampler should run.

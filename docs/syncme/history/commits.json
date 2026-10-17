@@ -5844,7 +5844,7 @@
   {
     "sha": "09a103de09e9c0eb16b140bb3b9d3284597021a6",
     "date": "2026-10-12T15:03:14+02:00",
-    "message": "Fix initial SyncMe server input: blank even when syncme.ir was previously used",
+    "message": "Fix initial SyncMe server input: blank even when [redacted server address] was previously used",
     "changed_paths": [
       "features/login/impl/src/main/kotlin/io/element/android/features/login/impl/screens/confirmaccountprovider/ConfirmAccountProviderPresenter.kt"
     ]
@@ -5852,7 +5852,7 @@
   {
     "sha": "d6f095b31481ab318bbd194fa0b629a4ef1bb8b7",
     "date": "2026-10-12T15:03:47+02:00",
-    "message": "Regression test: saved syncme.ir history must not prefill login field",
+    "message": "Regression test: saved [redacted server address] history must not prefill login field",
     "changed_paths": [
       "features/login/impl/src/test/kotlin/io/element/android/features/login/impl/screens/confirmaccountprovider/ConfirmAccountProviderPresenterTest.kt"
     ]

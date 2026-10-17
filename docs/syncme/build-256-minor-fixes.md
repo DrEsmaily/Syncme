@@ -1,1 +1,1 @@
-رفع خطای مشکلات کوچک
+Minor bugs fixed

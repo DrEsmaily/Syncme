@@ -23,7 +23,7 @@ During active media send, present explicit Cancel upload instead of ambiguous Re
 
 HOME / TAGS / BRAND
 Spaces navigation, buttons, page and create-space UI hidden, keep underlying Matrix Spaces capability. Chats-only main screen; standard bottom-end FAB (+) on right, not centered. Title SyncMe. Preserve Unread, People, Rooms, Favorites filters. Add persistent custom multi-room tags (create/delete, multi-tag per chat, persistent active selection until manually cleared, auto-fallback to All when active tag deleted), horizontal chips, context-menu assignment, storage in preferences/DataStore. Keep Deep Cobalt accents and black theme; prior palette, moderation/safety placement and red indicator choices.
-First-run homeserver syncme.ir. Developer Options hidden normally, unlock by five taps on app version. Media send choice Original / Compressed with specs; remove duplicate Media Upload Quality setting. Preserve agreed defaults.
+First-run homeserver [redacted server address]. Developer Options hidden normally, unlock by five taps on app version. Media send choice Original / Compressed with specs; remove duplicate Media Upload Quality setting. Preserve agreed defaults.
 
 BUILD / VERIFICATION
 Prior #78 and subsequent builds had Kotlin errors; compile success and on-device verification are separate. CI run is authoritative for exact SHA and artifacts. Keep checkpoint TXT in same GitHub Actions artifact as APK, including SHA, run, full git log and changed paths; on failure publish TXT alone. For continuing conversation: read newest checkpoint, inspect GitHub run, compare against #77 and latest upstream, fix build failures, test upload lifecycle first, then room opening and UI, report honestly. Never claim fully fixed without evidence.

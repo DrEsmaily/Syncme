@@ -12,15 +12,15 @@
 - **Validation report:** `SyncMe-237-APK-Validation.txt`
 
 ## Important fix compared with Build 236
-The original Build 236 account-provider screen only removed the implicit `syncme.ir` value when the server-history list was empty. When `syncme.ir` was already in remembered history, the screen continued to prefill it.
+The original Build 236 account-provider screen only removed the implicit `[redacted server address]` value when the server-history list was empty. When `[redacted server address]` was already in remembered history, the screen continued to prefill it.
 
-Build 237 **always renders an implicitly selected `syncme.ir` provider as an empty editable field**, independently of history, including app installations with a prior `syncme.ir` login.
+Build 237 **always renders an implicitly selected `[redacted server address]` provider as an empty editable field**, independently of history, including app installations with a prior `[redacted server address]` login.
 
-- Typing `syncme.ir` manually still works, is displayed exactly as entered, and can be submitted.
+- Typing `[redacted server address]` manually still works, is displayed exactly as entered, and can be submitted.
 - Other explicitly configured providers and the server history remain intact.
 - History remains available as autocomplete when the user begins typing.
 - Sign-in server validation and authentication behavior remain unchanged.
-- A regression test was added for `syncme.ir` in saved history and subsequent explicit typing.
+- A regression test was added for `[redacted server address]` in saved history and subsequent explicit typing.
 
 ## Preserved from Build 236
 1. Removed the right-side arrow from built-in Favorite tag and tag preview rows. Navigation and tag functionality unchanged.
@@ -34,8 +34,8 @@ Build 237 **always renders an implicitly selected `syncme.ir` provider as an emp
 
 ## How to verify
 1. Install the named ARM64 APK; confirm Settings footer shows **Build 237**.
-2. On the Account provider entry screen, check the input is **blank**, even on devices where `syncme.ir` was previously used.
-3. Type `syncme.ir` and confirm it remains visible and Continue initiates the expected login flow.
+2. On the Account provider entry screen, check the input is **blank**, even on devices where `[redacted server address]` was previously used.
+3. Type `[redacted server address]` and confirm it remains visible and Continue initiates the expected login flow.
 4. Check Favorite tag and Create tag preview rows show no trailing arrow.
 5. Open Settings > tap version five times > Developer Options; confirm both logging switches are OFF by default and can be independently enabled.
 6. With both toggles off, observe normal chat startup and performance; test logging only when collecting a diagnostic report.
