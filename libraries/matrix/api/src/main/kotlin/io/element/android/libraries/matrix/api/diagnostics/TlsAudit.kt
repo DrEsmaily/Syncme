@@ -133,11 +133,9 @@ object TlsAudit {
         if (!enabled) return
         val cleanHost = safe(host.lowercase(), 200)
         val suspect = isPossibleCertificateEndpoint(host)
-        val internal = host.equals("syncme.ir", ignoreCase = true) ||
-            host.endsWith(".syncme.ir", ignoreCase = true)
-        val category = if (suspect) "SUSPECT_CERT_ENDPOINT" else if (internal) "SYNCME" else "EXTERNAL"
+        val category = if (suspect) "SUSPECT_CERT_ENDPOINT" else "EXTERNAL"
         // Keep all likely OCSP/CRL/AIA requests, sample normal repetitive traffic.
-        val limit = if (suspect) 150 else if (internal) 4 else 12
+        val limit = if (suspect) 150 else 12
         val key = kind + "|" + cleanHost
         val count = counters.computeIfAbsent(key) { AtomicInteger(0) }.incrementAndGet()
         if (count <= limit) {
@@ -310,7 +308,6 @@ object TlsAudit {
         val category = when {
             host.isEmpty() -> "UNKNOWN_TARGET"
             isPossibleCertificateEndpoint(host) -> "SUSPECT_CERT_ENDPOINT"
-            host.equals("syncme.ir", true) || host.endsWith(".syncme.ir", true) -> "SYNCME"
             else -> "EXTERNAL_OBSERVED"
         }
         val key = "event=" + event + " target=" + safe(target, 50) +

@@ -9,6 +9,7 @@
 package io.element.android.libraries.matrix.impl.auth
 
 import com.google.common.truth.Truth.assertThat
+import io.element.android.libraries.matrix.api.auth.OAuthConfig
 import io.element.android.libraries.matrix.test.auth.FAKE_REDIRECT_URL
 import io.element.android.libraries.matrix.test.auth.FakeOAuthRedirectUrlProvider
 import io.element.android.libraries.matrix.test.core.aBuildMeta
@@ -25,5 +26,10 @@ class OAuthConfigurationProviderTest {
         ).get()
         assertThat(result.clientName).isEqualTo("myName")
         assertThat(result.redirectUri).isEqualTo(FAKE_REDIRECT_URL)
+        assertThat(result.clientUri).isEqualTo("https://github.com/DrEsmaily/SyncMe")
+        assertThat(result.clientUri).isEqualTo(OAuthConfig.CLIENT_URI)
+        assertThat(result.logoUri).isNull()
+        assertThat(result.tosUri).isNull()
+        assertThat(result.policyUri).isNull()
     }
 }

@@ -72,13 +72,14 @@ class ConfirmAccountProviderPresenter(
                 .distinct()
         }
 
-        // Editable input, seeded from the current (history-defaulted) account provider until the user edits it.
-        // Displayed without the scheme, so the field shows e.g. "matrix.org" rather than "https://matrix.org".
+        // Keep ordinary account entry empty; preserve managed providers and explicit selections.
         var userInput by rememberSaveable { mutableStateOf<String?>(null) }
-        // Leave the SyncMe default field empty, including when adding an account after a previous sign-in.
-        // Do not alter the underlying provider or previously saved history.
-        val accountProviderInput = userInput ?: accountProvider.friendlyServerName().let { server ->
-            if (server.equals("syncme.ir", ignoreCase = true)) "" else server
+        val accountProviderInput = userInput ?: if (
+            !enterpriseService.canConnectToAnyAccountProvider() || accountProviderDataSource.lastSelectedAccountProvider != null
+        ) {
+            accountProvider.friendlyServerName()
+        } else {
+            ""
         }
 
         // Offer the first candidate that the current input is a (case-insensitive) prefix of.

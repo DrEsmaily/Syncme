@@ -11,9 +11,9 @@ package config
 object BuildTimeConfig {
     const val APPLICATION_ID = "ir.syncme.app"
     const val APPLICATION_NAME = "SyncMe"
-    val METADATA_HOST_REVERSED: String? = "ir.syncme.app"
-    val OAUTH_CLIENT_URL_PATH: String? = "apps/android"
-    val URL_WEBSITE: String? = null
+    val METADATA_HOST_REVERSED: String? = "com.github.dresmaily.syncme"
+    val OAUTH_CLIENT_URL_PATH: String? = null
+    val URL_WEBSITE: String? = "https://github.com/DrEsmaily/SyncMe"
     val URL_LOGO: String? = null
     val URL_COPYRIGHT: String? = null
     val URL_ACCEPTABLE_USE: String? = null

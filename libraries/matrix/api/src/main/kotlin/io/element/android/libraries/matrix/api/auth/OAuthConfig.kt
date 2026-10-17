@@ -19,13 +19,13 @@ object OAuthConfig {
     } ?: BuildConfig.CLIENT_URI
 
     // Note: host must match with the host of CLIENT_URI
-    const val LOGO_URI = BuildConfig.LOGO_URI
+    val LOGO_URI: String? = BuildConfig.LOGO_URI
 
     // Note: host must match with the host of CLIENT_URI
-    const val TOS_URI = BuildConfig.TOS_URI
+    val TOS_URI: String? = BuildConfig.TOS_URI
 
     // Note: host must match with the host of CLIENT_URI
-    const val POLICY_URI = BuildConfig.POLICY_URI
+    val POLICY_URI: String? = BuildConfig.POLICY_URI
 
     // Some homeservers/auth issuers don't support dynamic client registration, and have to be registered manually
     val STATIC_REGISTRATIONS = mapOf(

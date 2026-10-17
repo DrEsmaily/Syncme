@@ -62,8 +62,8 @@ class ConfirmAccountProviderPresenterTest {
     }
 
     @Test
-    fun `present - saved SyncMe provider stays blank until the user types`() = runTest {
-        val preferences = InMemoryAppPreferencesStore(homeserverHistory = listOf("https://syncme.ir"))
+    fun `present - saved provider stays blank until the user types`() = runTest {
+        val preferences = InMemoryAppPreferencesStore(homeserverHistory = listOf("https://example.org"))
         val dataSource = anAccountProviderDataSource(appPreferencesStore = preferences)
         val presenter = createConfirmAccountProviderPresenter(
             accountProviderDataSource = dataSource,
@@ -74,9 +74,9 @@ class ConfirmAccountProviderPresenterTest {
             assertThat(initialState.accountProviderInput).isEmpty()
             assertThat(initialState.accountProviderSuggestion).isNull()
             assertThat(initialState.submitEnabled).isFalse()
-            assertThat(dataSource.flow.value.friendlyServerName()).isEqualTo("syncme.ir")
-            initialState.eventSink(ConfirmAccountProviderEvent.UserInputChanged("syncme.ir"))
-            val editedState = awaitState { it.accountProviderInput == "syncme.ir" }
+            assertThat(dataSource.flow.value.friendlyServerName()).isEqualTo("example.org")
+            initialState.eventSink(ConfirmAccountProviderEvent.UserInputChanged("example.org"))
+            val editedState = awaitState { it.accountProviderInput == "example.org" }
             assertThat(editedState.submitEnabled).isTrue()
             editedState.eventSink(ConfirmAccountProviderEvent.UserInputChanged(""))
             assertThat(awaitState { it.accountProviderInput.isEmpty() }.submitEnabled).isFalse()

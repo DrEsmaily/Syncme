@@ -33,17 +33,20 @@ android {
             name = "CLIENT_URI",
             value = BuildTimeConfig.URL_WEBSITE ?: "https://element.io"
         )
-        buildConfigFieldStr(
+        buildConfigField(
             name = "LOGO_URI",
-            value = BuildTimeConfig.URL_LOGO ?: "https://element.io/mobile-icon.png"
+            type = "String",
+            value = BuildTimeConfig.URL_LOGO?.let { "\"$it\"" } ?: "null",
         )
-        buildConfigFieldStr(
+        buildConfigField(
             name = "TOS_URI",
-            value = BuildTimeConfig.URL_ACCEPTABLE_USE ?: "https://element.io/acceptable-use-policy-terms"
+            type = "String",
+            value = BuildTimeConfig.URL_ACCEPTABLE_USE?.let { "\"$it\"" } ?: "null",
         )
-        buildConfigFieldStr(
+        buildConfigField(
             name = "POLICY_URI",
-            value = BuildTimeConfig.URL_POLICY ?: "https://element.io/privacy"
+            type = "String",
+            value = BuildTimeConfig.URL_POLICY?.let { "\"$it\"" } ?: "null",
         )
     }
 }
