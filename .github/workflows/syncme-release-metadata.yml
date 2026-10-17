@@ -1,0 +1,53 @@
+name: Reconcile SyncMe 1.1.0 Build 255 release metadata
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Fetch and verify the already published APK
+        run: |
+          set -euo pipefail
+          mkdir release255
+          gh release download v1.1.0-build255 --repo "$GITHUB_REPOSITORY" --dir release255 \
+            --pattern SyncMe-255-ARM64.apk --pattern SHA256.txt --pattern Provenance.txt --pattern manifest.txt
+          echo 'a916f9c4511394ebe6229f4181099fa4f3609379f1d4981cf85ac7d0255db9e4  release255/SyncMe-255-ARM64.apk' | sha256sum -c -
+          gh api "repos/$GITHUB_REPOSITORY/contents/docs/syncme/build-255-last-seen.md?ref=syncme-255-last-seen" --jq .content \
+            | base64 --decode > release255/SyncMe-255-Notes.md
+      - name: Synchronize canonical release notes and restore the notes attachment
+        run: |
+          set -euo pipefail
+          gh release edit v1.1.0-build255 --repo "$GITHUB_REPOSITORY" \
+            --title 'SyncMe 1.1.0 — Build 255' --notes-file release255/SyncMe-255-Notes.md --latest
+          gh release upload v1.1.0-build255 release255/SyncMe-255-Notes.md --repo "$GITHUB_REPOSITORY" --clobber
+      - name: Preserve previously shared download URLs as an explicit alias
+        run: |
+          set -euo pipefail
+          cat > release255/Alias-Notes.md <<'NOTES'
+          # SyncMe 1.1.0 — Build 255: compatibility download
+
+          The canonical release is [SyncMe 1.1.0 — Build 255](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.0-build255).
+
+          This legacy tag (`v1.0.0-build255`) was initially assigned an incorrect release-version label. It is retained so previously shared download URLs continue to work. The product release version is **1.1.0**, the build number is **255**, and this APK is byte-for-byte identical to the canonical release. This page is a compatibility alias for the same build.
+
+          [Direct canonical APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.0-build255/SyncMe-255-ARM64.apk) · [Full notes and release identity](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.0-build255)
+
+          APK SHA-256: `a916f9c4511394ebe6229f4181099fa4f3609379f1d4981cf85ac7d0255db9e4`.
+          NOTES
+          if gh release view v1.0.0-build255 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit v1.0.0-build255 --repo "$GITHUB_REPOSITORY" --latest=false \
+              --title 'SyncMe 1.1.0 — Build 255 (legacy download link)' --notes-file release255/Alias-Notes.md
+          else
+            gh release create v1.0.0-build255 --repo "$GITHUB_REPOSITORY" --verify-tag --latest=false \
+              --title 'SyncMe 1.1.0 — Build 255 (legacy download link)' --notes-file release255/Alias-Notes.md
+          fi
+          gh release upload v1.0.0-build255 --repo "$GITHUB_REPOSITORY" --clobber \
+            release255/SyncMe-255-ARM64.apk release255/SHA256.txt release255/Provenance.txt \
+            release255/manifest.txt release255/SyncMe-255-Notes.md
+          gh release edit v1.1.0-build255 --repo "$GITHUB_REPOSITORY" --latest
+          echo 'Canonical release: Version 1.1.0 / Build 255. Original APK hash verified; legacy links preserved.' >> "$GITHUB_STEP_SUMMARY"
