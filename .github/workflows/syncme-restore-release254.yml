@@ -1,0 +1,74 @@
+name: Restore SyncMe 1.0.0 Build 254 release
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Recover the original successful build artifact
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v1.0.0-build254" --jq .object.sha | grep -Fx d37c1f68c12ee4bfc7375c292d14885d27121fe4
+          gh run download 38776679128 --repo "$GITHUB_REPOSITORY" --name SyncMe-254-ARM64 --dir recovered
+          echo '40ab71ea4dd140cb218392a13473f0a9eb3ce1f23968eff27e7ac748b47d1d20  recovered/SyncMe-254-ARM64.apk' | sha256sum -c -
+          unzip -t recovered/SyncMe-254-ARM64.apk >/dev/null
+          grep -F "versionName='254'" recovered/manifest.txt | grep -F "versionCode='202610212'"
+      - name: Restore the downloadable documentation and checksum
+        run: |
+          set -euo pipefail
+          mkdir restored
+          cp recovered/SyncMe-254-ARM64.apk restored/SyncMe-254-ARM64.apk
+          cp recovered/SyncMe-254-Cumulative-Notes.md restored/SyncMe-254-Release-Notes.md
+          (cd restored && sha256sum SyncMe-254-ARM64.apk) > restored/SHA256SUMS.txt
+          (cd recovered && zip -qr ../restored/SyncMe-254-Documentation.zip . -x SyncMe-254-ARM64.apk)
+          cat > restored/Release-Body.md <<'RELEASE_NOTES'
+          ## Download SyncMe for Android
+          
+          **[Download SyncMe 254 ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.0.0-build254/SyncMe-254-ARM64.apk)**
+          
+          Public direct download; no GitHub account is required. For Android 7.0+ devices with an ARM64 processor (`arm64-v8a`). After downloading, open the APK; Android may ask you to allow installation from your browser or file manager.
+          
+          ## Release identity
+          
+          - Release tag: `v1.0.0-build254`
+          - Android version name: `254`
+          - ARM64 version code: `202610212`
+          - Source commit: `d37c1f68c12ee4bfc7375c292d14885d27121fe4`
+          - [Verified build and regression results](https://github.com/DrEsmaily/SyncMe/actions/runs/38776679128)
+          - APK SHA-256: `40ab71ea4dd140cb218392a13473f0a9eb3ce1f23968eff27e7ac748b47d1d20`
+          
+          This is the exact APK from successful build 254, without rebuilding or modifying the binary. Build 254 rebuilds the verified application source of build 253 with cumulative English documentation.
+          
+          ## SyncMe additions and customizations
+          
+          - Shared Online/Away indicators, approximate last-seen labels and qualified group online counts.
+          - Upload percentages, transferred/total bytes and progress presentation within conversations.
+          - Personal conversation tags with persistent filters and dedicated management screens.
+          - SyncMe branding, welcome screen, cobalt accents, black surfaces and customized menus/settings.
+          - Refined reader-avatar placement, failed-receipt retries and automatic receipt timing.
+          - Optional startup, TLS and decryption diagnostics.
+          
+          ## Cumulative documentation
+          
+          Download `SyncMe-254-Release-Notes.md` for the complete cumulative feature and technical summary. `SyncMe-254-Documentation.zip` includes original provenance, APK validation, preserved historical notes and a cumulative history for each of the ten previous successful builds. `SHA256SUMS.txt` provides the APK checksum.
+          
+          Regression tests and manifest/version/ABI/JNI checks passed. Real-device behavior remains a separate validation step, particularly for large uploads under VPN, background notifications, multi-device presence and receipt timing. Current TLS checks system trust, expiry/EKU and hostname but omits online OCSP/CRL revocation checking; the cumulative notes document this policy.
+          
+          SyncMe is an independent fork of [Element X Android](https://github.com/element-hq/element-x-android). Original attribution and license terms are preserved; this is not an official Element distribution.
+          RELEASE_NOTES
+      - name: Recreate release 1.0.0 Build 254 without changing the latest version
+        run: |
+          set -euo pipefail
+          gh release create v1.0.0-build254 --repo "$GITHUB_REPOSITORY" --verify-tag --draft --latest=false \
+            --title 'SyncMe 1.0.0 — Build 254' --notes-file restored/Release-Body.md \
+            restored/SyncMe-254-ARM64.apk restored/SHA256SUMS.txt \
+            restored/SyncMe-254-Release-Notes.md restored/SyncMe-254-Documentation.zip
+          gh release edit v1.0.0-build254 --repo "$GITHUB_REPOSITORY" --draft=false --latest=false
+          gh release edit v1.1.0-build255 --repo "$GITHUB_REPOSITORY" --latest
+          echo 'Restored release 1.0.0 / Build 254 from the original successful artifact. Original APK SHA-256 verified. Version 1.1.0 / Build 255 remains Latest.' >> "$GITHUB_STEP_SUMMARY"
