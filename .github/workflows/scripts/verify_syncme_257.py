@@ -24,7 +24,9 @@ build_tools = sorted(
 
 
 def run(tool, *args):
-    return subprocess.check_output([str(build_tools / tool), *map(str, args)], text=True)
+    return subprocess.check_output(
+        [str(build_tools / tool), *map(str, args)], text=True, encoding="utf-8", errors="replace"
+    )
 
 
 def metadata(path):
