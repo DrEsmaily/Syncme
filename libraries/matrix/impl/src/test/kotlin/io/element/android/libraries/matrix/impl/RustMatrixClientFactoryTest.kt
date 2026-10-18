@@ -22,6 +22,7 @@ import io.element.android.libraries.matrix.impl.search.RustSearchBackfillService
 import io.element.android.libraries.matrix.impl.search.workmanager.SearchBackfillRequestBuilder
 import io.element.android.libraries.matrix.impl.storage.FakeSqliteStoreBuilderProvider
 import io.element.android.libraries.matrix.impl.storage.SqliteStoreBuilderProvider
+import io.element.android.libraries.matrix.impl.workmanager.PerformDatabaseVacuumRequestBuilder
 import io.element.android.libraries.network.useragent.SimpleUserAgentProvider
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
@@ -38,14 +39,22 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.matrix.rustcomponents.sdk.Client
 import org.matrix.rustcomponents.sdk.ClientDelegate
+import uniffi.matrix_sdk_base.MediaRetentionPolicy
 import java.io.File
+import kotlin.time.Duration.Companion.days
+import kotlin.time.toJavaDuration
 import org.matrix.rustcomponents.sdk.SyncService as ClientSyncService
 
 class RustMatrixClientFactoryTest {
     @Test
     fun test() = runTest {
         val scheduleVacuumLambda = lambdaRecorder<WorkManagerRequestBuilder, Unit> {}
-        val workManagerScheduler = FakeWorkManagerScheduler(submitLambda = scheduleVacuumLambda, cancelLambda = { _, _ -> })
+        val workManagerScheduler = FakeWorkManagerScheduler(
+            submitLambda = { request ->
+                if (request is PerformDatabaseVacuumRequestBuilder) scheduleVacuumLambda(request)
+            },
+            cancelLambda = { _, _ -> },
+        )
         val sut = createRustMatrixClientFactory(workManagerScheduler = workManagerScheduler)
 
         val result = sut.create(aSessionData())
@@ -53,6 +62,29 @@ class RustMatrixClientFactoryTest {
         assertThat(result.sessionId).isEqualTo(SessionId("@alice:server.org"))
         scheduleVacuumLambda.assertions().isCalledOnce()
         result.destroy()
+    }
+
+    @Test
+    fun `restored clients allow five GiB media caching while preserving expiry and cleanup`() = runTest {
+        val policies = mutableListOf<MediaRetentionPolicy>()
+        val sut = createRustMatrixClientFactory(
+            clientBuilderProvider = FakeClientBuilderProvider {
+                FakeFfiClientBuilder {
+                    FakeFfiClient(withUtdHook = {}, setMediaRetentionPolicyResult = policies::add)
+                }
+            },
+            workManagerScheduler = FakeWorkManagerScheduler(submitLambda = {}, cancelLambda = { _, _ -> }),
+        )
+
+        val client = sut.create(aSessionData())
+        assertThat(policies).hasSize(1)
+        val policy = policies.single()
+        // The SDK must receive the complete 64-bit value, which is larger than UInt.MAX_VALUE.
+        assertThat(policy.maxCacheSize).isEqualTo(5_368_709_120uL)
+        assertThat(policy.maxFileSize).isEqualTo(5_368_709_120uL)
+        assertThat(policy.lastAccessExpiry).isEqualTo(30.days.toJavaDuration())
+        assertThat(policy.cleanupFrequency).isEqualTo(1.days.toJavaDuration())
+        client.destroy()
     }
 
     @Test

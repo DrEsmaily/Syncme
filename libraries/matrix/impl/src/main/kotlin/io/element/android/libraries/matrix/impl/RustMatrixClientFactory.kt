@@ -9,17 +9,17 @@
 package io.element.android.libraries.matrix.impl
 
 import dev.zacsweers.metro.Inject
-import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.features.enterprise.api.ClientBuilderEnterpriseHook
 import io.element.android.libraries.androidutils.crypto.ClientSecret
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
 import io.element.android.libraries.core.data.ByteUnit
-import io.element.android.libraries.core.data.megaBytes
+import io.element.android.libraries.core.data.gigaBytes
 import io.element.android.libraries.di.CacheDirectory
 import io.element.android.libraries.di.annotations.AppCoroutineScope
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.diagnostics.StartupTrace
 import io.element.android.libraries.matrix.api.paths.SessionPaths
 import io.element.android.libraries.matrix.impl.analytics.UtdTracker
 import io.element.android.libraries.matrix.impl.paths.getSessionPaths
@@ -115,12 +115,13 @@ class RustMatrixClientFactory(
         StartupTrace.mark("rust_client_built")
         StartupTrace.markReset("session_factory_client_built")
 
+        // This is a per-account disk budget, not a preallocated file or an in-memory cache.
+        val mediaCacheSize = 5.gigaBytes.into(ByteUnit.BYTES).toULong()
         client.setMediaRetentionPolicy(
             MediaRetentionPolicy(
-                // Make this 500MB instead of 400MB
-                maxCacheSize = 500.megaBytes.into(ByteUnit.BYTES).toULong(),
-                // This is the default value, but let's make it explicit
-                maxFileSize = 20.megaBytes.into(ByteUnit.BYTES).toULong(),
+                maxCacheSize = mediaCacheSize,
+                // A large file may use the disk budget instead of being excluded from caching.
+                maxFileSize = mediaCacheSize,
                 // Use 30 days instead of 60
                 lastAccessExpiry = 30.days.toJavaDuration(),
                 // This is the default value, but let's make it explicit
