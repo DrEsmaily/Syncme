@@ -43,6 +43,14 @@ class AvatarThumbnailTest : RobolectricTest() {
         assertThat(scaledBitmap?.height).isEqualTo(120)
     }
 
+    @Test
+    fun `animated and vector thumbnails retain the original Coil fallback`() {
+        val gif = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        val svg = Base64.encode("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"/>".toByteArray())
+        assertThat(decodeAvatarThumbnail(gif, 32)).isNull()
+        assertThat(decodeAvatarThumbnail(svg, 32)).isNull()
+    }
+
     private fun encodedBitmap(width: Int, height: Int): String {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         return ByteArrayOutputStream().use { output ->

@@ -19,6 +19,8 @@ internal fun decodeAvatarThumbnail(encodedThumbnail: String?, sizePx: Int): Bitm
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         if (options.outWidth <= 0 || options.outHeight <= 0) return@runCatchingExceptions null
+        // Keep Coil's existing animation and format support for all other thumbnail types.
+        if (options.outMimeType !in setOf("image/png", "image/jpeg")) return@runCatchingExceptions null
         // A homeserver may ignore the requested thumbnail dimensions. Bound decoded bitmap memory.
         val longestSide = maxOf(options.outWidth, options.outHeight)
         while (longestSide / options.inSampleSize / 2 >= sizePx.coerceAtLeast(1)) {
