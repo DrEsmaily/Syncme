@@ -39,9 +39,11 @@ import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.test
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -257,6 +259,37 @@ class PreferencesRootPresenterTest {
             appPreferencesStore = InMemoryAppPreferencesStore(isOtherAccountsExpanded = false),
         ).test {
             consumeItemsUntilPredicate { !it.isOtherAccountsSectionExpanded }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - accounts wait for their saved layout before becoming visible`() = runTest {
+        val savedLayout = CompletableDeferred<Boolean>()
+        val preferences = object : AppPreferencesStore by InMemoryAppPreferencesStore() {
+            override fun isOtherAccountsExpandedFlow() = flow { emit(savedLayout.await()) }
+        }
+        createPreferencesRootPresenter(
+            appPreferencesStore = preferences,
+            featureFlagService = FakeFeatureFlagService(initialState = mapOf(FeatureFlags.MultiAccount.key to true)),
+            sessionStore = InMemorySessionStore(
+                initialList = listOf(
+                    aSessionData(sessionId = A_SESSION_ID.value),
+                    aSessionData(sessionId = A_SESSION_ID_2.value),
+                ),
+            ),
+        ).test {
+            val loadingStates = consumeItemsUntilPredicate { it.userStatusState != null }
+            loadingStates.forEach {
+                assertThat(it.isMultiAccountEnabled).isFalse()
+                assertThat(it.otherSessions).isEmpty()
+            }
+            savedLayout.complete(false)
+            val loadedStates = consumeItemsUntilPredicate { it.otherSessions.isNotEmpty() }
+            loadedStates.filter { it.otherSessions.isNotEmpty() }.forEach {
+                assertThat(it.isMultiAccountEnabled).isTrue()
+                assertThat(it.isOtherAccountsSectionExpanded).isFalse()
+            }
             cancelAndIgnoreRemainingEvents()
         }
     }

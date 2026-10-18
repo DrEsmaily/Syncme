@@ -8,6 +8,8 @@
 
 package io.element.android.libraries.designsystem.components.avatar.internal
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -17,15 +19,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
-import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import timber.log.Timber
-import kotlin.io.encoding.Base64
 
 @Composable
 internal fun ImageAvatar(
@@ -36,8 +38,11 @@ internal fun ImageAvatar(
     contentDescription: String? = null,
 ) {
     val size = forcedAvatarSize ?: avatarData.size.dp
-    val thumbnailBytes = remember(avatarData.thumbnail) {
-        avatarData.thumbnail?.let { runCatchingExceptions { Base64.decode(it) }.getOrNull() }
+    // Session thumbnails are small, local images. Decode once so the fallback is ready in the
+    // first frame instead of briefly displaying initials while a second Coil request starts.
+    val thumbnailSizePx = with(LocalDensity.current) { size.roundToPx().coerceAtLeast(1) }
+    val thumbnail = remember(avatarData.thumbnail, thumbnailSizePx) {
+        decodeAvatarThumbnail(avatarData.thumbnail, thumbnailSizePx)
     }
     SubcomposeAsyncImage(
         model = avatarData,
@@ -59,7 +64,7 @@ internal fun ImageAvatar(
                 }
                 ThumbnailOrInitialLetterAvatar(
                     avatarData = avatarData,
-                    thumbnailBytes = thumbnailBytes,
+                    thumbnail = thumbnail,
                     avatarShape = avatarShape,
                     forcedAvatarSize = forcedAvatarSize,
                     contentDescription = contentDescription,
@@ -67,7 +72,7 @@ internal fun ImageAvatar(
             }
             else -> ThumbnailOrInitialLetterAvatar(
                 avatarData = avatarData,
-                thumbnailBytes = thumbnailBytes,
+                thumbnail = thumbnail,
                 avatarShape = avatarShape,
                 forcedAvatarSize = forcedAvatarSize,
                 contentDescription = contentDescription,
@@ -82,12 +87,12 @@ internal fun ImageAvatar(
 @Composable
 private fun ThumbnailOrInitialLetterAvatar(
     avatarData: AvatarData,
-    thumbnailBytes: ByteArray?,
+    thumbnail: Bitmap?,
     avatarShape: Shape,
     forcedAvatarSize: Dp?,
     contentDescription: String?,
 ) {
-    if (thumbnailBytes == null) {
+    if (thumbnail == null) {
         InitialLetterAvatar(
             avatarData = avatarData,
             avatarShape = avatarShape,
@@ -95,24 +100,13 @@ private fun ThumbnailOrInitialLetterAvatar(
             contentDescription = contentDescription,
         )
     } else {
-        SubcomposeAsyncImage(
-            model = thumbnailBytes,
+        Image(
+            bitmap = thumbnail.asImageBitmap(),
             contentDescription = contentDescription,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(forcedAvatarSize ?: avatarData.size.dp)
-                .clip(avatarShape)
-        ) {
-            val collectedState by painter.state.collectAsState()
-            when (collectedState) {
-                is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
-                else -> InitialLetterAvatar(
-                    avatarData = avatarData,
-                    avatarShape = avatarShape,
-                    forcedAvatarSize = forcedAvatarSize,
-                    contentDescription = contentDescription,
-                )
-            }
-        }
+                .clip(avatarShape),
+        )
     }
 }

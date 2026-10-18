@@ -430,12 +430,29 @@ private fun BoxScope.TimelineScrollHelper(
         }
     }
 
-    // Each event identity triggers independently, even for a burst of FromOther events.
-    // Keep the user's pre-insertion follow intent; Compose may preserve an older item's anchor.
-    LaunchedEffect(newestEventId, newEventState, canAutoScroll, isDragged, isScrollFinished) {
-        if (isLive && !isDragged && isScrollFinished && newestEventId != null &&
-            (canAutoScroll || newEventState == NewEventState.FromMe)
-        ) {
+    // Queue scrolling only for a new event, never merely because scrolling stopped near the bottom.
+    // FromMe can arrive after the item identity, so observe that transition independently.
+    var observedNewestEventId by remember { mutableStateOf(newestEventId) }
+    var observedNewEventState by remember { mutableStateOf(newEventState) }
+    var pendingAutoScroll by remember { mutableStateOf(false) }
+    LaunchedEffect(newestEventId, newEventState, isLive) {
+        val hasNewEvent = newestEventId != observedNewestEventId
+        val hasNewOwnEvent = newEventState == NewEventState.FromMe && observedNewEventState != NewEventState.FromMe
+        observedNewestEventId = newestEventId
+        observedNewEventState = newEventState
+        if (!isLive) {
+            pendingAutoScroll = false
+        } else if (newestEventId != null && (hasNewEvent || hasNewOwnEvent)) {
+            // Preserve follow intent before Compose moves the anchor to accommodate incoming items.
+            pendingAutoScroll = canAutoScroll || newEventState == NewEventState.FromMe
+        }
+    }
+    LaunchedEffect(pendingAutoScroll, isDragged, isScrollFinished, isLive) {
+        if (isDragged || !isLive) {
+            // An explicit drag takes precedence over a queued automatic scroll.
+            pendingAutoScroll = false
+        } else if (pendingAutoScroll && isScrollFinished) {
+            pendingAutoScroll = false
             lazyListState.scrollToItem(0)
         }
     }
