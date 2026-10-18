@@ -37,6 +37,10 @@ class AvatarThumbnailTest : RobolectricTest() {
         assertThat(bitmap).isNotNull()
         assertThat(bitmap?.width).isEqualTo(32)
         assertThat(bitmap?.height).isEqualTo(16)
+        // Keep enough pixels to avoid enlarging a thumbnail and making the avatar blurry.
+        val scaledBitmap = decodeAvatarThumbnail(encodedBitmap(width = 240, height = 240), sizePx = 96)
+        assertThat(scaledBitmap?.width).isEqualTo(120)
+        assertThat(scaledBitmap?.height).isEqualTo(120)
     }
 
     private fun encodedBitmap(width: Int, height: Int): String {

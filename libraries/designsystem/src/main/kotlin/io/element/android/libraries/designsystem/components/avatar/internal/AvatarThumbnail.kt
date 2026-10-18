@@ -21,7 +21,7 @@ internal fun decodeAvatarThumbnail(encodedThumbnail: String?, sizePx: Int): Bitm
         if (options.outWidth <= 0 || options.outHeight <= 0) return@runCatchingExceptions null
         // A homeserver may ignore the requested thumbnail dimensions. Bound decoded bitmap memory.
         val longestSide = maxOf(options.outWidth, options.outHeight)
-        while (longestSide / options.inSampleSize > sizePx.coerceAtLeast(1)) {
+        while (longestSide / options.inSampleSize / 2 >= sizePx.coerceAtLeast(1)) {
             options.inSampleSize *= 2
         }
         options.inJustDecodeBounds = false
