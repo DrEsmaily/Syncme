@@ -55,7 +55,10 @@ class PreferencesRootPresenterTest {
     @Test
     fun `present - initial state`() = runTest {
         val matrixClient = FakeMatrixClient()
-        createPreferencesRootPresenter(matrixClient = matrixClient).test {
+        createPreferencesRootPresenter(
+            matrixClient = matrixClient,
+            featureFlagService = FakeFeatureFlagService(initialState = mapOf(FeatureFlags.AllowBlackTheme.key to false)),
+        ).test {
             val initialState = awaitItem()
             assertThat(initialState.myUser).isEqualTo(
                 MatrixUser(
@@ -76,7 +79,7 @@ class PreferencesRootPresenterTest {
             )
             assertThat(loadedState.userStatusState).isNotNull()
             assertThat(loadedState.showAnalyticsSettings).isFalse()
-            assertThat(loadedState.showDeveloperSettings).isTrue()
+            assertThat(loadedState.showDeveloperSettings).isFalse()
             assertThat(loadedState.showLabsItem).isFalse()
             assertThat(loadedState.snackbarMessage).isNull()
         }

@@ -11,9 +11,11 @@ import android.graphics.Bitmap
 import com.google.common.truth.Truth.assertThat
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
+import org.robolectric.annotation.GraphicsMode
 import java.io.ByteArrayOutputStream
 import kotlin.io.encoding.Base64
 
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class AvatarThumbnailTest : RobolectricTest() {
     @Test
     fun `stored thumbnail is immediately available without an image loading request`() {
@@ -21,6 +23,15 @@ class AvatarThumbnailTest : RobolectricTest() {
         val bitmap = decodeAvatarThumbnail(encoded, sizePx = 32)
         assertThat(bitmap).isNotNull()
         assertThat(bitmap?.width).isEqualTo(32)
+        assertThat(bitmap?.height).isEqualTo(32)
+    }
+
+    @Test
+    fun `jpeg thumbnails also render immediately`() {
+        val encoded = encodedBitmap(width = 48, height = 32, format = Bitmap.CompressFormat.JPEG)
+        val bitmap = decodeAvatarThumbnail(encoded, sizePx = 32)
+        assertThat(bitmap).isNotNull()
+        assertThat(bitmap?.width).isEqualTo(48)
         assertThat(bitmap?.height).isEqualTo(32)
     }
 
@@ -51,10 +62,14 @@ class AvatarThumbnailTest : RobolectricTest() {
         assertThat(decodeAvatarThumbnail(svg, 32)).isNull()
     }
 
-    private fun encodedBitmap(width: Int, height: Int): String {
+    private fun encodedBitmap(
+        width: Int,
+        height: Int,
+        format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,
+    ): String {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         return ByteArrayOutputStream().use { output ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
+            assertThat(bitmap.compress(format, 100, output)).isTrue()
             bitmap.recycle()
             Base64.encode(output.toByteArray())
         }

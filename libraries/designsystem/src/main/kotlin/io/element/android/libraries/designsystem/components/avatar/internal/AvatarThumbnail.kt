@@ -16,7 +16,10 @@ internal fun decodeAvatarThumbnail(encodedThumbnail: String?, sizePx: Int): Bitm
     if (encodedThumbnail == null) return null
     return runCatchingExceptions {
         val bytes = Base64.decode(encodedThumbnail)
-        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+            inSampleSize = 1
+        }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         if (options.outWidth <= 0 || options.outHeight <= 0) return@runCatchingExceptions null
         // Keep Coil's existing animation and format support for all other thumbnail types.
