@@ -8,6 +8,8 @@
 
 package io.element.android.libraries.designsystem.components.avatar.internal
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -17,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
@@ -36,8 +40,11 @@ internal fun ImageAvatar(
     contentDescription: String? = null,
 ) {
     val size = forcedAvatarSize ?: avatarData.size.dp
-    val thumbnailBytes = remember(avatarData.thumbnail) {
-        avatarData.thumbnail?.let { runCatchingExceptions { Base64.decode(it) }.getOrNull() }
+    // Decode common static session thumbnails once so their fallback is ready in the first frame.
+    // Other formats retain Coil's existing decoder path.
+    val thumbnailSizePx = with(LocalDensity.current) { size.roundToPx().coerceAtLeast(1) }
+    val thumbnail = remember(avatarData.thumbnail, thumbnailSizePx) {
+        decodeAvatarThumbnail(avatarData.thumbnail, thumbnailSizePx)
     }
     SubcomposeAsyncImage(
         model = avatarData,
@@ -59,7 +66,7 @@ internal fun ImageAvatar(
                 }
                 ThumbnailOrInitialLetterAvatar(
                     avatarData = avatarData,
-                    thumbnailBytes = thumbnailBytes,
+                    thumbnail = thumbnail,
                     avatarShape = avatarShape,
                     forcedAvatarSize = forcedAvatarSize,
                     contentDescription = contentDescription,
@@ -67,7 +74,7 @@ internal fun ImageAvatar(
             }
             else -> ThumbnailOrInitialLetterAvatar(
                 avatarData = avatarData,
-                thumbnailBytes = thumbnailBytes,
+                thumbnail = thumbnail,
                 avatarShape = avatarShape,
                 forcedAvatarSize = forcedAvatarSize,
                 contentDescription = contentDescription,
@@ -82,11 +89,26 @@ internal fun ImageAvatar(
 @Composable
 private fun ThumbnailOrInitialLetterAvatar(
     avatarData: AvatarData,
-    thumbnailBytes: ByteArray?,
+    thumbnail: Bitmap?,
     avatarShape: Shape,
     forcedAvatarSize: Dp?,
     contentDescription: String?,
 ) {
+    if (thumbnail != null) {
+        Image(
+            bitmap = thumbnail.asImageBitmap(),
+            contentDescription = contentDescription,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(forcedAvatarSize ?: avatarData.size.dp)
+                .clip(avatarShape),
+        )
+        return
+    }
+    // Preserve the original Coil fallback for formats such as GIF, WebP and SVG.
+    val thumbnailBytes = remember(avatarData.thumbnail) {
+        avatarData.thumbnail?.let { runCatchingExceptions { Base64.decode(it) }.getOrNull() }
+    }
     if (thumbnailBytes == null) {
         InitialLetterAvatar(
             avatarData = avatarData,

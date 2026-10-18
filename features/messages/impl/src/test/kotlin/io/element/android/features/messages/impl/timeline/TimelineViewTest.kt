@@ -64,6 +64,67 @@ import org.junit.Test
 
 class TimelineViewTest : RobolectricTest() {
     @Test
+    fun `stopping near the live end does not scroll without a new message`() = runAndroidComposeUiTest {
+        val state = mutableStateOf(aTimelineState(timelineItems = List(40) { aTimelineItemEvent() }.toImmutableList()))
+        val scroll = LazyListState(firstVisibleItemIndex = 12)
+        setScrollableTimeline({ state.value }, scroll)
+        waitForIdle()
+        for (index in listOf(2, 1)) {
+            onNodeWithTag("timeline").performScrollToIndex(index)
+            waitForIdle()
+            runOnIdle { assertThat(scroll.firstVisibleItemIndex).isEqualTo(index) }
+        }
+    }
+
+    @Test
+    fun `restoring a partially visible latest item preserves its scroll offset`() = runAndroidComposeUiTest {
+        val state = mutableStateOf(aTimelineState(timelineItems = List(40) { aTimelineItemEvent() }.toImmutableList()))
+        val scroll = LazyListState(firstVisibleItemIndex = 0, firstVisibleItemScrollOffset = 24)
+        setScrollableTimeline({ state.value }, scroll)
+        waitForIdle()
+        runOnIdle { assertThat(scroll.firstVisibleItemScrollOffset).isEqualTo(24) }
+    }
+
+    @Test
+    fun `returning near the end after receiving a message while reading history does not jump`() = runAndroidComposeUiTest {
+        val state = mutableStateOf(aTimelineState(timelineItems = List(40) { aTimelineItemEvent() }.toImmutableList()))
+        val scroll = LazyListState(firstVisibleItemIndex = 12)
+        setScrollableTimeline({ state.value }, scroll)
+        waitForIdle()
+        runOnIdle {
+            state.value = state.value.copy(
+                timelineItems = (listOf(aTimelineItemEvent()) + state.value.timelineItems).toImmutableList(),
+                newEventState = NewEventState.FromOther,
+            )
+        }
+        waitForIdle()
+        onNodeWithTag("timeline").performScrollToIndex(1)
+        waitForIdle()
+        runOnIdle { assertThat(scroll.firstVisibleItemIndex).isEqualTo(1) }
+    }
+
+    @Test
+    fun `own message scrolls once even when its origin is classified after insertion`() = runAndroidComposeUiTest {
+        val state = mutableStateOf(aTimelineState(timelineItems = List(40) { aTimelineItemEvent() }.toImmutableList()))
+        val scroll = LazyListState(firstVisibleItemIndex = 12)
+        setScrollableTimeline({ state.value }, scroll)
+        waitForIdle()
+        runOnIdle {
+            state.value = state.value.copy(
+                timelineItems = (listOf(aTimelineItemEvent()) + state.value.timelineItems).toImmutableList(),
+            )
+        }
+        waitForIdle()
+        runOnIdle { state.value = state.value.copy(newEventState = NewEventState.FromMe) }
+        waitForIdle()
+        runOnIdle { assertThat(scroll.firstVisibleItemIndex).isEqualTo(0) }
+        // A sticky FromMe state must not pull the user back on subsequent manual scrolling.
+        onNodeWithTag("timeline").performScrollToIndex(12)
+        waitForIdle()
+        runOnIdle { assertThat(scroll.firstVisibleItemIndex).isEqualTo(12) }
+    }
+
+    @Test
     fun `server event ID arriving with unchanged list keys emits a read update`() = runAndroidComposeUiTest {
         val initial = listOf(
             aTimelineItemEvent().copy(eventId = null, transactionId = io.element.android.libraries.matrix.api.core.TransactionId("local-echo"))
@@ -502,6 +563,30 @@ private fun AndroidComposeUiTest<ComponentActivity>.setTimelineView(
             onGalleryItemClick = onGalleryItemClick,
             forceJumpToBottomVisibility = forceJumpToBottomVisibility,
             onJoinCallClick = onJoinCallClick,
+        )
+    }
+}
+
+private fun AndroidComposeUiTest<ComponentActivity>.setScrollableTimeline(
+    state: () -> TimelineState,
+    scroll: LazyListState,
+) {
+    setSafeContent(clearAndroidUiDispatcher = true) {
+        TimelineView(
+            state = state(),
+            lazyListState = scroll,
+            timelineProtectionState = aTimelineProtectionState(),
+            onUserDataClick = {},
+            onLinkClick = {},
+            onContentClick = {},
+            onMessageLongClick = {},
+            onSwipeToReply = {},
+            onReactionClick = { _, _ -> },
+            onReactionLongClick = { _, _ -> },
+            onMoreReactionsClick = {},
+            onReadReceiptClick = {},
+            onGalleryItemClick = { _, _ -> },
+            onJoinCallClick = {},
         )
     }
 }

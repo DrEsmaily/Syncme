@@ -37,6 +37,7 @@ import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -67,9 +68,6 @@ class PreferencesRootPresenter(
         val isMultiAccountEnabled by remember {
             featureFlagService.isFeatureEnabledFlow(FeatureFlags.MultiAccount)
         }.collectAsState(initial = false)
-        val isOtherAccountsSectionExpanded by remember {
-            appPreferencesStore.isOtherAccountsExpandedFlow()
-        }.collectAsState(initial = true)
         val isUserStatusSupported by produceState(false) {
             value = matrixClient.isUserStatusSupported().getOrDefault(false)
         }
@@ -81,9 +79,10 @@ class PreferencesRootPresenter(
             appPreferencesStore.getThemeFlow().mapToTheme(isBlackThemeAllowed)
         }.collectAsState(initial = Theme.System)
 
-        val otherSessions by remember {
-            sessionStore.sessionsFlow().map { list ->
-                list
+        // Publish the accounts and their saved layout together, avoiding a transient expanded section.
+        val otherAccounts by remember {
+            combine(sessionStore.sessionsFlow(), appPreferencesStore.isOtherAccountsExpandedFlow()) { list, expanded ->
+                val sessions = list
                     .filter { it.userId != matrixClient.sessionId.value }
                     .map {
                         MatrixUser(
@@ -94,8 +93,11 @@ class PreferencesRootPresenter(
                         )
                     }
                     .toImmutableList()
+                sessions to expanded
             }
-        }.collectAsState(initial = persistentListOf())
+        }.collectAsState(initial = null)
+        val otherSessions = otherAccounts?.first ?: persistentListOf()
+        val isOtherAccountsSectionExpanded = otherAccounts?.second ?: true
 
         val themeOption by remember {
             derivedStateOf {
@@ -152,7 +154,7 @@ class PreferencesRootPresenter(
             theme = themeOption,
             availableThemeOptions = availableThemeOptions,
             version = remember { versionFormatter.get() },
-            isMultiAccountEnabled = isMultiAccountEnabled,
+            isMultiAccountEnabled = isMultiAccountEnabled && otherAccounts != null,
             isOtherAccountsSectionExpanded = isOtherAccountsSectionExpanded,
             otherSessions = otherSessions,
             showAnalyticsSettings = hasAnalyticsProviders,
