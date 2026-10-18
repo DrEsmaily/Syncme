@@ -1,0 +1,113 @@
+name: SyncMe 257 combined fixes APK
+
+on:
+  push:
+    branches: [build/syncme-257-combined-fixes]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: syncme-final-257-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SYNCME_BUILD_NUMBER: '257'
+  SYNCME_VERSION_CODE: '20261024'
+  CI_GRADLE_ARGS: --no-configuration-cache --stacktrace --max-workers=2 --no-parallel
+
+jobs:
+  verified-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+        with:
+          cache-read-only: false
+      - name: Verify both fixes and preserve the installed application ID
+        run: |
+          git merge-base --is-ancestor ad9aee78dec1d7f31afddd69f63c642a7bd6231c HEAD
+          git merge-base --is-ancestor 33f0d7cb684075ee9591ba062decdc62f165d0f4 HEAD
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          path = Path('app/build.gradle.kts')
+          source = path.read_text()
+          marker = 'getByName("release") {'
+          assert source.count(marker) == 1
+          path.write_text(source.replace(marker, marker + '\n            applicationIdSuffix = ".syncmerelease"'))
+          PYTHON
+          git diff --check
+      - name: Run combined scroll, avatar, settings and media cache regressions
+        run: >-
+          ./gradlew
+          :features:messages:impl:testDebugUnitTest --tests '*TimelineViewTest'
+          :features:preferences:impl:testDebugUnitTest --tests '*PreferencesRootPresenterTest'
+          :libraries:designsystem:testDebugUnitTest --tests '*Avatar*Test'
+          :libraries:matrix:impl:testDebugUnitTest --tests '*RustMatrixClientFactoryTest' --tests '*RustTemporaryMatrixClientFactoryTest'
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
+      - name: Build optimized release APKs
+        run: >-
+          ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
+      - name: Verify APK metadata, signature and update compatibility
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build-checkpoint /tmp/syncme-reference
+          gh release download v1.1.1-build256 --repo "$GITHUB_REPOSITORY" --pattern SyncMe-256-ARM64.apk --dir /tmp/syncme-reference
+          python3 .github/workflows/scripts/verify_syncme_257.py
+          sha256sum build-checkpoint/SyncMe-257-ARM64.apk > build-checkpoint/SHA256.txt
+          git diff -- app/build.gradle.kts > build-checkpoint/build-source.patch
+          cp docs/syncme/build-257-combined-fixes.md build-checkpoint/SyncMe-257-Notes.md
+          cp .github/SYNCME_CONTINUATION_MASTER.txt build-checkpoint/Original-Continuation-Master.txt
+          {
+            echo "Build: SyncMe 257, optimized GplayRelease, ARM64"
+            echo "Commit: $GITHUB_SHA"
+            echo "Run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Includes scroll/avatar fixes: ad9aee78dec1d7f31afddd69f63c642a7bd6231c"
+            echo "Includes 5 GiB media cache: 33f0d7cb684075ee9591ba062decdc62f165d0f4"
+            echo "Build-only source adjustment: see build-source.patch"
+            echo "Physical device runtime confirmation: not performed"
+            cat build-checkpoint/SHA256.txt
+            cat docs/syncme/build-257-combined-fixes.md
+          } | tee build-checkpoint/Provenance.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload verified ARM64 APK and provenance
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-257-ARM64
+          path: build-checkpoint/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Preserve regression reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-257-test-results
+          path: |
+            features/messages/impl/build/reports/tests/
+            features/preferences/impl/build/reports/tests/
+            libraries/designsystem/build/reports/tests/
+            libraries/matrix/impl/build/reports/tests/
+          if-no-files-found: warn
+          retention-days: 30
