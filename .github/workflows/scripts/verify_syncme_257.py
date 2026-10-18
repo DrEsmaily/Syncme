@@ -46,6 +46,7 @@ with zipfile.ZipFile(apk) as archive:
                 dex.write_bytes(archive.read(name))
                 if "Lorg/rustls/platformverifier/CertificateVerifier;" in run("dexdump", "-f", dex):
                     verifier_found = True
+                    break
     assert verifier_found, "TLS JNI certificate verifier missing from optimized APK"
 
 manifest, (application_id, version_code, version_name) = metadata(apk)
@@ -60,7 +61,7 @@ assert '"com.github.dresmaily.syncme"' in resources, "OAuth redirect scheme chan
 
 signature = run("apksigner", "verify", "--verbose", "--print-certs", apk)
 previous_signature = run("apksigner", "verify", "--print-certs", reference)
-pattern = r"Signer #1 certificate SHA-256 digest: ([0-9a-fA-F]+)"
+pattern = r"certificate SHA-256 digest: ([0-9a-fA-F]+)"
 current_digest = re.search(pattern, signature)
 previous_digest = re.search(pattern, previous_signature)
 assert current_digest and previous_digest
