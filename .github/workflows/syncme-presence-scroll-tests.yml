@@ -1,0 +1,49 @@
+name: SyncMe presence scrolling regressions
+on:
+  push:
+    branches: [fix/syncme-presence-scroll]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: syncme-presence-scroll-tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+        with:
+          cache-read-only: true
+      - name: Test scrolling subscriptions and presence accuracy
+        run: >-
+          ./gradlew
+          :libraries:matrixui:testDebugUnitTest --tests '*PresenceSubscriptionTest'
+          :libraries:matrix:impl:testDebugUnitTest --tests '*RustPresenceServiceTest' --tests '*PresenceFromJsonTest'
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g
+          --no-configuration-cache --stacktrace --max-workers=2 --no-parallel
+      - name: Preserve regression results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-presence-scroll-tests
+          path: |
+            libraries/matrixui/build/reports/tests/
+            libraries/matrix/impl/build/reports/tests/
+          if-no-files-found: warn

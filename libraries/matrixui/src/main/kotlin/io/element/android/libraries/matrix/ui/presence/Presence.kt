@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,10 +35,11 @@ import io.element.android.libraries.ui.strings.CommonStrings
 @Composable
 fun MatrixClient.observePresence(users: Set<UserId>): Map<UserId, UserPresence> {
     val visibleUsers = users.sortedBy { it.value }.take(128).toSet()
-    DisposableEffect(this, visibleUsers) {
-        trackPresence(visibleUsers)
-        onDispose { releasePresence(visibleUsers) }
+    val subscription = remember(this) { PresenceSubscription(::trackPresence, ::releasePresence) }
+    DisposableEffect(subscription) {
+        onDispose { subscription.dispose() }
     }
+    SideEffect { subscription.update(visibleUsers) }
     val states by presenceStates.collectAsState()
     return states
 }

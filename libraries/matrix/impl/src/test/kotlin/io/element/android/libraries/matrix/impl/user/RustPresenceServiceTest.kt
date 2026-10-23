@@ -91,9 +91,11 @@ class RustPresenceServiceTest : RobolectricTest() {
         service.release(setOf(user))
         assertThat(service.states.value[user]).isEqualTo(UserPresence.Online)
         service.release(setOf(user))
-        assertThat(service.states.value).isEmpty()
+        assertThat(service.states.value[user]).isEqualTo(UserPresence.Online)
+        val requestsAfterRelease = paths.size
         delay(700)
-        assertThat(service.states.value).isEmpty()
+        assertThat(service.states.value[user]).isEqualTo(UserPresence.Online)
+        assertThat(paths.size).isEqualTo(requestsAfterRelease)
     }
 
     @Test
@@ -258,6 +260,51 @@ class RustPresenceServiceTest : RobolectricTest() {
             renewalScope.cancel()
         }
     }
+
+    @Test
+    fun `returning row keeps a fresh status until the server reports a real change`() = runBlocking {
+        val cached = cachedService()
+        cached.track(setOf(user))
+        eventually { cached.states.value[user] == UserPresence.Online }
+        cached.release(setOf(user))
+        presence.set("offline")
+        slowSnapshots.set(true)
+        cached.track(setOf(user))
+        assertThat(cached.states.value[user]).isEqualTo(UserPresence.Online)
+        eventually { cached.states.value[user] is UserPresence.Offline }
+    }
+
+    @Test
+    fun `expired returning row cannot reuse its old online status`() = runBlocking {
+        val cached = cachedService(maxAgeMillis = 150)
+        cached.track(setOf(user))
+        eventually { cached.states.value[user] == UserPresence.Online }
+        cached.release(setOf(user))
+        delay(300)
+        slowSnapshots.set(true)
+        cached.track(setOf(user))
+        assertThat(cached.states.value[user]).isNull()
+    }
+
+    @Test
+    fun `inactive cache is bounded and sync stop clears retained entries`() = runBlocking {
+        val cached = cachedService()
+        val users = (0 until 130).map { UserId("@member$it:example.org") }.toSet()
+        cached.track(users)
+        eventually { cached.states.value.size == users.size }
+        cached.release(users)
+        assertThat(cached.states.value.size).isEqualTo(128)
+        sync.value = SyncState.Offline
+        eventually { cached.states.value.isEmpty() }
+    }
+
+    private fun cachedService(maxAgeMillis: Long = 90_000) = RustPresenceService(
+        server.url("/").toString(), UserId("@alice:server.org"),
+        InMemorySessionStore(listOf(aSessionData())), sync, visibility, scope,
+        publishOwnPresence = {},
+        refreshIntervalMillis = { 200 },
+        snapshotMaxAgeMillis = maxAgeMillis,
+    )
 
     private suspend fun eventually(condition: () -> Boolean) = withTimeout(6000) {
         while (!condition()) delay(10)

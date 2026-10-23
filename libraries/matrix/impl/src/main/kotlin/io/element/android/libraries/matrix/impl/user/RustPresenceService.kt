@@ -44,6 +44,7 @@ internal class RustPresenceService(
     private val refreshIntervalMillis: (Int) -> Long = { if (it <= 8) 15_000 else 60_000 },
     private val publicationRetryMillis: Long = 2_000,
     private val publicationRefreshMillis: Long = 15_000,
+    private val snapshotMaxAgeMillis: Long = 90_000,
 ) {
     private val base = homeserver.trimEnd('/').toHttpUrl()
     private val http = OkHttpClient.Builder()
@@ -71,6 +72,7 @@ internal class RustPresenceService(
                             if (isCurrent(user, epoch)) {
                                 mutableStates.value += user to presenceFromJson(content, System.currentTimeMillis())
                                 observedAtNanos[user] = System.nanoTime()
+                                trimSnapshots()
                             }
                         }
                     } catch (cancelled: CancellationException) {
@@ -81,7 +83,10 @@ internal class RustPresenceService(
                             cooldownUntilNanos.updateAndGet { previous -> maxOf(previous, until) }
                         }
                         synchronized(registrations) {
-                            if (isCurrent(user, epoch)) mutableStates.value -= user
+                            if (isCurrent(user, epoch)) {
+                                mutableStates.value -= user
+                                observedAtNanos.remove(user)
+                            }
                         }
                     } finally {
                         synchronized(registrations) { pending.remove(user to epoch) }
@@ -132,8 +137,7 @@ internal class RustPresenceService(
                         try {
                             while (kotlin.coroutines.coroutineContext.isActive) {
                                 val count = synchronized(registrations) {
-                                    val oldest = System.nanoTime() - TimeUnit.SECONDS.toNanos(90)
-                                    mutableStates.value = mutableStates.value.filterKeys { (observedAtNanos[it] ?: 0) >= oldest }
+                                    trimSnapshots()
                                     registrations.keys.forEach(::enqueue)
                                     registrations.size
                                 }
@@ -144,6 +148,7 @@ internal class RustPresenceService(
                                 generation++
                                 running = false
                                 mutableStates.value = emptyMap()
+                                observedAtNanos.clear()
                             }
                         }
                     }
@@ -158,6 +163,7 @@ internal class RustPresenceService(
     }
 
     fun track(users: Set<UserId>) = synchronized(registrations) {
+        trimSnapshots()
         users.forEach { user ->
             val count = registrations[user] ?: 0
             registrations[user] = count + 1
@@ -172,10 +178,25 @@ internal class RustPresenceService(
                 registrations[user] = count - 1
             } else {
                 registrations.remove(user)
-                observedAtNanos.remove(user)
-                mutableStates.value -= user
             }
         }
+        trimSnapshots()
+    }
+
+    // Called only while holding registrations' monitor. Returning rows can reuse a fresh
+    // server response, but scrolling never extends its age or keeps unlimited users cached.
+    private fun trimSnapshots() {
+        val oldest = System.nanoTime() - TimeUnit.MILLISECONDS.toNanos(snapshotMaxAgeMillis)
+        val fresh = observedAtNanos.filterValues { it >= oldest }
+        val recentInactive = fresh.entries
+            .filter { it.key !in registrations }
+            .sortedByDescending { it.value }
+            .take(128)
+            .map { it.key }
+            .toSet()
+        val retained = fresh.keys.filter { it in registrations || it in recentInactive }.toSet()
+        observedAtNanos.keys.retainAll(retained)
+        mutableStates.value = mutableStates.value.filterKeys { it in retained }
     }
 
     private fun isCurrent(user: UserId, epoch: Long): Boolean = synchronized(registrations) {
