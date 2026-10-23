@@ -161,6 +161,12 @@ interface AppPreferencesStore {
     /** The selected custom room tag, or null when no custom tag filter is active. */
     fun getActiveCustomRoomTagIdFlow(): Flow<String?>
 
+    fun getActiveCustomRoomTagIdsFlow(): Flow<Set<String>>
+
+    suspend fun toggleActiveCustomRoomTag(tagId: String)
+
+    suspend fun clearActiveCustomRoomTags()
+
     /** Creates a tag and returns its stable id, or null for blank/duplicate names. */
     suspend fun createCustomRoomTag(name: String, icon: String = "◈"): String?
 

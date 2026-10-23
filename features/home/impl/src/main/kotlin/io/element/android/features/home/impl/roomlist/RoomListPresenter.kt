@@ -183,12 +183,12 @@ class RoomListPresenter(
 
         LaunchedEffect(
             filtersState.filterSelectionStates,
-            filtersState.activeCustomTagId,
+            filtersState.activeCustomTagIds,
             filtersState.customTags,
         ) {
             val selectedFilters = filtersState.selectedFilters().map { filter -> filter.into() }
-            val customTagFilter = filtersState.selectedCustomTag()?.let { tag ->
-                RoomListFilter.Identifiers(tag.roomIds.map(::RoomId))
+            val customTagFilter = filtersState.selectedCustomTags().takeIf { it.isNotEmpty() }?.let { tags ->
+                RoomListFilter.Identifiers(tags.flatMap { it.roomIds }.distinct().map(::RoomId))
             }
             val allFilters = RoomListFilter.All(selectedFilters + listOfNotNull(customTagFilter))
             roomListDataSource.updateFilter(allFilters)

@@ -13,6 +13,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.core.meta.BuildMeta
@@ -48,6 +49,7 @@ private val callRingtoneChannelVersionKey = intPreferencesKey("notificationCallR
 private val callRingtoneDisplayNameKey = stringPreferencesKey("notificationCallRingtoneDisplayName")
 private val customRoomTagsKey = stringPreferencesKey("syncmeCustomRoomTags")
 private val activeCustomRoomTagIdKey = stringPreferencesKey("syncmeActiveCustomRoomTagId")
+private val activeCustomRoomTagIdsKey = stringSetPreferencesKey("syncmeActiveCustomRoomTagIds")
 
 // URLs never contain a newline, so it is a safe delimiter to persist an ordered list in a single String.
 private const val HOMESERVER_HISTORY_DELIMITER = "\n"
@@ -284,9 +286,29 @@ class DefaultAppPreferencesStore(
     }
 
     override fun getActiveCustomRoomTagIdFlow(): Flow<String?> {
-        return store.data.map { prefs ->
-            val active = prefs[activeCustomRoomTagIdKey]
-            active?.takeIf { id -> prefs.readCustomRoomTags().any { it.id == id } }
+        return getActiveCustomRoomTagIdsFlow().map { it.firstOrNull() }
+    }
+
+    private fun Preferences.readActiveCustomRoomTagIds(): Set<String> {
+        val saved = this[activeCustomRoomTagIdsKey] ?: setOfNotNull(this[activeCustomRoomTagIdKey])
+        return saved.intersect(readCustomRoomTags().map { it.id }.toSet())
+    }
+
+    override fun getActiveCustomRoomTagIdsFlow(): Flow<Set<String>> = store.data.map { it.readActiveCustomRoomTagIds() }
+
+    override suspend fun toggleActiveCustomRoomTag(tagId: String) {
+        store.edit { prefs ->
+            if (prefs.readCustomRoomTags().none { it.id == tagId }) return@edit
+            val active = prefs.readActiveCustomRoomTagIds()
+            prefs[activeCustomRoomTagIdsKey] = if (tagId in active) active - tagId else active + tagId
+            prefs.remove(activeCustomRoomTagIdKey)
+        }
+    }
+
+    override suspend fun clearActiveCustomRoomTags() {
+        store.edit { prefs ->
+            prefs[activeCustomRoomTagIdsKey] = emptySet()
+            prefs.remove(activeCustomRoomTagIdKey)
         }
     }
 
@@ -327,8 +349,10 @@ class DefaultAppPreferencesStore(
 
     override suspend fun deleteCustomRoomTag(tagId: String) {
         store.edit { prefs ->
+            val active = prefs.readActiveCustomRoomTagIds() - tagId
             val updated = prefs.readCustomRoomTags().filterNot { it.id == tagId }
             prefs.writeCustomRoomTags(updated)
+            prefs[activeCustomRoomTagIdsKey] = active
             if (prefs[activeCustomRoomTagIdKey] == tagId) {
                 prefs.remove(activeCustomRoomTagIdKey)
             }
@@ -337,11 +361,8 @@ class DefaultAppPreferencesStore(
 
     override suspend fun setActiveCustomRoomTagId(tagId: String?) {
         store.edit { prefs ->
-            if (tagId != null && prefs.readCustomRoomTags().any { it.id == tagId }) {
-                prefs[activeCustomRoomTagIdKey] = tagId
-            } else {
-                prefs.remove(activeCustomRoomTagIdKey)
-            }
+            prefs[activeCustomRoomTagIdsKey] = setOfNotNull(tagId).intersect(prefs.readCustomRoomTags().map { it.id }.toSet())
+            prefs.remove(activeCustomRoomTagIdKey)
         }
     }
 

@@ -88,6 +88,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -96,6 +97,32 @@ import kotlin.time.Duration.Companion.seconds
 class RoomListPresenterTest {
     @get:Rule
     val warmUpRule = WarmUpRule()
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `selected custom tags filter the union of rooms without duplicates`() = runTest {
+        val dynamic = FakeDynamicRoomList()
+        val service = FakeRoomListService(createRoomListLambda = { dynamic })
+        val filters = aRoomListFiltersState(
+            customTags = listOf(
+                io.element.android.libraries.preferences.api.store.CustomRoomTag("family", "Family", setOf(A_ROOM_ID.value, A_ROOM_ID_2.value)),
+                io.element.android.libraries.preferences.api.store.CustomRoomTag("friends", "Friends", setOf(A_ROOM_ID_2.value, A_ROOM_ID_3.value)),
+            ),
+            activeCustomTagIds = setOf("family", "friends"),
+        )
+        val presenter = createRoomListPresenter(
+            client = FakeMatrixClient(roomListService = service),
+            filtersPresenter = Presenter { filters },
+        )
+        presenter.test {
+            awaitItem()
+            advanceUntilIdle()
+            val applied = dynamic.currentFilter.value as io.element.android.libraries.matrix.api.roomlist.RoomListFilter.All
+            val identifiers = applied.filters.filterIsInstance<io.element.android.libraries.matrix.api.roomlist.RoomListFilter.Identifiers>().single()
+            assertThat(identifiers.values).containsExactly(A_ROOM_ID, A_ROOM_ID_2, A_ROOM_ID_3)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 
     @Test
     fun `present - load 1 room with success`() = runTest {

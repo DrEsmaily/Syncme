@@ -29,21 +29,20 @@ class RoomListFiltersPresenter(
     override fun present(): RoomListFiltersState {
         val coroutineScope = rememberCoroutineScope()
         val customTags by appPreferencesStore.getCustomRoomTagsFlow().collectAsState(emptyList())
-        val activeCustomTagId by appPreferencesStore.getActiveCustomRoomTagIdFlow().collectAsState(null)
+        val activeCustomTagIds by appPreferencesStore.getActiveCustomRoomTagIdsFlow().collectAsState(emptySet())
 
         fun handleEvent(event: RoomListFiltersEvent) {
             when (event) {
                 RoomListFiltersEvent.ClearSelectedFilters -> {
                     filterSelectionStrategy.clear()
-                    coroutineScope.launch { appPreferencesStore.setActiveCustomRoomTagId(null) }
+                    coroutineScope.launch { appPreferencesStore.clearActiveCustomRoomTags() }
                 }
                 is RoomListFiltersEvent.ToggleFilter -> {
                     filterSelectionStrategy.toggle(event.filter)
                 }
                 is RoomListFiltersEvent.SelectCustomTag -> {
                     coroutineScope.launch {
-                        val next = event.tagId.takeUnless { it == activeCustomTagId }
-                        appPreferencesStore.setActiveCustomRoomTagId(next)
+                        appPreferencesStore.toggleActiveCustomRoomTag(event.tagId)
                     }
                 }
                 is RoomListFiltersEvent.CreateCustomTag -> {
@@ -73,7 +72,7 @@ class RoomListFiltersPresenter(
         return RoomListFiltersState(
             filterSelectionStates = filters.toImmutableList(),
             customTags = customTags.toImmutableList(),
-            activeCustomTagId = activeCustomTagId,
+            activeCustomTagIds = activeCustomTagIds,
             eventSink = ::handleEvent,
         )
     }

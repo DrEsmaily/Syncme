@@ -16,13 +16,13 @@ import kotlinx.collections.immutable.toImmutableList
 data class RoomListFiltersState(
     val filterSelectionStates: ImmutableList<FilterSelectionState>,
     val customTags: ImmutableList<CustomRoomTag>,
-    val activeCustomTagId: String?,
+    val activeCustomTagIds: Set<String>,
     val eventSink: (RoomListFiltersEvent) -> Unit,
 ) {
-    val hasAnyFilterSelected = filterSelectionStates.any { it.isSelected } || activeCustomTagId != null
+    val hasAnyFilterSelected = filterSelectionStates.any { it.isSelected } || activeCustomTagIds.isNotEmpty()
 
-    fun selectedCustomTag(): CustomRoomTag? {
-        return customTags.firstOrNull { it.id == activeCustomTagId }
+    fun selectedCustomTags(): List<CustomRoomTag> {
+        return customTags.filter { it.id in activeCustomTagIds }
     }
 
     fun selectedFilters(): ImmutableList<RoomListFilter> {

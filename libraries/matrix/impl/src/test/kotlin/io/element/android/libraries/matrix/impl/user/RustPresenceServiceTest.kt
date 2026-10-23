@@ -219,6 +219,46 @@ class RustPresenceServiceTest : RobolectricTest() {
         assertThat(published).doesNotContain("unavailable")
     }
 
+    @Test
+    fun `foreground renewal prevents expiry and stops when sync or visibility stops`() = runBlocking {
+        val renewalScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val renewalSync = MutableStateFlow(SyncState.Running)
+        val renewalVisibility = MutableStateFlow<Boolean?>(true)
+        val onlineAt = java.util.concurrent.atomic.AtomicLong(0)
+        val renewals = AtomicInteger(0)
+        try {
+            RustPresenceService(
+                server.url("/").toString(), UserId("@alice:server.org"),
+                InMemorySessionStore(listOf(aSessionData())), renewalSync, renewalVisibility, renewalScope,
+                publishOwnPresence = { value ->
+                    if (value == "online") {
+                        onlineAt.set(System.nanoTime())
+                        renewals.incrementAndGet()
+                    }
+                },
+                publicationRefreshMillis = 50,
+            )
+            eventually { renewals.get() >= 4 }
+            // A one-shot publication would expire while ordinary sync remains Running.
+            delay(1000)
+            assertThat(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - onlineAt.get())).isLessThan(800L)
+            renewalSync.value = SyncState.Offline
+            delay(100)
+            val stopped = renewals.get()
+            delay(200)
+            assertThat(renewals.get()).isEqualTo(stopped)
+            renewalSync.value = SyncState.Running
+            eventually { renewals.get() > stopped }
+            renewalVisibility.value = false
+            delay(1200)
+            val background = renewals.get()
+            delay(200)
+            assertThat(renewals.get()).isEqualTo(background)
+        } finally {
+            renewalScope.cancel()
+        }
+    }
+
     private suspend fun eventually(condition: () -> Boolean) = withTimeout(6000) {
         while (!condition()) delay(10)
     }

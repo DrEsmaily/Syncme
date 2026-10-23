@@ -40,6 +40,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -115,13 +116,13 @@ fun RoomListFiltersView(
         )
     }
     // Move the selected custom chip into view as the built-in filters do.
-    LaunchedEffect(state.activeCustomTagId) {
-        if (state.activeCustomTagId != null) lazyListState.animateScrollToItem(1)
+    LaunchedEffect(state.activeCustomTagIds) {
+        if (state.activeCustomTagIds.isNotEmpty()) lazyListState.animateScrollToItem(1)
     }
     val previousFilters = remember { mutableStateOf(listOf<RoomListFilter>()) }
     // Put the selected custom tag first among custom chips, just like built-in
     // filters place the selected chip at the leading edge of their group.
-    val orderedCustomTags = state.customTags.sortedBy { if (it.id == state.activeCustomTagId) 0 else 1 }
+    val orderedCustomTags = state.customTags.sortedBy { if (it.id in state.activeCustomTagIds) 0 else 1 }
     LazyRow(
         contentPadding = PaddingValues(start = 8.dp, end = 16.dp),
         modifier = modifier.fillMaxWidth(),
@@ -146,7 +147,7 @@ fun RoomListFiltersView(
             }
         }
         // Selected tag is a genuinely leading chip, not merely a scrolled trailing chip.
-        orderedCustomTags.firstOrNull { it.id == state.activeCustomTagId }?.let { tag ->
+        orderedCustomTags.filter { it.id in state.activeCustomTagIds }.forEach { tag ->
             item("custom_tag_${tag.id}") {
                 RoomListCustomTagView(
                     tag = tag,
@@ -175,11 +176,11 @@ fun RoomListFiltersView(
                 )
             }
         }
-        orderedCustomTags.filterNot { it.id == state.activeCustomTagId }.forEach { tag ->
+        orderedCustomTags.filterNot { it.id in state.activeCustomTagIds }.forEach { tag ->
             item("custom_tag_${tag.id}") {
                 RoomListCustomTagView(
                     tag = tag,
-                    selected = state.activeCustomTagId == tag.id,
+                    selected = tag.id in state.activeCustomTagIds,
                     modifier = Modifier.animateItem(),
                     onClick = {
                         state.eventSink(RoomListFiltersEvent.SelectCustomTag(tag.id))
@@ -247,10 +248,10 @@ private fun SyncMeTagManager(
         tags.none { it.id != (if (page == "rename") selectedId else null) && it.name.equals(trimmed, ignoreCase = true) }
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
         Surface(color = ElementTheme.colors.bgCanvasDefault, modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 26.dp),
+            Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 20.dp, vertical = 26.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = {

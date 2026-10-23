@@ -20,6 +20,7 @@ class RoomListFiltersStatePreviewParam : PreviewParameterProvider<RoomListFilter
             aRoomListFiltersState(
                 filterSelectionStates = RoomListFilter.entries.map { FilterSelectionState(it, isSelected = true) }
             ),
+            aRoomListFiltersState(activeCustomTagIds = setOf("work", "family")),
         )
 }
 
@@ -30,10 +31,11 @@ fun aRoomListFiltersState(
         CustomRoomTag(id = "family", name = "Family", roomIds = emptySet()),
     ),
     activeCustomTagId: String? = null,
+    activeCustomTagIds: Set<String> = setOfNotNull(activeCustomTagId),
     eventSink: (RoomListFiltersEvent) -> Unit = {},
 ) = RoomListFiltersState(
     filterSelectionStates = filterSelectionStates.toImmutableList(),
     customTags = customTags.toImmutableList(),
-    activeCustomTagId = activeCustomTagId,
+    activeCustomTagIds = activeCustomTagIds,
     eventSink = eventSink,
 )

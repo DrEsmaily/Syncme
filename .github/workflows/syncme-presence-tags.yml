@@ -1,0 +1,127 @@
+name: SyncMe 1.1.2 Build 258
+
+on:
+  push:
+    branches: [build/syncme-258-presence-tags]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: syncme-final-258-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SYNCME_BUILD_NUMBER: '258'
+  SYNCME_VERSION_CODE: '20261025'
+  CI_GRADLE_ARGS: --no-configuration-cache --stacktrace --max-workers=2 --no-parallel
+
+jobs:
+  verified-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014258a94e6
+        with:
+          cache-read-only: false
+      - name: Preserve the installed application ID
+        run: |
+          git merge-base --is-ancestor ad9aee78dec1d7f31afddd69f63c642a7bd6231c HEAD
+          git merge-base --is-ancestor 33f0d7cb684075ee9591ba062decdc62f165d0f4 HEAD
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          path = Path('app/build.gradle.kts')
+          source = path.read_text()
+          marker = 'getByName("release") {'
+          assert source.count(marker) == 1
+          path.write_text(source.replace(marker, marker + '\n            applicationIdSuffix = ".syncmerelease"'))
+          PYTHON
+          git diff --check
+      - name: Run presence, tag selection, storage and existing regressions
+        run: >-
+          ./gradlew
+          :features:messages:impl:testDebugUnitTest --tests '*TimelineViewTest'
+          :features:home:impl:testDebugUnitTest --tests '*RoomListFiltersPresenterTest' --tests '*RoomListPresenterTest'
+          :libraries:preferences:impl:testDebugUnitTest --tests '*DefaultAppPreferencesStoreTest'
+          :features:preferences:impl:testDebugUnitTest --tests '*PreferencesRootPresenterTest'
+          :libraries:designsystem:testDebugUnitTest --tests '*Avatar*Test'
+          :libraries:matrix:impl:testDebugUnitTest --tests '*RustMatrixClientFactoryTest' --tests '*RustTemporaryMatrixClientFactoryTest' --tests '*RustPresenceServiceTest' --tests '*PresenceFromJsonTest'
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
+      - name: Build optimized release APKs
+        run: >-
+          ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
+      - name: Verify APK metadata, signature and update compatibility
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build-checkpoint /tmp/syncme-reference
+          gh release download v1.1.1-build256 --repo "$GITHUB_REPOSITORY" --pattern SyncMe-256-ARM64.apk --dir /tmp/syncme-reference
+          python3 .github/workflows/scripts/verify_syncme_258.py
+          sha256sum build-checkpoint/SyncMe-258-ARM64.apk > build-checkpoint/SHA256.txt
+          git diff -- app/build.gradle.kts > build-checkpoint/build-source.patch
+          cp docs/syncme/build-258-minor-fixes.md build-checkpoint/SyncMe-258-Notes.md
+          cp .github/SYNCME_CONTINUATION_MASTER.txt build-checkpoint/Original-Continuation-Master.txt
+          {
+            echo "Build: SyncMe 258, optimized GplayRelease, ARM64"
+            echo "Commit: $GITHUB_SHA"
+            echo "Run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Base: verified build 257, commit 178d12e5bdac4652aa6079ba4309aa54729ee41a"
+            echo "Build-only source adjustment: see build-source.patch"
+            echo "Physical device runtime confirmation: not performed"
+            cat build-checkpoint/SHA256.txt
+            cat docs/syncme/build-258-minor-fixes.md
+          } | tee build-checkpoint/Provenance.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload verified ARM64 APK and provenance
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-258-ARM64
+          path: build-checkpoint/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Preserve regression reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-258-test-results
+          path: |
+            features/messages/impl/build/reports/tests/
+            features/home/impl/build/reports/tests/
+            libraries/preferences/impl/build/reports/tests/
+            features/preferences/impl/build/reports/tests/
+            libraries/designsystem/build/reports/tests/
+            libraries/matrix/impl/build/reports/tests/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Publish verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.1.2-build258 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "SyncMe 1.1.2 — Build 258" --latest \
+            --notes-file docs/syncme/build-258-minor-fixes.md \
+            build-checkpoint/SyncMe-258-ARM64.apk build-checkpoint/SHA256.txt \
+            build-checkpoint/Provenance.txt build-checkpoint/manifest.txt \
+            build-checkpoint/signature.txt build-checkpoint/update-compatibility.txt \
+            build-checkpoint/SyncMe-258-Notes.md

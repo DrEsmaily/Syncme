@@ -43,6 +43,7 @@ internal class RustPresenceService(
     private val publishOwnPresence: suspend (String) -> Unit,
     private val refreshIntervalMillis: (Int) -> Long = { if (it <= 8) 15_000 else 60_000 },
     private val publicationRetryMillis: Long = 2_000,
+    private val publicationRefreshMillis: Long = 15_000,
 ) {
     private val base = homeserver.trimEnd('/').toHttpUrl()
     private val http = OkHttpClient.Builder()
@@ -101,9 +102,12 @@ internal class RustPresenceService(
                 var retryMillis = publicationRetryMillis
                 while (kotlin.coroutines.coroutineContext.isActive) {
                     try {
-                        // The SDK owns publication, including presence in its future sync requests.
+                        // Native Sliding Sync does not reliably refresh server-side presence.
+                        // Renew only while foreground and syncing; never keep background sessions alive.
                         publishOwnPresence(if (foreground) "online" else "unavailable")
-                        break
+                        if (!foreground) break
+                        retryMillis = publicationRetryMillis
+                        delay(publicationRefreshMillis)
                     } catch (cancelled: CancellationException) {
                         throw cancelled
                     } catch (_: Exception) {

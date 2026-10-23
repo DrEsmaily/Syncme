@@ -21,6 +21,31 @@ import org.junit.Test
 
 class RoomListFiltersPresenterTest {
     @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `custom tags can be selected together deselected and cleared`() = runTest {
+        val preferences = io.element.android.libraries.preferences.test.InMemoryAppPreferencesStore()
+        val first = requireNotNull(preferences.createCustomRoomTag("Family", "TAG"))
+        val second = requireNotNull(preferences.createCustomRoomTag("Friends", "TAG"))
+        val presenter = RoomListFiltersPresenter(DefaultFilterSelectionStrategy(), preferences)
+        presenter.test {
+            val initial = awaitItem()
+            initial.eventSink(RoomListFiltersEvent.SelectCustomTag(first))
+            initial.eventSink(RoomListFiltersEvent.SelectCustomTag(second))
+            advanceUntilIdle()
+            val selected = awaitLastSequentialItem()
+            assertThat(selected.activeCustomTagIds).containsExactly(first, second)
+            assertThat(selected.selectedCustomTags().map { it.name }).containsExactly("Family", "Friends")
+            selected.eventSink(RoomListFiltersEvent.SelectCustomTag(first))
+            advanceUntilIdle()
+            val remaining = awaitLastSequentialItem()
+            assertThat(remaining.activeCustomTagIds).containsExactly(second)
+            remaining.eventSink(RoomListFiltersEvent.ClearSelectedFilters)
+            advanceUntilIdle()
+            assertThat(awaitLastSequentialItem().hasAnyFilterSelected).isFalse()
+        }
+    }
+
+    @Test
     fun `present - initial state`() = runTest {
         val presenter = createRoomListFiltersPresenter()
         presenter.test {
