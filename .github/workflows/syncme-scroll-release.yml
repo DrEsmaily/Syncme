@@ -42,7 +42,7 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
         with:
-          cache-read-only: true
+          cache-read-only: false
       - name: Verify tested source and preserve update identity
         env:
           GH_TOKEN: ${{ github.token }}
@@ -70,13 +70,20 @@ jobs:
           ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease
           '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
           -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
+      - name: Preserve compiled ARM64 candidate before verification
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-259-ARM64-candidate
+          path: app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk
+          if-no-files-found: error
+          retention-days: 7
       - name: Verify APK metadata, signature and update compatibility
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p build-checkpoint /tmp/syncme-reference
           gh release download v1.1.2-build258 --repo "$GITHUB_REPOSITORY" --pattern SyncMe-258-ARM64.apk --dir /tmp/syncme-reference
-          python3 .github/workflows/scripts/verify_syncme_258.py
+          python3 .github/workflows/scripts/verify_syncme_259.py
           sha256sum build-checkpoint/SyncMe-259-ARM64.apk > build-checkpoint/SHA256.txt
           git diff -- app/build.gradle.kts > build-checkpoint/build-source.patch
           cp docs/syncme/build-259-minor-fixes.md build-checkpoint/SyncMe-259-Notes.md
