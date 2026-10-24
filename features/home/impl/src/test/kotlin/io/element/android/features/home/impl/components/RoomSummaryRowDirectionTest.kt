@@ -8,6 +8,7 @@
 
 package io.element.android.features.home.impl.components
 
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
@@ -37,7 +38,7 @@ class RoomSummaryRowDirectionTest : RobolectricTest() {
     @Test
     fun `long Persian preview remains one line`() = checkPreview("\u0633\u0644\u0627\u0645 ".repeat(100), ResolvedTextDirection.Rtl, truncated = true)
 
-    private fun checkPreview(text: String, direction: ResolvedTextDirection, truncated: Boolean = false) = runAndroidComposeUiTest {
+    private fun checkPreview(text: String, direction: ResolvedTextDirection, truncated: Boolean = false) = runAndroidComposeUiTest<ComponentActivity> {
         setContent {
             RoomSummaryRow(
                 room = aRoomListRoomSummary(latestEvent = LatestEvent.Synced(text)),
