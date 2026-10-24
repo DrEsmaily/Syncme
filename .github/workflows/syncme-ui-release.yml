@@ -57,6 +57,7 @@ jobs:
       - name: Check affected home and encryption behavior
         run: >-
           ./gradlew :features:home:impl:testDebugUnitTest --tests '*RoomSummaryRowUnreadIndicatorCountTest'
+          :features:preferences:impl:testDebugUnitTest --tests '*PreferencesRootViewTest.Location sharing is hidden'
           :features:securebackup:impl:testDebugUnitTest --tests '*SecureBackupRootPresenterTest'
           '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
           -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS

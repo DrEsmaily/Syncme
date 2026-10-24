@@ -251,18 +251,10 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on Location sharing invokes the expected callback`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    eventSink = eventsRecorder,
-                ),
-                onOpenLocationSettings = callback,
-            )
-            val text = activity!!.getString(CommonStrings.common_location_sharing)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
+    fun `Location sharing is hidden`() = runAndroidComposeUiTest {
+        setView(aPreferencesRootState())
+        val text = activity!!.getString(CommonStrings.common_location_sharing)
+        onNodeWithText(text).assertDoesNotExist()
     }
 
     @Test
