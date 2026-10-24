@@ -34,6 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -341,7 +343,10 @@ private fun MessagePreviewAndIndicatorRow(
                         .clipToBounds(),
                     text = annotatedMessagePreview,
                     color = ElementTheme.colors.roomListRoomMessage,
-                    style = ElementTheme.typography.fontBodyMdRegular,
+                    style = ElementTheme.typography.fontBodyMdRegular.copy(
+                        textDirection = TextDirection.Content,
+                        textAlign = TextAlign.Start,
+                    ),
                     minLines = 1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

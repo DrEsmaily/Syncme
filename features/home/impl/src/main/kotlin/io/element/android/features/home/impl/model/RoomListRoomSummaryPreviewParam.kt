@@ -164,7 +164,11 @@ open class RoomListRoomSummaryPreviewParam : PreviewParameterProvider<RoomListRo
                     hasRoomCall = true,
                     activeCallIntent = CallIntent.AUDIO
                 ),
-            )
+            ),
+            listOf(
+                aRoomListRoomSummary(latestEvent = LatestEvent.Synced("\u0633\u0644\u0627\u0645")),
+                aRoomListRoomSummary(latestEvent = LatestEvent.Synced("\u0633\u0644\u0627\u0645 SyncMe")),
+            ),
         ).flatten()
 }
 
