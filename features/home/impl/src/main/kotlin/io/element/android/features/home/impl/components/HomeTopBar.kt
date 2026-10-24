@@ -48,6 +48,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.element.android.appconfig.RoomListConfig
@@ -70,7 +73,6 @@ import io.element.android.libraries.designsystem.modifiers.backgroundVerticalGra
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.preview.USER_NAME_ALICE
-import io.element.android.libraries.designsystem.text.AdaptativeTitle
 import io.element.android.libraries.designsystem.theme.components.DropdownMenu
 import io.element.android.libraries.designsystem.theme.components.DropdownMenuItem
 import io.element.android.libraries.designsystem.theme.components.Icon
@@ -114,7 +116,7 @@ fun HomeTopBar(
         TopAppBar(
             modifier = Modifier
                 .backgroundVerticalGradient(
-                    isVisible = !areSearchResultsDisplayed,
+                    isVisible = !areSearchResultsDisplayed && ElementTheme.colors.bgCanvasDefault == Color.Black,
                 )
                 .statusBarsPadding()
                 .padding(contentPadding),
@@ -123,10 +125,18 @@ fun HomeTopBar(
                 scrolledContainerColor = Color.Transparent,
             ),
             title = {
-                AdaptativeTitle(
-                    title = "SyncMe",
-                    style = ElementTheme.typography.fontHeadingLgBold,
-                    twoLinesStyle = ElementTheme.typography.fontHeadingSmMedium,
+                val titleStyle = with(LocalDensity.current) {
+                    ElementTheme.typography.fontHeadingLgBold.copy(
+                        fontSize = 26.dp.toSp(),
+                        lineHeight = AvatarSize.CurrentUserTopBar.dp.toSp(),
+                    )
+                }
+                Text(
+                    text = "SyncMe",
+                    modifier = Modifier.semantics { heading() },
+                    style = titleStyle,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             },
             navigationIcon = {

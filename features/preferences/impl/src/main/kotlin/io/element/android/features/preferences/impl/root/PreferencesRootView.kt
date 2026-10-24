@@ -324,11 +324,6 @@ ListItem(
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
             onClick = onOpenLockScreenSettings,
         )
-        ListItem(
-            content = { Text(stringResource(id = CommonStrings.common_location_sharing)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.LocationPin())),
-            onClick = onOpenLocationSettings,
-        )
     }
 }
 

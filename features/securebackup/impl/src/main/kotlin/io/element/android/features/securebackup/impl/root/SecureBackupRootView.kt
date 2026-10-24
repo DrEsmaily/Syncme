@@ -24,7 +24,6 @@ import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
-import io.element.android.libraries.designsystem.text.buildAnnotatedStringWithStyledPart
 import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.ListItem
@@ -62,16 +61,9 @@ fun SecureBackupRootView(
             },
             supportingContent = {
                 Text(
-                    text = buildAnnotatedStringWithStyledPart(
-                        fullTextRes = R.string.screen_chat_backup_key_backup_description,
-                        coloredTextRes = CommonStrings.action_learn_more,
-                        color = ElementTheme.colors.textPrimary,
-                        underline = false,
-                        bold = true,
-                    ),
+                    text = stringResource(R.string.screen_chat_backup_key_backup_description_without_link),
                 )
             },
-            onClick = onLearnMoreClick,
         )
 
         // Disable / Enable key storage

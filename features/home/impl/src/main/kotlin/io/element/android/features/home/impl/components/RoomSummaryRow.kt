@@ -199,6 +199,7 @@ private fun RoomSummaryScaffoldRow(
             .then(clickModifier)
             .padding(horizontal = 16.dp, vertical = 11.dp)
             .height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(contentAlignment = Alignment.BottomEnd) {
             Avatar(
@@ -295,8 +296,8 @@ private fun MessagePreviewAndIndicatorRow(
                 text = stringResource(R.string.screen_roomlist_tombstoned_room_description),
                 color = ElementTheme.colors.roomListRoomMessage,
                 style = ElementTheme.typography.fontBodyMdRegular,
-                minLines = 2,
-                maxLines = 2,
+                minLines = 1,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         } else {
@@ -316,8 +317,8 @@ private fun MessagePreviewAndIndicatorRow(
                     text = stringResource(CommonStrings.common_message_failed_to_send),
                     color = ElementTheme.colors.textCriticalPrimary,
                     style = ElementTheme.typography.fontBodyMdRegular,
-                    minLines = 2,
-                    maxLines = 2,
+                    minLines = 1,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             } else {
@@ -341,8 +342,8 @@ private fun MessagePreviewAndIndicatorRow(
                     text = annotatedMessagePreview,
                     color = ElementTheme.colors.roomListRoomMessage,
                     style = ElementTheme.typography.fontBodyMdRegular,
-                    minLines = 2,
-                    maxLines = 2,
+                    minLines = 1,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }

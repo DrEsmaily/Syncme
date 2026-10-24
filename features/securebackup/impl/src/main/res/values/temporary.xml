@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="screen_chat_backup_key_backup_description_without_link">This will allow you to view your chat history on any new devices and is required for backup of chats and digital identity.</string>
+</resources>
