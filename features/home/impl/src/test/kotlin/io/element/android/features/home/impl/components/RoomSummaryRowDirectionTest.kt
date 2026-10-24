@@ -9,6 +9,9 @@
 package io.element.android.features.home.impl.components
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
@@ -21,7 +24,9 @@ import io.element.android.features.home.impl.model.LatestEvent
 import io.element.android.features.home.impl.model.aRoomListRoomSummary
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
+import org.robolectric.annotation.GraphicsMode
 
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class RoomSummaryRowDirectionTest : RobolectricTest() {
     @Test
     fun `Persian preview aligns right`() = checkPreview("\u0633\u0644\u0627\u0645", ResolvedTextDirection.Rtl)
@@ -41,6 +46,7 @@ class RoomSummaryRowDirectionTest : RobolectricTest() {
     private fun checkPreview(text: String, direction: ResolvedTextDirection, truncated: Boolean = false) = runAndroidComposeUiTest<ComponentActivity> {
         setContent {
             RoomSummaryRow(
+                modifier = Modifier.width(320.dp),
                 room = aRoomListRoomSummary(latestEvent = LatestEvent.Synced(text)),
                 hideInviteAvatars = false,
                 isInviteSeen = false,
