@@ -61,6 +61,7 @@ dependencies {
     api(projects.features.home.api)
 
     testCommonDependencies(libs, true)
+    testImplementation(projects.libraries.uiCommon)
     testImplementation(projects.features.announcement.test)
     testImplementation(projects.features.invite.test)
     testImplementation(projects.features.networkmonitor.test)
