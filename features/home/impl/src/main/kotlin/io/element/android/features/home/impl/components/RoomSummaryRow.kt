@@ -340,7 +340,7 @@ private fun MessagePreviewAndIndicatorRow(
                 val annotatedMessagePreview = AnnotatedString(text = messagePreview.orEmpty().toString())
                 Box(modifier = Modifier.weight(1f)) {
                     Text(
-                        modifier = Modifier.clipToBounds(),
+                        modifier = Modifier.fillMaxWidth().clipToBounds(),
                         text = annotatedMessagePreview,
                         color = ElementTheme.colors.roomListRoomMessage,
                         style = ElementTheme.typography.fontBodyMdRegular.copy(

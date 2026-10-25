@@ -9,9 +9,9 @@
 package io.element.android.features.messages.impl.timeline.components
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -26,7 +26,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -86,7 +85,6 @@ fun MessagesReactionButton(
 
     Surface(
         modifier = modifier
-            .background(Color.Transparent)
             .padding(vertical = 2.dp, horizontal = 2.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(1.dp, buttonBorderColor, RoundedCornerShape(12.dp))
@@ -102,17 +100,18 @@ fun MessagesReactionButton(
                 onLongClick = onLongClick
             )
             .onKeyboardContextMenuAction(onLongClick)
-            .background(buttonColor, RoundedCornerShape(12.dp))
-            .padding(vertical = 4.dp, horizontal = 10.dp)
             .clearAndSetSemantics {
                 contentDescription = a11yText
             },
-        color = buttonColor
+        color = buttonColor,
+        shape = RoundedCornerShape(12.dp),
     ) {
-        when (content) {
-            is MessagesReactionsButtonContent.Icon -> IconContent(resourceId = content.resourceId)
-            is MessagesReactionsButtonContent.Text -> TextContent(text = content.text)
-            is MessagesReactionsButtonContent.Reaction -> ReactionContent(reaction = content.reaction)
+        Box(modifier = Modifier.padding(vertical = 4.dp, horizontal = 10.dp)) {
+            when (content) {
+                is MessagesReactionsButtonContent.Icon -> IconContent(resourceId = content.resourceId)
+                is MessagesReactionsButtonContent.Text -> TextContent(text = content.text)
+                is MessagesReactionsButtonContent.Reaction -> ReactionContent(reaction = content.reaction)
+            }
         }
     }
 }
