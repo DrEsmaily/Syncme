@@ -74,10 +74,13 @@ class InReplyToDirectionTest : RobolectricTest() {
             val layout = results.single()
             val textBounds = onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             val cardBounds = onNodeWithTag("quote").fetchSemanticsNode().boundsInRoot
+            val senderBounds = onNodeWithText("Sender", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             if (direction == ResolvedTextDirection.Rtl) {
                 assertThat(textBounds.right).isWithin(1f).of(cardBounds.right - inset)
+                assertThat(senderBounds.right).isWithin(1f).of(cardBounds.right - inset)
             } else {
                 assertThat(textBounds.left).isWithin(1f).of(cardBounds.left + inset)
+                assertThat(senderBounds.left).isWithin(1f).of(cardBounds.left + inset)
             }
             assertThat(layout.getParagraphDirection(0)).isEqualTo(direction)
             if (truncated) {

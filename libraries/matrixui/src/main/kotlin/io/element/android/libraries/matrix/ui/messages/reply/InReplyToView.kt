@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.core.text.TextDirectionHeuristicsCompat
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.libraries.core.extensions.toSafeLength
 import io.element.android.libraries.designsystem.atomic.atoms.PlaceholderAtom
@@ -94,6 +95,12 @@ private fun ReplyToReadyContent(
     maxLines: Int,
     modifier: Modifier = Modifier,
 ) {
+    val quoteText = when (metadata) {
+        is InReplyToMetadata.Text -> metadata.text
+        is InReplyToMetadata.Thumbnail -> metadata.text
+        else -> ""
+    }
+    val isRtlQuote = TextDirectionHeuristicsCompat.FIRSTSTRONG_LTR.isRtl(quoteText, 0, quoteText.length)
     val paddings = if (metadata is InReplyToMetadata.Thumbnail) {
         PaddingValues(end = 8.dp)
     } else {
@@ -124,7 +131,7 @@ private fun ReplyToReadyContent(
                 senderId = senderId,
                 senderProfile = senderProfile,
                 senderNameMode = SenderNameMode.Reply,
-                modifier = Modifier.semantics {
+                modifier = Modifier.align(if (isRtlQuote) Alignment.End else Alignment.Start).semantics {
                     contentDescription = a11InReplyToText
                     isTraversalGroup = true
                     traversalIndex = 1f
