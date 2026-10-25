@@ -8,11 +8,11 @@ package io.element.android.features.home.impl
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasAnyDescendant
-import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -55,7 +55,7 @@ class HomeListLayoutTest : RobolectricTest() {
                 leaveRoomView = {},
             )
         }
-        onNode(hasScrollAction() and hasAnyDescendant(hasText("Conversation 0")))
+        onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
             .performScrollToNode(hasText("Conversation 30"))
         val preview = onNodeWithText("Preview 30", useUnmergedTree = true).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
         val compose = onNodeWithContentDescription(activity!!.getString(CommonStrings.action_create_room))
