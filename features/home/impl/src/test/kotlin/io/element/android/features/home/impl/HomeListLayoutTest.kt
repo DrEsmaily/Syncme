@@ -16,8 +16,11 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.compound.theme.ElementTheme
+import io.element.android.compound.theme.Theme
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.home.impl.model.LatestEvent
 import io.element.android.features.home.impl.model.aRoomListRoomSummary
@@ -32,34 +35,54 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class HomeListLayoutTest : RobolectricTest() {
     @Test
-    fun `last conversation scrolls fully above the compose button`() = runAndroidComposeUiTest<ComponentActivity> {
+    fun `floating button overlays scrolling list in light theme`() = checkFloatingButton(Theme.Light)
+
+    @Test
+    fun `floating button overlays scrolling list in dark theme`() = checkFloatingButton(Theme.Dark)
+
+    @Test
+    fun `floating button overlays scrolling list in black theme`() = checkFloatingButton(Theme.Black)
+
+    private fun checkFloatingButton(theme: Theme) = runAndroidComposeUiTest<ComponentActivity> {
+        var composeClicks = 0
         val rooms = (0..30).map {
             aRoomListRoomSummary(id = "!room$it:domain", name = "Conversation $it", latestEvent = LatestEvent.Synced("Preview $it"))
         }.toImmutableList()
         setContent {
-            HomeView(
-                homeState = aHomeState(roomListState = aRoomListState(contentState = aRoomsContentState(summaries = rooms))),
-                modifier = Modifier.fillMaxSize(),
-                onRoomClick = { _, _ -> },
-                onSettingsClick = {},
-                onAddAccountClick = {},
-                onSetUpRecoveryClick = {},
-                onConfirmRecoveryKeyClick = {},
-                onStartChatClick = {},
-                onCreateSpaceClick = {},
-                onRoomSettingsClick = {},
-                onMenuActionClick = {},
-                onReportRoomClick = {},
-                onDeclineInviteAndBlockUser = {},
-                acceptDeclineInviteView = {},
-                leaveRoomView = {},
-            )
+            ElementTheme(theme = theme) {
+                HomeView(
+                    homeState = aHomeState(roomListState = aRoomListState(contentState = aRoomsContentState(summaries = rooms))),
+                    modifier = Modifier.fillMaxSize(),
+                    onRoomClick = { _, _ -> },
+                    onSettingsClick = {},
+                    onAddAccountClick = {},
+                    onSetUpRecoveryClick = {},
+                    onConfirmRecoveryKeyClick = {},
+                    onStartChatClick = { composeClicks++ },
+                    onCreateSpaceClick = {},
+                    onRoomSettingsClick = {},
+                    onMenuActionClick = {},
+                    onReportRoomClick = {},
+                    onDeclineInviteAndBlockUser = {},
+                    acceptDeclineInviteView = {},
+                    leaveRoomView = {},
+                )
+            }
         }
+        val button = onNodeWithContentDescription(activity!!.getString(CommonStrings.action_create_room))
+        val beforeScroll = button.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        val listBounds = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
+            .fetchSemanticsNode().boundsInRoot
+        // The viewport continues beneath the floating button; no full-width bottom bar reserves its height.
+        assertThat(listBounds.bottom).isGreaterThan(beforeScroll.bottom)
         onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
             .performScrollToNode(hasText("Conversation 30"))
         val preview = onNodeWithText("Preview 30", useUnmergedTree = true).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
         val compose = onNodeWithContentDescription(activity!!.getString(CommonStrings.action_create_room))
             .assertIsDisplayed().fetchSemanticsNode().boundsInRoot
         assertThat(preview.bottom).isAtMost(compose.top)
+        assertThat(compose).isEqualTo(beforeScroll)
+        button.performClick()
+        assertThat(composeClicks).isEqualTo(1)
     }
 }

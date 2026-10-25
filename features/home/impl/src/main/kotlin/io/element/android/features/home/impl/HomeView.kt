@@ -17,19 +17,18 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -205,20 +204,14 @@ private fun HomeScaffold(
                 canReportBug = state.canReportBug,
             )
         },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(ElementTheme.colors.bgCanvasDefault)
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                HomeFloatingActionButton(
-                    onClick = onStartChatClick,
-                    contentDescription = CommonStrings.action_create_room,
-                )
-            }
+        floatingActionButton = {
+            HomeFloatingActionButton(
+                onClick = onStartChatClick,
+                contentDescription = CommonStrings.action_create_room,
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                ),
+            )
         },
         contentWindowInsets = scaffoldScrollableContentInsets,
         content = { padding ->
@@ -230,7 +223,8 @@ private fun HomeScaffold(
                 top = padding.calculateTopPadding()
             )
             val contentPadding = PaddingValues(
-                bottom = 8.dp,
+                // Scrollable clearance lets the last conversation move fully above the floating button.
+                bottom = 96.dp,
             )
             // The nested scroll connection is set on the content and not on the Scaffold, else the top bar would
             // consume the scroll events of its own content.
@@ -267,7 +261,17 @@ private fun HomeFloatingActionButton(
     contentDescription: Int,
     modifier: Modifier = Modifier,
 ) {
-    FloatingActionButton(onClick = onClick, modifier = modifier) {
+    val elevation = if (ElementTheme.isLightTheme) 6.dp else 4.dp
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = modifier,
+        elevation = FloatingActionButtonDefaults.elevation(
+            defaultElevation = elevation,
+            pressedElevation = elevation + 2.dp,
+            focusedElevation = elevation,
+            hoveredElevation = elevation + 2.dp,
+        ),
+    ) {
         Icon(
             imageVector = CompoundIcons.Plus(),
             contentDescription = stringResource(id = contentDescription),
