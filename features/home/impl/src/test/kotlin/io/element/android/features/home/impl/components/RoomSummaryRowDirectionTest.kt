@@ -88,7 +88,16 @@ class RoomSummaryRowDirectionTest : RobolectricTest() {
     fun `long sender name leaves space for the Persian body`() =
         checkPrefixedPreview("A very long sender display name".repeat(4), "\u0646\u0633\u062e\u0647 ".repeat(100), ResolvedTextDirection.Rtl)
 
-    private fun checkPrefixedPreview(prefix: String, body: String, direction: ResolvedTextDirection) = runAndroidComposeUiTest<ComponentActivity> {
+    @Test
+    fun `sending You prefix preserves the first Persian word`() =
+        checkPrefixedPreview("You", "\u0646\u0633\u062e\u0647 ".repeat(100), ResolvedTextDirection.Rtl, sending = true)
+
+    private fun checkPrefixedPreview(
+        prefix: String,
+        body: String,
+        direction: ResolvedTextDirection,
+        sending: Boolean = false,
+    ) = runAndroidComposeUiTest<ComponentActivity> {
         val preview = buildAnnotatedString {
             append("$prefix: ")
             addStringAnnotation(RoomLatestEventFormatter.SENDER_PREFIX_TAG, "sender", 0, length)
@@ -97,7 +106,7 @@ class RoomSummaryRowDirectionTest : RobolectricTest() {
         setContent {
             RoomSummaryRow(
                 modifier = Modifier.width(320.dp),
-                room = aRoomListRoomSummary(latestEvent = LatestEvent.Synced(preview)),
+                room = aRoomListRoomSummary(latestEvent = if (sending) LatestEvent.Sending(preview) else LatestEvent.Synced(preview)),
                 hideInviteAvatars = false,
                 isInviteSeen = false,
                 onClick = {},

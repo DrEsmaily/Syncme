@@ -8,6 +8,7 @@
 
 package io.element.android.features.home.impl.model
 
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
@@ -15,6 +16,7 @@ import io.element.android.libraries.designsystem.preview.LAST_MESSAGE
 import io.element.android.libraries.designsystem.preview.ROOM_NAME
 import io.element.android.libraries.designsystem.preview.USER_NAME_ALICE
 import io.element.android.libraries.designsystem.preview.USER_NAME_BOB
+import io.element.android.libraries.eventformatter.api.RoomLatestEventFormatter
 import io.element.android.libraries.matrix.api.core.RoomAlias
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
@@ -169,6 +171,13 @@ open class RoomListRoomSummaryPreviewParam : PreviewParameterProvider<RoomListRo
                 aRoomListRoomSummary(latestEvent = LatestEvent.Synced("\u0633\u0644\u0627\u0645")),
                 aRoomListRoomSummary(latestEvent = LatestEvent.Synced("\u0633\u0644\u0627\u0645 SyncMe")),
             ),
+            listOf("You", "Alice", "\u2068\u0639\u0644\u06cc\u2069").map { sender ->
+                aRoomListRoomSummary(latestEvent = LatestEvent.Synced(buildAnnotatedString {
+                    append("$sender: ")
+                    addStringAnnotation(RoomLatestEventFormatter.SENDER_PREFIX_TAG, "sender", 0, length)
+                    append("\u0646\u0633\u062e\u0647 ".repeat(50))
+                }))
+            },
         ).flatten()
 }
 
