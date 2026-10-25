@@ -9,7 +9,9 @@ package io.element.android.libraries.matrix.ui.messages.reply
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
@@ -20,6 +22,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.ResolvedTextDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.google.common.truth.Truth.assertThat
 import io.element.android.libraries.matrix.api.core.EventId
@@ -49,6 +52,12 @@ class InReplyToDirectionTest : RobolectricTest() {
     fun `long Persian quote keeps the two-line limit`() = checkDirection("\u0633\u0644\u0627\u0645 ".repeat(100), ResolvedTextDirection.Rtl, truncated = true)
 
     @Test
+    fun `English quote stays left in an RTL interface`() = checkDirection("Hello", ResolvedTextDirection.Ltr, layoutDirection = LayoutDirection.Rtl)
+
+    @Test
+    fun `Persian quote stays right in an RTL interface`() = checkDirection("\u0633\u0644\u0627\u0645", ResolvedTextDirection.Rtl, layoutDirection = LayoutDirection.Rtl)
+
+    @Test
     fun `short quotes retain their natural card width`() = runAndroidComposeUiTest<ComponentActivity> {
         setContent {
             Box(Modifier.width(320.dp).testTag("container")) {
@@ -61,13 +70,20 @@ class InReplyToDirectionTest : RobolectricTest() {
         assertThat(width).isLessThan(parentWidth)
     }
 
-    private fun checkDirection(text: String, direction: ResolvedTextDirection, truncated: Boolean = false) =
+    private fun checkDirection(
+        text: String,
+        direction: ResolvedTextDirection,
+        truncated: Boolean = false,
+        layoutDirection: LayoutDirection = LayoutDirection.Ltr,
+    ) =
         runAndroidComposeUiTest<ComponentActivity> {
             var inset = 0f
             setContent {
                 inset = with(LocalDensity.current) { 8.dp.toPx() }
-                InReplyToView(details(text), hideImage = false, contentValidationValue = ContentValidationValue.Valid,
-                    modifier = Modifier.width(260.dp).testTag("quote"))
+                CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+                    InReplyToView(details(text), hideImage = false, contentValidationValue = ContentValidationValue.Valid,
+                        modifier = Modifier.width(260.dp).testTag("quote"))
+                }
             }
             val results = mutableListOf<TextLayoutResult>()
             onNodeWithText(text, useUnmergedTree = true).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(results) }

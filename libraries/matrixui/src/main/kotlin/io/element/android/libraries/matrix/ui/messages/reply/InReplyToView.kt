@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -131,7 +132,7 @@ private fun ReplyToReadyContent(
                 senderId = senderId,
                 senderProfile = senderProfile,
                 senderNameMode = SenderNameMode.Reply,
-                modifier = Modifier.align(if (isRtlQuote) Alignment.End else Alignment.Start).semantics {
+                modifier = Modifier.align(if (isRtlQuote) AbsoluteAlignment.Right else AbsoluteAlignment.Left).semantics {
                     contentDescription = a11InReplyToText
                     isTraversalGroup = true
                     traversalIndex = 1f
