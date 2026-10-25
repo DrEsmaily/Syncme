@@ -2,7 +2,7 @@
 
 # SyncMe for Android
 
-**Version 1.1.10 · Build 266**
+**Version 1.1.11 · Build 267**
 
 **SyncMe** is an independent Android Matrix messenger forked from [Element X Android](https://github.com/element-hq/element-x-android).
 It adds a customized interface, personal conversation tags, shared presence indicators and optional diagnostic tools on top of the Matrix Rust SDK, Jetpack Compose and Appyx foundation.
@@ -11,11 +11,11 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest release and downloads
 
-**[Download SyncMe 1.1.10 · Build 266 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.10-build266/SyncMe-266-ARM64.apk)**
+**[Download SyncMe 1.1.11 · Build 267 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.11-build267/SyncMe-267-ARM64.apk)**
 
-- **Version 1.1.10 · Build 266 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.10-build266) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/40162426521) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.10-build266/SHA256.txt).
+- **Version 1.1.11 · Build 267 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.11-build267) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/40163722101) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.11-build267/SHA256.txt).
 - Minor bugs fixed
-- [Source](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-266-timestamp) · [Previous public release: 1.1.9 · Build 265](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.9-build265/SyncMe-265-ARM64.apk).
+- [Source](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-267-floating-button) · [Previous public release: 1.1.10 · Build 266](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.10-build266/SyncMe-266-ARM64.apk).
 
 Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
 
@@ -75,10 +75,11 @@ Explore SyncMe's welcome screen, conversation filters, presence indicators, pers
 
 ## Latest 10 successful builds
 
-This rolling list includes the current build and the nine preceding successful builds. Version 1.1.10 (Build 266) follows Version 1.1.9 (Build 265). Build 257 is preserved as an Actions artifact.
+This rolling list includes the current build and the nine preceding successful builds. Version 1.1.11 (Build 267) follows Version 1.1.10 (Build 266). Build 257 is preserved as an Actions artifact.
 
 | Build | Verified execution | Downloads and documentation |
 |---|---|---|
+| 267 — Version 1.1.11 | [Run 40163722101](https://github.com/DrEsmaily/SyncMe/actions/runs/40163722101) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.11-build267/SyncMe-267-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.11-build267) |
 | 266 — Version 1.1.10 | [Run 40162426521](https://github.com/DrEsmaily/SyncMe/actions/runs/40162426521) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.10-build266/SyncMe-266-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.10-build266) |
 | 265 — Version 1.1.9 | [Run 40153566396](https://github.com/DrEsmaily/SyncMe/actions/runs/40153566396) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.9-build265/SyncMe-265-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.9-build265) |
 | 264 — Version 1.1.8 | [Run 40150641003](https://github.com/DrEsmaily/SyncMe/actions/runs/40150641003) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.8-build264/SyncMe-264-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.8-build264) |
@@ -88,9 +89,10 @@ This rolling list includes the current build and the nine preceding successful b
 | 260 — Version 1.1.4 | [Run 40127367193](https://github.com/DrEsmaily/SyncMe/actions/runs/40127367193) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.4-build260/SyncMe-260-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.4-build260) |
 | 259 — Version 1.1.3 | [Run 39885493041](https://github.com/DrEsmaily/SyncMe/actions/runs/39885493041) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.3-build259/SyncMe-259-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.3-build259) |
 | 258 — Version 1.1.2 | [Run 39877617093](https://github.com/DrEsmaily/SyncMe/actions/runs/39877617093) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.2-build258/SyncMe-258-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.2-build258) |
-| 257 | [Run 39171234618](https://github.com/DrEsmaily/SyncMe/actions/runs/39171234618) | [APK and provenance (Actions artifact)](https://github.com/DrEsmaily/SyncMe/actions/runs/39171234618/artifacts/12153525423) |
 
 ### Earlier preserved archive
+
+[Build 257](https://github.com/DrEsmaily/SyncMe/actions/runs/39171234618/artifacts/12153525423) remains preserved as an Actions artifact with its APK and provenance.
 
 [Version 1.1.1 · Build 256](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256) remains available as a public release with its APK and documentation.
 
@@ -98,16 +100,16 @@ This rolling list includes the current build and the nine preceding successful b
 
 [Version 1.0.0 · Build 254](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build254) remains available as a public release with its APK and documentation.
 
-The original protected snapshot covers builds **244–253**. Builds [253](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967), [252](https://github.com/DrEsmaily/SyncMe/actions/runs/38633766604), [251](https://github.com/DrEsmaily/SyncMe/actions/runs/38586470729), [250](https://github.com/DrEsmaily/SyncMe/actions/runs/38547146922), [249](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735), [248](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130), [247](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920), [246](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737), [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes builds 257 through 266; the archive records the earlier preservation operation.
+The original protected snapshot covers builds **244–253**. Builds [253](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967), [252](https://github.com/DrEsmaily/SyncMe/actions/runs/38633766604), [251](https://github.com/DrEsmaily/SyncMe/actions/runs/38586470729), [250](https://github.com/DrEsmaily/SyncMe/actions/runs/38547146922), [249](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735), [248](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130), [247](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920), [246](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737), [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes builds 258 through 267; the archive records the earlier preservation operation.
 
 [Historical cleanup report and preservation record](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cleanup-proposal.md)
 
 ## Development and preserved history
 
-The latest verified application source is on [`build/syncme-266-timestamp`](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-266-timestamp). Version 1.1.10 (Build 266) builds on the verified Build 265 source; [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.10-build266).
+The latest verified application source is on [`build/syncme-267-floating-button`](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-267-floating-button). Version 1.1.11 (Build 267) builds on the verified Build 266 source; [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.11-build267).
 Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
-Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255, 256, 258, 259, 260, 261, 262, 263, 264, 265 and 266 provide persistent APK downloads; Build 257 remains available as an Actions artifact.
+Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255, 256, 258, 259, 260, 261, 262, 263, 264, 265, 266 and 267 provide persistent APK downloads; Build 257 remains available as an Actions artifact.
 
 ## Building and contributing
 
