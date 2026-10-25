@@ -37,9 +37,10 @@ class DefaultMentionSpanUpdater(
     @Composable
     override fun rememberMentionSpans(text: CharSequence): CharSequence {
         val isLightTheme = ElementTheme.isLightTheme
+        val canvasColor = ElementTheme.colors.bgCanvasDefault
         val roomInfoCacheUpdate by roomNamesCache.updateFlow.collectAsState(0)
         val roomMemberProfilesCacheUpdate by roomMemberProfilesCache.updateFlow.collectAsState(0)
-        return remember(text, roomInfoCacheUpdate, roomMemberProfilesCacheUpdate, isLightTheme) {
+        return remember(text, roomInfoCacheUpdate, roomMemberProfilesCacheUpdate, isLightTheme, canvasColor) {
             updateMentionSpans(text)
             text
         }
