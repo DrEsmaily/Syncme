@@ -60,6 +60,8 @@ jobs:
           --tests '*RoomSummaryRowUnreadIndicatorCountTest'
           --tests '*HomeListLayoutTest' --tests '*RoomListFiltersViewTest'
           :features:messages:impl:testDebugUnitTest --tests '*AggregatedReactionTest' --tests '*MessagesReactionBackgroundTest'
+          :libraries:textcomposer:impl:testDebugUnitTest --tests '*MentionSpanThemeTest' --tests '*MentionSpanGeometryTest'
+          --tests '*IntentionalMentionSpanProviderTest' --tests '*MentionSpanFormatterTest'
           '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
           -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
       - name: Report test failures

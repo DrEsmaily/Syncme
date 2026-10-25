@@ -119,14 +119,20 @@ class MentionSpan(
         val measuredWidth = measuredTextWidth + measuredTrailingWidth + startPadding + endPadding
         val pillWidth = minOf(availableWidth, measuredWidth.toFloat())
 
-        backgroundPaint.color = backgroundColor
-        val rect = RectF(x, top.toFloat(), x + pillWidth, bottom.toFloat())
-        val radius = rect.height() / 2
-        canvas.drawRoundRect(rect, radius, radius, backgroundPaint)
-
         textPaint.set(paint)
         textPaint.color = textColor
         textPaint.typeface = typeface
+
+        backgroundPaint.color = backgroundColor
+        val metrics = textPaint.fontMetrics
+        val rect = RectF(
+            x,
+            maxOf(top.toFloat(), y + metrics.ascent),
+            x + pillWidth,
+            minOf(bottom.toFloat(), y + metrics.descent),
+        )
+        val radius = rect.height() / 2
+        canvas.drawRoundRect(rect, radius, radius, backgroundPaint)
 
         val availableWidthForText = availableWidth - startPadding - endPadding - measuredTrailingWidth
         val textToDraw = if (measuredTextWidth > availableWidthForText) {

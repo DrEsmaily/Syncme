@@ -25,6 +25,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -71,7 +72,7 @@ class MentionSpanTheme(val currentUserId: UserId) {
     internal var otherBackgroundColor: Int = Color.WHITE
         private set
 
-    private val paddingValues = PaddingValues(start = 4.dp, end = 6.dp)
+    private val paddingValues = PaddingValues(horizontal = 4.dp)
     internal val paddingValuesPx = mutableStateOf(0 to 0)
     internal val typeface = mutableStateOf(Typeface.DEFAULT)
 
@@ -81,10 +82,11 @@ class MentionSpanTheme(val currentUserId: UserId) {
     @Suppress("ComposableNaming")
     @Composable
     fun updateStyles() {
-        currentUserTextColor = ElementTheme.colors.textBadgeAccent.toArgb()
-        currentUserBackgroundColor = ElementTheme.colors.bgBadgeAccent.toArgb()
-        otherTextColor = ElementTheme.colors.textOnSolidPrimary.toArgb()
-        otherBackgroundColor = ElementTheme.colors.bgBadgePrimary.toArgb()
+        val foreground = if (ElementTheme.isLightTheme) ElementTheme.colors.bgAccentRest else ElementTheme.colors.textBadgeAccent
+        currentUserTextColor = foreground.toArgb()
+        currentUserBackgroundColor = ElementTheme.colors.bgAccentSelected.compositeOver(ElementTheme.colors.bgCanvasDefault).toArgb()
+        otherTextColor = foreground.toArgb()
+        otherBackgroundColor = ElementTheme.colors.bgAccentSubtle.compositeOver(ElementTheme.colors.bgCanvasDefault).toArgb()
 
         typeface.value = ElementTheme.typography.fontBodyLgMedium.rememberTypeface().value
         val density = LocalDensity.current
