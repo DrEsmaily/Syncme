@@ -1,0 +1,125 @@
+name: SyncMe 1.1.8 Build 264
+
+on:
+  push:
+    branches: [build/syncme-264-reply-direction]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: syncme-final-264-reply-direction-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SYNCME_BUILD_NUMBER: '264'
+  SYNCME_VERSION_CODE: '20261031'
+  CI_GRADLE_ARGS: --no-configuration-cache --stacktrace --max-workers=2 --no-parallel
+
+jobs:
+  verified-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+        with:
+          cache-read-only: false
+      - name: Preserve update identity
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          path = Path('app/build.gradle.kts')
+          source = path.read_text()
+          marker = 'getByName("release") {'
+          assert source.count(marker) == 1
+          path.write_text(source.replace(marker, marker + '\n            applicationIdSuffix = ".syncmerelease"'))
+          PYTHON
+          git diff --check
+      - name: Check quoted-text direction, alignment and card sizing
+        run: >-
+          ./gradlew :libraries:matrixui:testDebugUnitTest --tests '*InReplyToDirectionTest'
+          --tests '*InReplyToDetailTest' --tests '*InReplyToMetadataKtTest'
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
+      - name: Report test failures
+        if: failure()
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          for path in Path('libraries/matrixui/build/test-results').rglob('TEST-*.xml'):
+              root = ET.parse(path).getroot()
+              for case in root.findall('testcase'):
+                  for failure in case.findall('failure'):
+                      print(case.attrib.get('name'), failure.attrib.get('message'), failure.text)
+          PYTHON
+      - name: Build optimized release APKs
+        run: >-
+          ./gradlew :app:assembleGplayRelease -PuseLegacyPackaging=true -x lintVitalGplayRelease
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS
+      - name: Preserve compiled ARM64 candidate before verification
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-264-ARM64-candidate
+          path: app/build/outputs/apk/gplay/release/*arm64-v8a*release.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Verify APK metadata, signature and update compatibility
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build-checkpoint /tmp/syncme-reference
+          gh release download v1.1.7-build263 --repo "$GITHUB_REPOSITORY" --pattern SyncMe-263-ARM64.apk --dir /tmp/syncme-reference
+          python3 .github/workflows/scripts/verify_syncme_264.py
+          sha256sum build-checkpoint/SyncMe-264-ARM64.apk > build-checkpoint/SHA256.txt
+          git diff -- app/build.gradle.kts > build-checkpoint/build-source.patch
+          cp docs/syncme/build-264-minor-fixes.md build-checkpoint/SyncMe-264-Notes.md
+          cp .github/SYNCME_CONTINUATION_MASTER.txt build-checkpoint/Original-Continuation-Master.txt
+          {
+            echo "Build: SyncMe 264, optimized GplayRelease, ARM64"
+            echo "Commit: $GITHUB_SHA"
+            echo "Run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Regression tests: preview direction, alignment, truncation and unread indicator tests passed in this run"
+            echo "Build-only source adjustment: see build-source.patch"
+            echo "Physical device runtime confirmation: not performed"
+            cat build-checkpoint/SHA256.txt
+            cat docs/syncme/build-264-minor-fixes.md
+          } | tee build-checkpoint/Provenance.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload verified ARM64 APK and provenance
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: SyncMe-264-ARM64
+          path: build-checkpoint/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Publish verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.1.8-build264 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "SyncMe 1.1.8 — Build 264" --latest \
+            --notes-file docs/syncme/build-264-minor-fixes.md \
+            build-checkpoint/SyncMe-264-ARM64.apk build-checkpoint/SHA256.txt \
+            build-checkpoint/Provenance.txt build-checkpoint/manifest.txt \
+            build-checkpoint/signature.txt build-checkpoint/update-compatibility.txt \
+            build-checkpoint/SyncMe-264-Notes.md

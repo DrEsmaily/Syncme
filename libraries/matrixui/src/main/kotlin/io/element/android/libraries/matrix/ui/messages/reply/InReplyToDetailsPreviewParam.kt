@@ -93,6 +93,10 @@ open class InReplyToDetailsPreviewParam : PreviewParameterProvider<InReplyToDeta
                 isEdited = false,
                 threadInfo = null,
             ),
+            aMessageContent(
+                body = "\u0633\u0644\u0627\u0645",
+                type = TextMessageType("\u0633\u0644\u0627\u0645", null),
+            ),
         ).map {
             aInReplyToDetails(
                 eventContent = it,

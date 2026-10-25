@@ -10,6 +10,8 @@ package io.element.android.libraries.matrix.ui.messages.reply
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,6 +30,7 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -98,6 +101,7 @@ private fun ReplyToReadyContent(
     }
     Row(
         modifier
+            .width(IntrinsicSize.Max)
             .background(ElementTheme.colors.bgCanvasDefault)
             .padding(paddings)
     ) {
@@ -113,7 +117,7 @@ private fun ReplyToReadyContent(
         }
         val a11InReplyToText = stringResource(CommonStrings.common_in_reply_to, senderProfile.getDisambiguatedDisplayName(senderId))
         Column(
-            modifier = Modifier.semantics(mergeDescendants = false) { isTraversalGroup = true },
+            modifier = Modifier.weight(1f).semantics(mergeDescendants = false) { isTraversalGroup = true },
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             SenderName(
@@ -185,7 +189,7 @@ private fun ReplyToContentText(
         else -> FontStyle.Normal
     }
     Row(
-        modifier = Modifier.semantics(mergeDescendants = false) {
+        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = false) {
             isTraversalGroup = true
             traversalIndex = -1f
         },
@@ -202,7 +206,8 @@ private fun ReplyToContentText(
         }
         Text(
             text = text,
-            style = ElementTheme.typography.fontBodyMdRegular,
+            modifier = Modifier.weight(1f),
+            style = ElementTheme.typography.fontBodyMdRegular.copy(textDirection = TextDirection.Content),
             fontStyle = fontStyle,
             textAlign = TextAlign.Start,
             color = ElementTheme.colors.textSecondary,
