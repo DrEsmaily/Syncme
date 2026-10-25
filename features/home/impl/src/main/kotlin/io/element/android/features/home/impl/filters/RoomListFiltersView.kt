@@ -447,6 +447,11 @@ private fun RoomListFilterView(
 
     FilterChip(
         selected = selected,
+        trailingIcon = if (selected) {
+            { Icon(imageVector = CompoundIcons.Check(), contentDescription = null, tint = textColour.value, modifier = Modifier.size(16.dp)) }
+        } else {
+            null
+        },
         onClick = { onClick(roomListFilter) },
         modifier = modifier.height(32.dp),
         shape = CircleShape,
@@ -495,6 +500,11 @@ private fun RoomListCustomTagView(
 
     FilterChip(
         selected = selected,
+        trailingIcon = if (selected) {
+            { Icon(imageVector = CompoundIcons.Check(), contentDescription = null, tint = textColour.value, modifier = Modifier.size(16.dp)) }
+        } else {
+            null
+        },
         onClick = onClick,
         modifier = modifier.height(32.dp),
         shape = CircleShape,

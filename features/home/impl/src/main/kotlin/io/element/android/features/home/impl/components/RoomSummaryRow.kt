@@ -74,7 +74,7 @@ import io.element.android.libraries.matrix.ui.presence.PresenceIndicator
 import io.element.android.libraries.ui.strings.CommonStrings
 import timber.log.Timber
 
-internal val minHeight = 84.dp
+internal val minHeight = 76.dp
 
 @Composable
 internal fun RoomSummaryRow(
@@ -206,6 +206,7 @@ private fun RoomSummaryScaffoldRow(
         Box(contentAlignment = Alignment.BottomEnd) {
             Avatar(
                 avatarData = room.avatarData,
+                forcedAvatarSize = 48.dp,
                 avatarType = if (room.isSpace) {
                     AvatarType.Space(isTombstoned = room.isTombstoned)
                 } else {
@@ -336,21 +337,21 @@ private fun MessagePreviewAndIndicatorRow(
                     Spacer(modifier = Modifier.width(6.dp))
                 }
                 val messagePreview = room.latestEvent.content()
-                val annotatedMessagePreview = messagePreview as? AnnotatedString ?: AnnotatedString(text = messagePreview.orEmpty().toString())
-                Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clipToBounds(),
-                    text = annotatedMessagePreview,
-                    color = ElementTheme.colors.roomListRoomMessage,
-                    style = ElementTheme.typography.fontBodyMdRegular.copy(
-                        textDirection = TextDirection.Content,
-                        textAlign = TextAlign.Start,
-                    ),
-                    minLines = 1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                val annotatedMessagePreview = AnnotatedString(text = messagePreview.orEmpty().toString())
+                Box(modifier = Modifier.weight(1f)) {
+                    Text(
+                        modifier = Modifier.clipToBounds(),
+                        text = annotatedMessagePreview,
+                        color = ElementTheme.colors.roomListRoomMessage,
+                        style = ElementTheme.typography.fontBodyMdRegular.copy(
+                            textDirection = TextDirection.Content,
+                            textAlign = TextAlign.Start,
+                        ),
+                        minLines = 1,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.width(16.dp))

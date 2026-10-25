@@ -11,6 +11,8 @@
 package io.element.android.features.home.impl.filters
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import io.element.android.features.home.impl.R
@@ -23,6 +25,15 @@ import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
 
 class RoomListFiltersViewTest : RobolectricTest() {
+    @Test
+    fun `multiple custom tags remain visibly selected`() = runAndroidComposeUiTest<ComponentActivity> {
+        setContent {
+            RoomListFiltersView(state = aRoomListFiltersState(activeCustomTagIds = setOf("work", "family")))
+        }
+        onNodeWithText("Work").assertIsSelected()
+        onNodeWithText("Family").assertIsSelected()
+    }
+
     @Test
     fun `clicking on filters generates expected Event`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<RoomListFiltersEvent>()

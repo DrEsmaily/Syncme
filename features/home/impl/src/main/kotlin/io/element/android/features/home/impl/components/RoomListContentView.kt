@@ -120,7 +120,7 @@ private fun SkeletonView(
             item {
                 RoomSummaryPlaceholderRow()
                 if (index != count - 1) {
-                    HorizontalDivider()
+                    RoomListDivider()
                 }
             }
         }
@@ -292,7 +292,7 @@ private fun RoomsViewList(
                 eventSink = eventSink,
             )
             if (index != state.summaries.lastIndex) {
-                HorizontalDivider()
+                RoomListDivider()
             }
         }
     }
@@ -369,5 +369,13 @@ internal fun RoomListContentViewPreview(@PreviewParameter(RoomListContentStatePr
         onCreateRoomClick = {},
         lazyListState = rememberLazyListState(),
         contentPadding = PaddingValues(0.dp),
+    )
+}
+
+@Composable
+private fun RoomListDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(start = 80.dp),
+        color = ElementTheme.colors.borderDisabled,
     )
 }
