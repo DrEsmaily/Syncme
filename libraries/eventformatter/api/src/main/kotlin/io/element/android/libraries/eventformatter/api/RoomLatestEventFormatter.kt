@@ -31,4 +31,8 @@ interface RoomLatestEventFormatter {
      * @return the preview text, or `null` when this kind of event should not be previewed.
      */
     fun format(latestEvent: LatestEventValue.Remote, isDmRoom: Boolean): CharSequence?
+    companion object {
+        /** Annotated sender label, including its separator, kept separate from the message's own direction. */
+        const val SENDER_PREFIX_TAG = "io.element.android.eventformatter.sender_prefix"
+    }
 }

@@ -13,6 +13,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import io.element.android.libraries.eventformatter.api.RoomLatestEventFormatter
 
 private const val FIRST_STRONG_ISOLATE = 0x2068
 private const val POP_DIRECTIONAL_ISOLATE = 0x2069
@@ -20,12 +21,15 @@ private const val POP_DIRECTIONAL_ISOLATE = 0x2069
 /** Wraps the string between Unicode isolate characters so its own direction cannot reorder the text around it. */
 internal fun String.bidiIsolate(): String = Char(FIRST_STRONG_ISOLATE) + this + Char(POP_DIRECTIONAL_ISOLATE)
 
-internal fun CharSequence.prefixWith(prefix: String): AnnotatedString {
+internal fun CharSequence.prefixWith(prefix: String, isSenderPrefix: Boolean = false): AnnotatedString {
     return buildAnnotatedString {
         withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
             append(prefix)
         }
         append(": ")
+        if (isSenderPrefix) {
+            addStringAnnotation(RoomLatestEventFormatter.SENDER_PREFIX_TAG, "sender", 0, length)
+        }
         if (this@prefixWith is AnnotatedString) {
             append(this@prefixWith)
         } else {

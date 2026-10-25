@@ -190,7 +190,8 @@ class DefaultRoomLatestEventFormatter(
                 sp.getString(CommonStrings.common_you)
             } else {
                 senderDisambiguatedDisplayName.bidiIsolate()
-            }
+            },
+            isSenderPrefix = true,
         )
     }
 }

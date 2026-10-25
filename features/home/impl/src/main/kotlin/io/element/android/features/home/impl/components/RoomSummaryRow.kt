@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -63,6 +64,7 @@ import io.element.android.libraries.designsystem.theme.roomListRoomMessage
 import io.element.android.libraries.designsystem.theme.roomListRoomMessageDate
 import io.element.android.libraries.designsystem.theme.roomListRoomName
 import io.element.android.libraries.designsystem.theme.unreadIndicator
+import io.element.android.libraries.eventformatter.api.RoomLatestEventFormatter
 import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
@@ -336,22 +338,10 @@ private fun MessagePreviewAndIndicatorRow(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                 }
-                val messagePreview = room.latestEvent.content()
-                val annotatedMessagePreview = AnnotatedString(text = messagePreview.orEmpty().toString())
-                Box(modifier = Modifier.weight(1f)) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth().clipToBounds(),
-                        text = annotatedMessagePreview,
-                        color = ElementTheme.colors.roomListRoomMessage,
-                        style = ElementTheme.typography.fontBodyMdRegular.copy(
-                            textDirection = TextDirection.Content,
-                            textAlign = TextAlign.Start,
-                        ),
-                        minLines = 1,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                RoomMessagePreview(
+                    preview = room.latestEvent.content(),
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
         Spacer(modifier = Modifier.width(16.dp))
@@ -386,6 +376,38 @@ private fun MessagePreviewAndIndicatorRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RoomMessagePreview(preview: CharSequence?, modifier: Modifier = Modifier) {
+    val text = preview?.toString().orEmpty()
+    val sender = (preview as? AnnotatedString)
+        ?.getStringAnnotations(RoomLatestEventFormatter.SENDER_PREFIX_TAG, 0, text.length)
+        ?.firstOrNull { it.start == 0 && it.end in 1..text.length }
+    val style = ElementTheme.typography.fontBodyMdRegular.copy(textDirection = TextDirection.Content)
+    Row(modifier = modifier) {
+        if (sender != null) {
+            Text(
+                text = text.substring(0, sender.end).trimEnd(),
+                modifier = Modifier.widthIn(max = 96.dp),
+                style = style,
+                color = ElementTheme.colors.roomListRoomMessage,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.width(4.dp))
+        }
+        Text(
+            text = text.substring(sender?.end ?: 0),
+            modifier = Modifier.weight(1f),
+            style = style,
+            textAlign = TextAlign.Start,
+            color = ElementTheme.colors.roomListRoomMessage,
+            minLines = 1,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

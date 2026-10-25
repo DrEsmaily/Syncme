@@ -13,6 +13,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import io.element.android.libraries.eventformatter.api.RoomLatestEventFormatter
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.media.ImageInfo
 import io.element.android.libraries.matrix.api.media.MediaSource
@@ -970,6 +971,25 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         assertThat(boldSpanStyle).isNotNull()
         val spanStart = "Bob".length + 4
         assertThat(boldSpanStyle!!.start..boldSpanStyle.end).isEqualTo(spanStart..spanStart + 4)
+    }
+
+    @Test
+    @Config(qualifiers = "en")
+    fun `sender annotation separates labels without changing message text`() {
+        val body = "\u0646\u0633\u062e\u0647: updated"
+        listOf(true, false).forEach { outgoing ->
+            val event = createLatestEvent(outgoing, "Alice", MessageContent(body, null, false, null, TextMessageType(body, null)))
+            val preview = formatter.format(event, false) as AnnotatedString
+            val range = preview.getStringAnnotations(RoomLatestEventFormatter.SENDER_PREFIX_TAG, 0, preview.length).single()
+            assertThat(range.start).isEqualTo(0)
+            assertThat(preview.text.substring(0, range.end)).isEqualTo(if (outgoing) "You: " else "\u2068Alice\u2069: ")
+            assertThat(preview.text.substring(range.end)).isEqualTo(body)
+            val dmPreview = formatter.format(event, true)
+            assertThat(dmPreview.toString()).isEqualTo(body)
+            val dmLabels = (dmPreview as? AnnotatedString)
+                ?.getStringAnnotations(RoomLatestEventFormatter.SENDER_PREFIX_TAG, 0, body.length).orEmpty()
+            assertThat(dmLabels).isEmpty()
+        }
     }
 
     // endregion
