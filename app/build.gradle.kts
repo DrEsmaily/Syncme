@@ -27,6 +27,7 @@ import extension.setupDependencyInjection
 import extension.testCommonDependencies
 import org.sonarqube.gradle.SonarResolverTask
 import java.util.Locale
+import java.util.Properties
 
 plugins {
     id("io.element.android-compose-application")
@@ -39,7 +40,7 @@ plugins {
     // alias(libs.plugins.gms.google.services)
 }
 
-val syncmeRelease = java.util.Properties().apply {
+val syncmeRelease = Properties().apply {
     rootProject.file("syncme-release.properties").inputStream().use { load(it) }
 }
 val syncmeVersion = System.getenv("SYNCME_VERSION_NAME") ?: syncmeRelease.getProperty("version")
