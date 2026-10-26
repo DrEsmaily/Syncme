@@ -40,6 +40,7 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.components.HomeTopBar
 import io.element.android.features.home.impl.components.MultiAccountAnnouncementBottomSheet
+import io.element.android.features.home.impl.components.homeHeaderEdgeFade
 import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.model.RoomListRoomSummary
@@ -248,6 +249,9 @@ private fun HomeScaffold(
                     modifier = Modifier
                         .padding(outerPadding)
                         .consumeWindowInsets(outerPadding)
+                        .homeHeaderEdgeFade(ElementTheme.colors.bgCanvasDefault) {
+                            roomsLazyListState.firstVisibleItemIndex > 0 || roomsLazyListState.firstVisibleItemScrollOffset > 0
+                        }
                 )
             }
         },
