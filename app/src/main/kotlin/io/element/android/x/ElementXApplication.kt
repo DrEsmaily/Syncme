@@ -53,6 +53,8 @@ class ElementXApplication : Application(), DependencyInjectionGraphOwner, Config
         TlsAudit.setEnabled(this, tlsEnabled)
         if (tlsEnabled) enableTlsAuditCleartextHints()
 
+        io.element.android.features.home.impl.updates.SyncMeUpdater.get(this).observeForeground()
+
         enableStrictMode()
 
         AppInitializer.getInstance(this).apply {

@@ -267,6 +267,7 @@ tasks.withType<SonarResolverTask>().configureEach {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.features.home.impl)
     allLibrariesImpl()
     allServicesImpl()
     if (isEnterpriseBuild) {

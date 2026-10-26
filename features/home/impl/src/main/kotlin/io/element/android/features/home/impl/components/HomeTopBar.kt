@@ -48,9 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.element.android.appconfig.RoomListConfig
@@ -125,19 +123,7 @@ fun HomeTopBar(
                 scrolledContainerColor = Color.Transparent,
             ),
             title = {
-                val titleStyle = with(LocalDensity.current) {
-                    ElementTheme.typography.fontHeadingLgBold.copy(
-                        fontSize = 26.dp.toSp(),
-                        lineHeight = AvatarSize.CurrentUserTopBar.dp.toSp(),
-                    )
-                }
-                Text(
-                    text = "SyncMe",
-                    modifier = Modifier.semantics { heading() },
-                    style = titleStyle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                SyncMeTitle()
             },
             navigationIcon = {
                 NavigationIcon(
@@ -190,14 +176,14 @@ private fun RowScope.RoomListMenuItems(
             contentDescription = stringResource(CommonStrings.action_search),
         )
     }
-    if (RoomListConfig.HAS_DROP_DOWN_MENU) {
+    run {
         var showMenu by remember { mutableStateOf(false) }
         IconButton(
             onClick = { showMenu = !showMenu }
         ) {
             Icon(
                 imageVector = CompoundIcons.OverflowVertical(),
-                contentDescription = null,
+                contentDescription = stringResource(CommonStrings.syncme_home_menu),
             )
         }
         DropdownMenu(
@@ -236,6 +222,7 @@ private fun RowScope.RoomListMenuItems(
                     }
                 )
             }
+            io.element.android.features.home.impl.updates.UpdateMenuItem(onDismiss = { showMenu = false })
         }
     }
 }

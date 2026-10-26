@@ -29,6 +29,7 @@ setupDependencyInjection()
 
 dependencies {
     implementation(projects.appconfig)
+    implementation(libs.androidx.lifecycle.process)
     implementation(projects.libraries.core)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.architecture)
