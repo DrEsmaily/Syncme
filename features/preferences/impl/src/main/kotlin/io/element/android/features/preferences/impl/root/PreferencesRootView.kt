@@ -312,8 +312,11 @@ internal fun AppSettingsSection(
     onOpenLocationSettings: () -> Unit,
     onOpenMediaSettings: () -> Unit,
 ) {
+    // This divider follows the final account row directly, without the header's default 16dp gap.
+    HorizontalDivider()
     PreferenceCategory(
         title = stringResource(CommonStrings.common_app_settings),
+        showTopDivider = false,
     ) {
         PreferenceDropdown(
             icon = CompoundIcons.DarkMode(),
