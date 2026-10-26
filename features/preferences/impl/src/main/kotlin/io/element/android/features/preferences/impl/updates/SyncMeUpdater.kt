@@ -38,6 +38,13 @@ class SyncMeUpdater private constructor(private val context: Context) {
     private val preferences = context.getSharedPreferences("syncme_updates", Context.MODE_PRIVATE)
     private val mutableState = MutableStateFlow(UpdateState())
     internal val state = mutableState.asStateFlow()
+    private val mutableAcknowledgedPrompt = MutableStateFlow(preferences.getString("acknowledged_prompt", null))
+    internal val acknowledgedPrompt = mutableAcknowledgedPrompt.asStateFlow()
+
+    internal fun acknowledgePrompt(release: UpdateRelease) {
+        mutableAcknowledgedPrompt.value = release.sha256
+        scope.launch { preferences.edit().putString("acknowledged_prompt", release.sha256).apply() }
+    }
     private val downloads get() = context.getSystemService(DownloadManager::class.java)
     private var task: Job? = null
     private var observing = false

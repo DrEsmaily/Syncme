@@ -41,4 +41,8 @@
     <string name="syncme_update_install_failed">Couldn’t open installer · Tap to retry</string>
     <string name="syncme_update_retry">Couldn’t check for updates · Tap to retry</string>
     <string name="syncme_update_download_retry">Tap to retry download</string>
+    <string name="syncme_update_download_complete">Update downloaded</string>
+    <string name="syncme_update_install_question">SyncMe %1$s is ready to install. Install it now?</string>
+    <string name="syncme_update_install_now">Install</string>
+    <string name="syncme_update_later">Later</string>
 </resources>
