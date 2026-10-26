@@ -12,7 +12,7 @@ The JSON is generated from the verified APK: actual Android versionCode, file si
 4. Fetch both public HTTPS URLs and confirm the JSON checksum matches the uploaded APK.
 
 The first updater-enabled version must be installed manually. Subsequent versions are checked when the application enters the foreground.
-The final home overflow-menu item checks, downloads and opens the Android installer. Android requires the user to allow installation from SyncMe and confirm installation.
+The final item under Settings → App settings checks, downloads and opens the Android installer. Android requires the user to allow installation from SyncMe and confirm installation.
 
 Downloads use Android DownloadManager and can resume after a connection interruption. The app restores an unfinished download after process restart.
 Before opening the installer, it checks size, SHA-256, application ID, versionCode and signing certificate against the installed application.
