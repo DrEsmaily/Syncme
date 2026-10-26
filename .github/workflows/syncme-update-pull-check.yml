@@ -1,0 +1,36 @@
+name: Check SyncMe server update fetching
+on:
+  push:
+    branches: [ops/syncme-update-pull]
+    paths: ['ops/update-pull/**', 'tests/update-pull/**', '.github/workflows/syncme-update-pull-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Validate shell and mirror behavior
+        run: |
+          bash -n ops/update-pull/install.sh
+          python3 -m unittest discover -s tests/update-pull -v
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re, subprocess, tempfile
+          installer = Path('ops/update-pull/install.sh').read_text()
+          expected = hashlib.sha256(Path('ops/update-pull/pull.py').read_bytes()).hexdigest()
+          assert expected in installer, 'Installer agent checksum is stale'
+          with tempfile.TemporaryDirectory() as folder:
+              units = re.findall(r"cat > \"\$stage/([^\"]+)\" <<'UNIT'\n(.*?)\nUNIT", installer, re.S)
+              assert len(units) == 2
+              paths = []
+              for name, contents in units:
+                  path = Path(folder) / name
+                  path.write_text(contents + '\n')
+                  paths.append(str(path))
+              subprocess.run(['systemd-analyze', 'verify', *paths], check=True)
+          PY
