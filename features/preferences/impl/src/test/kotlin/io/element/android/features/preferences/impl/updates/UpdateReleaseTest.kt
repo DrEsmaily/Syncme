@@ -2,7 +2,7 @@
  * Copyright (c) 2026 DrEsmaily (SyncMe Project).
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-package io.element.android.features.home.impl.updates
+package io.element.android.features.preferences.impl.updates
 
 import android.content.pm.PackageInfo
 import android.content.pm.Signature

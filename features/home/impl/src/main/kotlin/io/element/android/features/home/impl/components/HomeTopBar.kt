@@ -176,7 +176,7 @@ private fun RowScope.RoomListMenuItems(
             contentDescription = stringResource(CommonStrings.action_search),
         )
     }
-    run {
+    if (RoomListConfig.HAS_DROP_DOWN_MENU) {
         var showMenu by remember { mutableStateOf(false) }
         IconButton(
             onClick = { showMenu = !showMenu }
@@ -222,7 +222,6 @@ private fun RowScope.RoomListMenuItems(
                     }
                 )
             }
-            io.element.android.features.home.impl.updates.UpdateMenuItem(onDismiss = { showMenu = false })
         }
     }
 }

@@ -2,14 +2,13 @@
  * Copyright (c) 2026 DrEsmaily (SyncMe Project).
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-package io.element.android.features.home.impl.updates
+package io.element.android.features.preferences.impl.updates
 
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -23,21 +22,21 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
-import io.element.android.libraries.designsystem.theme.components.DropdownMenuItem
-import io.element.android.libraries.designsystem.theme.components.Icon
+import io.element.android.libraries.designsystem.components.list.ListItemContent
+import io.element.android.libraries.designsystem.theme.components.IconSource
+import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.ui.strings.CommonStrings
 
 @Composable
-internal fun UpdateMenuItem(onDismiss: () -> Unit) {
+internal fun UpdateSettingsItem() {
     val context = LocalContext.current
     val updater = remember(context) { SyncMeUpdater.get(context) }
     val state by updater.state.collectAsStateWithLifecycle()
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (Build.VERSION.SDK_INT < 26 || context.packageManager.canRequestPackageInstalls()) updater.install(context)
     }
-    UpdateMenuContent(state) {
-        onDismiss()
+    UpdateSettingsContent(state) {
         when (state.stage) {
             UpdateStage.Available, UpdateStage.DownloadFailed -> updater.download()
             UpdateStage.Ready, UpdateStage.InstallFailed -> {
@@ -52,7 +51,7 @@ internal fun UpdateMenuItem(onDismiss: () -> Unit) {
 }
 
 @Composable
-internal fun UpdateMenuContent(state: UpdateState, onClick: () -> Unit) {
+internal fun UpdateSettingsContent(state: UpdateState, onClick: () -> Unit) {
     val title = when (state.stage) {
         UpdateStage.Available -> CommonStrings.syncme_update_available
         UpdateStage.Downloading -> CommonStrings.syncme_update_downloading
@@ -75,20 +74,16 @@ internal fun UpdateMenuContent(state: UpdateState, onClick: () -> Unit) {
         UpdateStage.CheckFailed -> stringResource(CommonStrings.syncme_update_retry)
         UpdateStage.DownloadFailed -> stringResource(CommonStrings.syncme_update_download_retry)
     }
-    DropdownMenuItem(
-        text = {
-            Column {
-                Text(stringResource(title))
-                Text(subtitle, style = ElementTheme.typography.fontBodySmRegular, color = ElementTheme.colors.textSecondary)
-            }
-        },
+    ListItem(
+        content = { Text(stringResource(title)) },
+        supportingContent = { Text(subtitle) },
         onClick = onClick,
         enabled = state.stage !in setOf(UpdateStage.Checking, UpdateStage.Downloading, UpdateStage.Paused, UpdateStage.Verifying),
-        leadingIcon = { Icon(CompoundIcons.ArrowDown(), contentDescription = null, tint = ElementTheme.colors.iconSecondary) },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.ArrowDown())),
     )
 }
 
-internal class UpdateMenuPreviewStates : PreviewParameterProvider<UpdateState> {
+internal class UpdateSettingsPreviewStates : PreviewParameterProvider<UpdateState> {
     override val values = UpdateStage.entries.asSequence().map { stage ->
         UpdateState(stage, UpdateRelease("1.1.12", 202611042, 74000000, "a".repeat(64), ""), 42)
     }
@@ -96,6 +91,6 @@ internal class UpdateMenuPreviewStates : PreviewParameterProvider<UpdateState> {
 
 @PreviewsDayNight
 @Composable
-internal fun UpdateMenuPreview(@PreviewParameter(UpdateMenuPreviewStates::class) state: UpdateState) = ElementPreview {
-    UpdateMenuContent(state) {}
+internal fun UpdateSettingsPreview(@PreviewParameter(UpdateSettingsPreviewStates::class) state: UpdateState) = ElementPreview {
+    UpdateSettingsContent(state) {}
 }

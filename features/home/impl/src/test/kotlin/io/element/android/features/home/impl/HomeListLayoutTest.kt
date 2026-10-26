@@ -69,6 +69,7 @@ class HomeListLayoutTest : RobolectricTest() {
                 )
             }
         }
+        onNodeWithContentDescription(activity!!.getString(CommonStrings.syncme_home_menu)).assertDoesNotExist()
         val button = onNodeWithContentDescription(activity!!.getString(CommonStrings.action_create_room))
         val beforeScroll = button.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
         val listBounds = onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))

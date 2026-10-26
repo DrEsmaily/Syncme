@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 @file:OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)
-package io.element.android.features.home.impl.updates
+package io.element.android.features.preferences.impl.updates
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
@@ -20,16 +20,16 @@ import org.junit.Test
 import org.robolectric.annotation.GraphicsMode
 
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-class UpdateMenuTest : RobolectricTest() {
+class UpdateSettingsTest : RobolectricTest() {
     @Test
     fun `up to date and retry states use clear English labels`() = runAndroidComposeUiTest<ComponentActivity> {
         setContent {
             ElementTheme(theme = Theme.Light) {
                 Column {
-                    UpdateMenuContent(UpdateState(UpdateStage.Current)) {}
-                    UpdateMenuContent(UpdateState(UpdateStage.CheckFailed)) {}
-                    UpdateMenuContent(UpdateState(UpdateStage.DownloadFailed)) {}
-                    UpdateMenuContent(UpdateState(UpdateStage.Ready)) {}
+                    UpdateSettingsContent(UpdateState(UpdateStage.Current)) {}
+                    UpdateSettingsContent(UpdateState(UpdateStage.CheckFailed)) {}
+                    UpdateSettingsContent(UpdateState(UpdateStage.DownloadFailed)) {}
+                    UpdateSettingsContent(UpdateState(UpdateStage.Ready)) {}
                 }
             }
         }
@@ -40,7 +40,7 @@ class UpdateMenuTest : RobolectricTest() {
 
     @Test
     fun `active download shows progress and prevents duplicate download taps`() = runAndroidComposeUiTest<ComponentActivity> {
-        setContent { ElementTheme(theme = Theme.Dark) { UpdateMenuContent(UpdateState(UpdateStage.Downloading, percent = 42)) {} } }
+        setContent { ElementTheme(theme = Theme.Dark) { UpdateSettingsContent(UpdateState(UpdateStage.Downloading, percent = 42)) {} } }
         onNodeWithText("42%", useUnmergedTree = false).assertIsDisplayed().assertIsNotEnabled()
     }
 
@@ -48,7 +48,7 @@ class UpdateMenuTest : RobolectricTest() {
     fun `available update shows version and accepts a download action`() = runAndroidComposeUiTest<ComponentActivity> {
         val release = UpdateRelease("1.1.12", 202611042, 10, "a".repeat(64), "")
         var clicks = 0
-        setContent { ElementTheme(theme = Theme.Black) { UpdateMenuContent(UpdateState(UpdateStage.Available, release)) { clicks++ } } }
+        setContent { ElementTheme(theme = Theme.Black) { UpdateSettingsContent(UpdateState(UpdateStage.Available, release)) { clicks++ } } }
         onNodeWithText("Update available").assertIsDisplayed().performClick()
         onNodeWithText("Version 1.1.12 · Tap to download").assertIsDisplayed()
         assertThat(clicks).isEqualTo(1)

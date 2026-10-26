@@ -2,7 +2,7 @@
  * Copyright (c) 2026 DrEsmaily (SyncMe Project).
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-package io.element.android.features.home.impl.updates
+package io.element.android.features.preferences.impl.updates
 
 import android.app.DownloadManager
 import android.content.Context
@@ -34,7 +34,7 @@ import kotlinx.coroutines.withContext
 
 /** Process-wide updater. DownloadManager owns transfers; only verified APKs reach the Android installer. */
 class SyncMeUpdater private constructor(private val context: Context) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val preferences = context.getSharedPreferences("syncme_updates", Context.MODE_PRIVATE)
     private val mutableState = MutableStateFlow(UpdateState())
     internal val state = mutableState.asStateFlow()
@@ -182,8 +182,10 @@ class SyncMeUpdater private constructor(private val context: Context) {
                     requireNotNull(downloads.getUriForDownloadedFile(downloadId))
                 }
                 verified = true
-                activity.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
-                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK))
+                withContext(Dispatchers.Main) {
+                    activity.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
+                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK))
+                }
                 mutableState.value = UpdateState(UpdateStage.Ready, release)
             } catch (error: Exception) {
                 if (error is CancellationException) throw error

@@ -300,7 +300,7 @@ private fun AddAccountItem(onAddAccountClick: () -> Unit) {
 }
 
 @Composable
-private fun AppSettingsSection(
+internal fun AppSettingsSection(
     state: PreferencesRootState,
     onOpenLockScreenSettings: () -> Unit,
     onOpenLocationSettings: () -> Unit,
@@ -319,11 +319,12 @@ private fun AppSettingsSection(
                 state.eventSink(PreferencesRootEvent.SetTheme(themeOption))
             }
         )
-ListItem(
+        ListItem(
             content = { Text(stringResource(id = CommonStrings.common_screen_lock)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
             onClick = onOpenLockScreenSettings,
         )
+        io.element.android.features.preferences.impl.updates.UpdateSettingsItem()
     }
 }
 
