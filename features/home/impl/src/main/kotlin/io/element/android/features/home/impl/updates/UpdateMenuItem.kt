@@ -15,6 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import io.element.android.libraries.designsystem.preview.ElementPreview
+import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.element.android.compound.theme.ElementTheme
@@ -68,7 +72,8 @@ internal fun UpdateMenuContent(state: UpdateState, onClick: () -> Unit) {
         UpdateStage.Verifying -> stringResource(CommonStrings.syncme_update_verifying_detail)
         UpdateStage.Ready -> stringResource(CommonStrings.syncme_update_ready)
         UpdateStage.InstallFailed -> stringResource(CommonStrings.syncme_update_install_failed)
-        UpdateStage.CheckFailed, UpdateStage.DownloadFailed -> stringResource(CommonStrings.syncme_update_retry)
+        UpdateStage.CheckFailed -> stringResource(CommonStrings.syncme_update_retry)
+        UpdateStage.DownloadFailed -> stringResource(CommonStrings.syncme_update_download_retry)
     }
     DropdownMenuItem(
         text = {
@@ -81,4 +86,16 @@ internal fun UpdateMenuContent(state: UpdateState, onClick: () -> Unit) {
         enabled = state.stage !in setOf(UpdateStage.Checking, UpdateStage.Downloading, UpdateStage.Paused, UpdateStage.Verifying),
         leadingIcon = { Icon(CompoundIcons.ArrowDown(), contentDescription = null, tint = ElementTheme.colors.iconSecondary) },
     )
+}
+
+internal class UpdateMenuPreviewStates : PreviewParameterProvider<UpdateState> {
+    override val values = UpdateStage.entries.asSequence().map { stage ->
+        UpdateState(stage, UpdateRelease("1.1.12", 202611042, 74000000, "a".repeat(64), ""), 42)
+    }
+}
+
+@PreviewsDayNight
+@Composable
+internal fun UpdateMenuPreview(@PreviewParameter(UpdateMenuPreviewStates::class) state: UpdateState) = ElementPreview {
+    UpdateMenuContent(state) {}
 }

@@ -35,9 +35,10 @@
     <string name="syncme_update_current">You’re up to date</string>
     <string name="syncme_update_version">Version %1$s · Tap to download</string>
     <string name="syncme_update_starting">Starting download…</string>
-    <string name="syncme_update_waiting">Waiting for a connection</string>
+    <string name="syncme_update_waiting">Download will resume automatically</string>
     <string name="syncme_update_verifying_detail">Checking download integrity</string>
     <string name="syncme_update_ready">Download complete · Tap to install</string>
     <string name="syncme_update_install_failed">Couldn’t open installer · Tap to retry</string>
-    <string name="syncme_update_retry">Couldn’t complete request · Tap to retry</string>
+    <string name="syncme_update_retry">Couldn’t check for updates · Tap to retry</string>
+    <string name="syncme_update_download_retry">Tap to retry download</string>
 </resources>
