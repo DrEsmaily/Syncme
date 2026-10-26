@@ -17,6 +17,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -227,11 +228,13 @@ internal fun ColumnScope.MultiAccountSection(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 72.dp)
                 .clipToBounds()
                 .semantics { stateDescription = expandedStateDescription }
                 .clickable { state.eventSink(PreferencesRootEvent.ToggleOtherAccountsExpanded) },
         ) {
             ListSectionHeader(
+                modifier = Modifier.align(Alignment.CenterStart),
                 title = stringResource(CommonStrings.common_switch_account),
                 hasDivider = false,
             )
@@ -278,6 +281,7 @@ internal fun ColumnScope.MultiAccountSection(
                             .clickable {
                                 state.eventSink(PreferencesRootEvent.SwitchToSession(matrixUser.userId))
                             }
+                            .heightIn(min = 72.dp)
                             .padding(top = 2.dp, bottom = 2.dp, end = 8.dp),
                         matrixUser = matrixUser,
                         avatarSize = AvatarSize.AccountItem,

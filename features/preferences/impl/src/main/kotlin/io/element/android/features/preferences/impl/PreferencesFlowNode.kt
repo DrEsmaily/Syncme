@@ -10,6 +10,9 @@ package io.element.android.features.preferences.impl
 
 import android.os.Parcelable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.unit.dp
+import io.element.android.libraries.designsystem.theme.components.LocalSettingsMenuRowHeight
 import androidx.compose.ui.Modifier
 import com.bumble.appyx.core.modality.BuildContext
 import com.bumble.appyx.core.node.Node
@@ -382,6 +385,8 @@ class PreferencesFlowNode(
 
     @Composable
     override fun View(modifier: Modifier) {
-        BackstackView()
+        CompositionLocalProvider(LocalSettingsMenuRowHeight provides 72.dp) {
+            BackstackView()
+        }
     }
 }

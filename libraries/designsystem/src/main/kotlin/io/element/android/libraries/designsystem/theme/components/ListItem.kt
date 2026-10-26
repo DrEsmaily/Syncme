@@ -10,6 +10,7 @@ package io.element.android.libraries.designsystem.theme.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.ListItemColors
@@ -19,17 +20,22 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.preview.ElementThemedPreview
 import io.element.android.libraries.designsystem.preview.PreviewGroup
+
+// Unspecified outside Settings: chat lists and other application surfaces keep their existing sizing.
+val LocalSettingsMenuRowHeight = staticCompositionLocalOf { Dp.Unspecified }
 
 // Designs: https://www.figma.com/file/G1xy0HDZKJf5TCRFmKb5d5/Compound-Android-Components?type=design&node-id=425%3A24208&mode=design&t=G5hCfkLB6GgXDuWe-1
 
@@ -150,13 +156,15 @@ fun ListItem(
         }
     }
 
+    val menuHeight = LocalSettingsMenuRowHeight.current
+    val rowModifier = if (menuHeight != Dp.Unspecified) modifier.heightIn(min = menuHeight) else modifier
     androidx.compose.material3.ListItem(
         modifier = if (onClick != null) {
             Modifier
                 .clickable(enabled = enabled || alwaysClickable, onClick = onClick)
-                .then(modifier)
+                .then(rowModifier)
         } else {
-            modifier
+            rowModifier
         }
             .withAccessibilityModifier(
                 content = trailingContent ?: leadingContent,
