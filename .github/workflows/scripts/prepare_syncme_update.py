@@ -14,7 +14,7 @@ parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
 manifest = (args.output / 'manifest.txt').read_text()
 match = re.search(r"versionCode='(\d+)' versionName='([^']+)'", manifest)
-assert match and match[2] == str(args.build)
+assert match and match[2] == args.version, "Android versionName must equal the semantic release version"
 metadata = {
     'version': args.version,
     'versionCode': int(match[1]),

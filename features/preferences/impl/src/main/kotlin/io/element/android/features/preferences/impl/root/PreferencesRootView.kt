@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -209,7 +210,7 @@ private fun ColumnScope.UserStatusSection(
  * Ref: https://www.figma.com/design/G1xy0HDZKJf5TCRFmKb5d5/Compound-Android-Components?node-id=5414-4759
  */
 @Composable
-private fun ColumnScope.MultiAccountSection(
+internal fun ColumnScope.MultiAccountSection(
     state: PreferencesRootState,
     onAddAccountClick: () -> Unit,
 ) {
@@ -222,21 +223,22 @@ private fun ColumnScope.MultiAccountSection(
         } else {
             stringResource(CommonStrings.a11y_state_collapsed)
         }
+        HorizontalDivider(modifier = Modifier.padding(top = 16.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .clipToBounds()
                 .semantics { stateDescription = expandedStateDescription }
                 .clickable { state.eventSink(PreferencesRootEvent.ToggleOtherAccountsExpanded) },
         ) {
             ListSectionHeader(
                 title = stringResource(CommonStrings.common_switch_account),
-                hasDivider = true,
+                hasDivider = false,
             )
             Row(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    // Center on header text; header reserves space above its top divider.
-                    .padding(end = 16.dp, top = 16.dp),
+                    .padding(end = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {

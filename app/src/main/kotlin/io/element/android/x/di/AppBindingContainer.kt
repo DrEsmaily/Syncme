@@ -89,6 +89,7 @@ object AppBindingContainer {
             // TODO EAx Config.LOW_PRIVACY_LOG_ENABLE,
             lowPrivacyLoggingEnabled = false,
             versionName = BuildConfig.VERSION_NAME,
+            buildNumber = BuildConfig.SYNCME_BUILD_NUMBER,
             versionCode = context.getVersionCodeFromManifest(),
             gitRevision = BuildConfig.GIT_REVISION,
             gitBranchName = BuildConfig.GIT_BRANCH_NAME,

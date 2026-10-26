@@ -28,6 +28,15 @@ class VersionFormatterTest {
         assertThat(sut.get()).isEqualTo("SyncMe by 0x07c4 • Build versionName")
     }
 
+    @Test
+    fun `release version and build number are distinct`() {
+        val sut = DefaultVersionFormatter(
+            stringProvider = FakeStringProvider(),
+            buildMeta = aBuildMeta(versionName = "1.1.14").copy(buildNumber = 270),
+        )
+        assertThat(sut.get()).isEqualTo("SyncMe by 0x07c4 • 1.1.14 • Build 270")
+    }
+
     companion object {
         const val VERSION = "version: "
     }

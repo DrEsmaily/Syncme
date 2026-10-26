@@ -23,4 +23,5 @@ data class BuildMeta(
     val gitBranchName: String,
     val flavorDescription: String,
     val flavorShortDescription: String,
+    val buildNumber: Int? = null,
 )

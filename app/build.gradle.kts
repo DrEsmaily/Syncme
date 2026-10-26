@@ -39,14 +39,24 @@ plugins {
     // alias(libs.plugins.gms.google.services)
 }
 
+val syncmeRelease = java.util.Properties().apply {
+    rootProject.file("syncme-release.properties").inputStream().use { load(it) }
+}
+val syncmeVersion = System.getenv("SYNCME_VERSION_NAME") ?: syncmeRelease.getProperty("version")
+val syncmeBuild = (System.getenv("SYNCME_BUILD_NUMBER") ?: syncmeRelease.getProperty("build")).toInt()
+val syncmeVersionCodeBase = (System.getenv("SYNCME_VERSION_CODE") ?: syncmeRelease.getProperty("versionCodeBase")).toInt()
+require(syncmeVersion.matches(Regex("(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)")))
+require(syncmeBuild > 0 && syncmeVersionCodeBase in 1..209999999)
+
 android {
     namespace = "io.element.android.x"
 
     defaultConfig {
         applicationId = BuildTimeConfig.APPLICATION_ID
         targetSdk = Versions.TARGET_SDK
-        versionCode = System.getenv("SYNCME_VERSION_CODE")?.toIntOrNull() ?: Versions.VERSION_CODE
-        versionName = System.getenv("SYNCME_BUILD_NUMBER") ?: Versions.VERSION_NAME
+        versionCode = syncmeVersionCodeBase
+        versionName = syncmeVersion
+        buildConfigField("int", "SYNCME_BUILD_NUMBER", syncmeBuild.toString())
 
         // Keep abiFilter for the universalApk
         ndk {
