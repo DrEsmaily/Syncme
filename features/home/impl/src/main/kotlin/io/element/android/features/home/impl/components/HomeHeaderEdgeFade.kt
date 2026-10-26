@@ -9,11 +9,10 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 
 /** A draw-only overlay at the chat viewport edge; no layer, blur, layout or input handling. */
 internal fun Modifier.homeHeaderEdgeFade(background: Color, isVisible: () -> Boolean): Modifier = drawWithCache {
-    val fadeHeight = minOf(18.dp.toPx(), size.height)
+    val fadeHeight = minOf(5f, size.height)
     val brush = Brush.verticalGradient(
         colors = listOf(background, background.copy(alpha = 0f)),
         startY = 0f,

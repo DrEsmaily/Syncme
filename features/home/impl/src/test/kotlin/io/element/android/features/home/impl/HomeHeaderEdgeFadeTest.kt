@@ -56,12 +56,12 @@ class HomeHeaderEdgeFadeTest : RobolectricTest() {
         val bounds = viewport.fetchSemanticsNode().boundsInRoot
         fun distance(a: Color, b: Color) = abs(a.red - b.red) + abs(a.green - b.green) + abs(a.blue - b.blue)
         val resting = viewport.captureToImage().toPixelMap()
-        assertThat(distance(resting[resting.width / 2, 1], Color.Red)).isLessThan(0.03f)
+        assertThat(distance(resting[resting.width / 2, 0], Color.Red)).isLessThan(0.03f)
         runOnIdle { scrolled = true }
         val pixels = viewport.captureToImage().toPixelMap()
         val x = pixels.width / 2
-        val upper = pixels[x, 1]
-        val middle = pixels[x, (pixels.height * 0.09f).toInt()]
+        val upper = pixels[x, 0]
+        val middle = pixels[x, 2]
         val below = pixels[x, pixels.height / 2]
         assertThat(distance(upper, background)).isLessThan(0.25f)
         assertThat(distance(middle, Color.Red)).isLessThan(distance(upper, Color.Red))
@@ -71,6 +71,6 @@ class HomeHeaderEdgeFadeTest : RobolectricTest() {
         assertThat(taps).isEqualTo(1)
         runOnIdle { scrolled = false }
         val reset = viewport.captureToImage().toPixelMap()
-        assertThat(distance(reset[x, 1], Color.Red)).isLessThan(0.03f)
+        assertThat(distance(reset[x, 0], Color.Red)).isLessThan(0.03f)
     }
 }
