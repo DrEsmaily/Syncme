@@ -2,7 +2,7 @@
 
 # SyncMe for Android
 
-**Version 1.1.13 · Build 269**
+**Version 1.1.14 · Build 270**
 
 **SyncMe** is an independent Android Matrix messenger forked from [Element X Android](https://github.com/element-hq/element-x-android).
 It adds a customized interface, personal conversation tags, shared presence indicators and optional diagnostic tools on top of the Matrix Rust SDK, Jetpack Compose and Appyx foundation.
@@ -11,12 +11,12 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest release and downloads
 
-**[Download SyncMe 1.1.13 · Build 269 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.13-build269/SyncMe-269-ARM64.apk)**
+**[Download SyncMe 1.1.14 · Build 270 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.14-build270/SyncMe-270-ARM64.apk)**
 
-- **Version 1.1.13 · Build 269 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.13-build269) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/40259329512) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.13-build269/SHA256.txt).
+- **Version 1.1.14 · Build 270 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.14-build270) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/40280144052) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.14-build270/SHA256.txt).
 - Minor bugs fixed
-- [Server upload files](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.13-build269/SyncMe-269-Server-Upload.zip) · [Update metadata](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.13-build269/latest.json) · [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-269-settings-updater/docs/syncme/update-hosting.md).
-- [Source](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-269-settings-updater) · [Previous public release: 1.1.12 · Build 268](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.12-build268/SyncMe-268-ARM64.apk).
+- [Server upload files](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.14-build270/SyncMe-270-Server-Upload.zip) · [Update metadata](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.14-build270/latest.json) · [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-270-settings-bounds/docs/syncme/update-hosting.md).
+- [Source](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-270-settings-bounds) · [Previous public release: 1.1.13 · Build 269](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.13-build269/SyncMe-269-ARM64.apk).
 
 Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
 
@@ -31,7 +31,7 @@ These are recorded differences from the upstream version used as this fork's bas
 | **Upload percentage and transferred size** | Real percentage, transferred/total bytes and a progress bar within conversations, driven by SDK send-queue state and fitted to the message bubble. |
 | **Media-send controls** | Customized quality/original-file behavior, upload cancellation through message actions, and pending-upload presentation. |
 | **Personal conversation tags** | Dedicated create, rename and management flows, conversation assignments and persistent home filters; up to three personal tags. |
-| **In-app updates** | Final row under Settings → App settings, background version checks, resumable Android downloads and verified installation from the configured HTTPS update server. [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-269-settings-updater/docs/syncme/update-hosting.md). |
+| **In-app updates** | Final row under Settings → App settings, background version checks, resumable Android downloads and verified installation from the configured HTTPS update server. [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-270-settings-bounds/docs/syncme/update-hosting.md). |
 | **SyncMe identity and interface** | SM artwork, dedicated welcome screen, cobalt accents, black surfaces, simpler navigation, and customized menus, reactions and settings. |
 | **Optional diagnostics** | Startup, TLS and decryption tools in Developer Options; default-off, bounded capture. |
 | **Refined read-receipt behavior** | Reader avatars under the relevant outgoing message, retries after failure, and automatic receipts restricted to the active chat and visible event. |
@@ -77,10 +77,11 @@ Explore SyncMe's welcome screen, conversation filters, presence indicators, pers
 
 ## Latest 10 successful builds
 
-This rolling list includes the current build and the nine preceding successful builds. Version 1.1.13 (Build 269) follows Version 1.1.12 (Build 268).
+This rolling list includes the current build and the nine preceding successful builds. Version 1.1.14 (Build 270) follows Version 1.1.13 (Build 269).
 
 | Build | Verified execution | Downloads and documentation |
 |---|---|---|
+| 270 — Version 1.1.14 | [Run 40280144052](https://github.com/DrEsmaily/SyncMe/actions/runs/40280144052) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.14-build270/SyncMe-270-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.14-build270) |
 | 269 — Version 1.1.13 | [Run 40259329512](https://github.com/DrEsmaily/SyncMe/actions/runs/40259329512) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.13-build269/SyncMe-269-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.13-build269) |
 | 268 — Version 1.1.12 | [Run 40256575761](https://github.com/DrEsmaily/SyncMe/actions/runs/40256575761) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.12-build268/SyncMe-268-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.12-build268) |
 | 267 — Version 1.1.11 | [Run 40163722101](https://github.com/DrEsmaily/SyncMe/actions/runs/40163722101) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.11-build267/SyncMe-267-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.11-build267) |
@@ -90,9 +91,10 @@ This rolling list includes the current build and the nine preceding successful b
 | 263 — Version 1.1.7 | [Run 40148224229](https://github.com/DrEsmaily/SyncMe/actions/runs/40148224229) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.7-build263/SyncMe-263-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.7-build263) |
 | 262 — Version 1.1.6 | [Run 40146274001](https://github.com/DrEsmaily/SyncMe/actions/runs/40146274001) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.6-build262/SyncMe-262-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.6-build262) |
 | 261 — Version 1.1.5 | [Run 40131437006](https://github.com/DrEsmaily/SyncMe/actions/runs/40131437006) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.5-build261/SyncMe-261-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.5-build261) |
-| 260 — Version 1.1.4 | [Run 40127367193](https://github.com/DrEsmaily/SyncMe/actions/runs/40127367193) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.4-build260/SyncMe-260-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.4-build260) |
 
 ### Earlier preserved archive
+
+[Version 1.1.4 · Build 260](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.4-build260) remains available as a public release with its APK and documentation.
 
 [Version 1.1.3 · Build 259](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.3-build259) remains available as a public release with its APK and documentation.
 
@@ -112,12 +114,14 @@ The original protected snapshot covers builds **244–253**. Builds [253](https:
 
 ## Development and preserved history
 
-The latest verified application source is on [`build/syncme-269-settings-updater`](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-269-settings-updater). Version 1.1.13 (Build 269) builds on the verified Build 268 source; [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.13-build269).
+The latest verified application source is on [`build/syncme-270-settings-bounds`](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-270-settings-bounds). Version 1.1.14 (Build 270) builds on the verified Build 269 source; [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.14-build270).
 Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
-Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255, 256, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268 and 269 provide persistent APK downloads.
+Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255, 256, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269 and 270 provide persistent APK downloads.
 
 ## Building and contributing
+
+Release identity follows [Semantic Versioning and separate build identifiers](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-270-settings-bounds/docs/syncme/versioning.md), using `syncme-release.properties` as the canonical source.
 
 The application requires Android 7.0+ (API 24). Development uses JDK 21 and the Android toolchain. See [contributing](CONTRIBUTING.md) and [developer onboarding](docs/_developer_onboarding.md).
 
