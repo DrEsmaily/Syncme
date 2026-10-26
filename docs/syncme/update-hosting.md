@@ -1,4 +1,22 @@
-# Manual update hosting
+# Update hosting
+
+## Automatic server fetching
+
+The tested optional installer configures the existing VPS to fetch new verified public GitHub releases every five minutes, without SSH deployment keys or GitHub secrets. It does not require a new app build.
+
+Run this one-time command in the VPS terminal already serving the update folder:
+
+```bash
+syncme_setup_dir="$(mktemp -d)" && curl -fsSL --proto '=https' --proto-redir '=https' "https://raw.githubusercontent.com/DrEsmaily/SyncMe/f4764193a0a6deb3fe4cb3c0f12f09365cd0bfe2/ops/update-pull/install.sh" -o "$syncme_setup_dir/install.sh" && sudo bash "$syncme_setup_dir/install.sh" f4764193a0a6deb3fe4cb3c0f12f09365cd0bfe2
+```
+
+The command installs a dedicated unprivileged systemd service and timer. It starts an initial check in the background. GitHub connectivity is needed to fetch a new release; the previously hosted version remains available when GitHub is unreachable.
+
+Setup is not activated remotely by the assistant: it becomes active only after the command succeeds on the VPS.
+
+[Implementation, operational commands and uninstall/disable instructions](https://github.com/DrEsmaily/SyncMe/blob/f4764193a0a6deb3fe4cb3c0f12f09365cd0bfe2/ops/update-pull/README.md).
+
+## Manual upload fallback
 
 The user-authorized update-only endpoint is `https://updates.syncme.ir/android/latest.json`.
 It is independent of Matrix login, account providers and GitHub at runtime.
