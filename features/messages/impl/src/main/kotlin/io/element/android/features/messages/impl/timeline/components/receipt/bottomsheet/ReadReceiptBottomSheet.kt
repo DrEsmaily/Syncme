@@ -10,6 +10,7 @@ package io.element.android.features.messages.impl.timeline.components.receipt.bo
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -21,6 +22,7 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -97,9 +99,12 @@ internal fun ReadReceiptBottomSheetContent(
     onOpenAttachment: (TimelineItem.Event) -> Unit = {},
 ) {
     val event = state.selectedEvent
-    val receipts = event?.readReceiptState?.receipts.orEmpty()
-    val reactions = remember(event?.reactionsState) {
-        messageReactionReports(event?.reactionsState?.reactions.orEmpty())
+    val receipts = event?.readReceiptDetailsState?.receipts.orEmpty()
+    val reactionsByReader = remember(event?.reactionsState) {
+        event?.reactionsState?.reactions.orEmpty()
+            .flatMap { reaction -> reaction.senders.map { it.senderId to reaction.displayKey } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, keys) -> keys.distinct() }
     }
     LazyColumn {
         if (event?.content?.isMedia == true) {
@@ -128,34 +133,20 @@ internal fun ReadReceiptBottomSheetContent(
                 matrixUser = MatrixUser(userId, receipt.avatarData.name, receipt.avatarData.url),
                 avatarSize = AvatarSize.ReadReceiptList,
                 trailingContent = {
-                    Text(receipt.formattedDate, style = ElementTheme.typography.fontBodySmRegular, color = ElementTheme.colors.textSecondary)
+                    Column(horizontalAlignment = Alignment.End) {
+                        reactionsByReader[userId]?.takeIf { it.isNotEmpty() }?.let { reactions ->
+                            Text(
+                                text = reactions.joinToString(" "),
+                                modifier = Modifier.widthIn(max = 140.dp),
+                                style = ElementTheme.typography.fontBodyMdRegular,
+                            )
+                        }
+                        Text(receipt.formattedDate, style = ElementTheme.typography.fontBodySmRegular, color = ElementTheme.colors.textSecondary)
+                    }
                 },
             )
         }
-        if (event?.isMine == true) {
-            item {
-                ListItem { Text(stringResource(CommonStrings.syncme_message_reactions)) }
-            }
-            if (reactions.isEmpty()) {
-                item {
-                    Text(
-                        stringResource(CommonStrings.syncme_message_no_reactions),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        color = ElementTheme.colors.textSecondary,
-                    )
-                }
-            }
-            items(reactions, key = { "reaction:${it.user.userId.value}" }) { report ->
-                Column(Modifier.clickable { onUserDataClick(report.user.userId) }) {
-                    MatrixUserRow(matrixUser = report.user, avatarSize = AvatarSize.ReadReceiptList)
-                    Text(
-                        text = report.entries.joinToString("\n"),
-                        modifier = Modifier.padding(start = 72.dp, end = 16.dp, bottom = 12.dp),
-                        style = ElementTheme.typography.fontBodyMdRegular,
-                    )
-                }
-            }
-        }
+
     }
 }
 

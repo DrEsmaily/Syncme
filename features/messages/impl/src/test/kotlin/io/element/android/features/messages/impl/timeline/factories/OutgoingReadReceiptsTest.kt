@@ -103,4 +103,39 @@ class OutgoingReadReceiptsTest {
         val outgoing = message(true, reader("alice"))
         assertThat(listOf(outgoing).withOutgoingReadReceipts()).containsExactly(outgoing)
     }
+    private fun List<TimelineItem>.details(index: Int) = (get(index) as TimelineItem.Event).readReceiptDetailsState.receipts
+
+    @Test
+    fun `later read positions cover older outgoing details without duplicating badges`() {
+        val alice = reader("alice")
+        val result = listOf(message(true), message(true, alice), message(true), message(true)).withOutgoingReadReceipts()
+        assertThat(result.details(0)).isEmpty()
+        assertThat(result.details(1)).containsExactly(alice)
+        assertThat(result.details(2)).containsExactly(alice)
+        assertThat(result.details(3)).containsExactly(alice)
+        assertThat(result.readers(2)).isEmpty()
+        assertThat(result.readers(3)).isEmpty()
+    }
+
+    @Test
+    fun `readers with different positions merge only for messages each has read`() {
+        val alice = reader("alice")
+        val bob = reader("bob")
+        val result = listOf(message(true, alice), message(true, bob), message(true, alice), message(true)).withOutgoingReadReceipts()
+        assertThat(result.details(0)).containsExactly(alice)
+        assertThat(result.details(1)).containsExactly(alice, bob)
+        assertThat(result.details(3)).containsExactly(alice, bob)
+    }
+
+    @Test
+    fun `detail read positions stay within their thread and exclude pending messages`() {
+        val thread = TimelineItemThreadInfo.ThreadResponse(ThreadId("\$thread"))
+        val pending = message(true).copy(eventId = null)
+        val result = listOf(message(true, reader("alice")).copy(threadInfo = thread), message(true), pending, message(true).copy(threadInfo = thread))
+            .withOutgoingReadReceipts()
+        assertThat(result.details(1)).isEmpty()
+        assertThat(result.details(2)).isEmpty()
+        assertThat(result.details(3)).hasSize(1)
+    }
+
 }

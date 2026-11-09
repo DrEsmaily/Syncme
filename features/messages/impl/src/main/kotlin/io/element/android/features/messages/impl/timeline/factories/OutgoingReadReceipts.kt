@@ -24,21 +24,39 @@ import kotlinx.collections.immutable.toImmutableList
 internal fun List<TimelineItem>.withOutgoingReadReceipts(): List<TimelineItem> {
     val pending = mutableMapOf<ThreadId?, MutableList<ReadReceiptData>>()
     val seen = mutableSetOf<Pair<ThreadId?, String>>()
+    val positions = mutableMapOf<ThreadId?, LinkedHashMap<String, ReadReceiptData>>()
+    val details = mutableMapOf<ThreadId?, TimelineItemReadReceipts>()
+    val emptyDetails = TimelineItemReadReceipts(kotlinx.collections.immutable.persistentListOf())
     return map { item ->
         if (item !is TimelineItem.Event) return@map item
         val thread = (item.threadInfo as? TimelineItemThreadInfo.ThreadResponse)?.threadRootId
         val readers = pending.getOrPut(thread) { mutableListOf() }
+        var changed = false
         item.readReceiptState.receipts.forEach { receipt ->
-            if (seen.add(thread to receipt.avatarData.id)) readers.add(receipt)
+            if (seen.add(thread to receipt.avatarData.id)) {
+                readers.add(receipt)
+                positions.getOrPut(thread) { linkedMapOf() }[receipt.avatarData.id] = receipt
+                changed = true
+            }
+        }
+        if (changed) {
+            // Reuse this immutable snapshot for older messages until another reader position is encountered.
+            details[thread] = TimelineItemReadReceipts(positions.getValue(thread).values.toImmutableList())
         }
         val isTarget = item.isMine && item.eventId != null && !item.canBeGrouped() && item.content !is TimelineItemRedactedContent
         val receipts = if (isTarget) readers.toList().also { readers.clear() } else emptyList()
-        if (receipts == item.readReceiptState.receipts) {
+        val detailReceipts = if (isTarget) {
+            details[thread] ?: emptyDetails
+        } else {
+            emptyDetails
+        }
+        if (receipts == item.readReceiptState.receipts && detailReceipts == item.readReceiptDetailsState) {
             item
         } else {
             item.copy(
-            readReceiptState = TimelineItemReadReceipts(receipts.toImmutableList()),
-        )
+                readReceiptState = TimelineItemReadReceipts(receipts.toImmutableList()),
+                readReceiptDetailsState = detailReceipts,
+            )
         }
     }
 }

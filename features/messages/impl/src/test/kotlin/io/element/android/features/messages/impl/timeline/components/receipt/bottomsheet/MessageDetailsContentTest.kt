@@ -32,8 +32,8 @@ class MessageDetailsContentTest : RobolectricTest() {
         }
         onNodeWithText("Seen by").assertIsDisplayed()
         onNodeWithText("No read receipts available").assertIsDisplayed()
-        onNodeWithText("Reactions").assertIsDisplayed()
-        onNodeWithText("No reactions yet").assertIsDisplayed()
+        onNodeWithText("Reactions").assertDoesNotExist()
+        onNodeWithText("No reactions yet").assertDoesNotExist()
         onNodeWithText("Open attachment").performClick()
         assertThat(opened).isEqualTo(1)
     }
@@ -43,4 +43,23 @@ class MessageDetailsContentTest : RobolectricTest() {
         setContent { ElementPreview { ReadReceiptBottomSheetContent(ReadReceiptBottomSheetState(event, {}), {}) } }
         onNodeWithText("Reactions").assertDoesNotExist()
     }
+    @Test fun `older message details show cumulative readers with reactions inline`() = runAndroidComposeUiTest<ComponentActivity> {
+        val alice = io.element.android.libraries.matrix.api.core.UserId("@alice:test")
+        val receipt = io.element.android.features.messages.impl.timeline.model.ReadReceiptData(
+            io.element.android.libraries.designsystem.components.avatar.AvatarData(alice.value, "Alice", size = io.element.android.libraries.designsystem.components.avatar.AvatarSize.ReadReceiptList),
+            "12:00",
+        )
+        val reaction = io.element.android.features.messages.impl.timeline.model.AggregatedReaction(alice, "❤️",
+            persistentListOf(io.element.android.features.messages.impl.timeline.model.AggregatedReactionSender(alice, 0, "12:00")))
+        val event = aTimelineItemEvent(isMine = true, readReceiptState = TimelineItemReadReceipts(persistentListOf()),
+            timelineItemReactions = io.element.android.features.messages.impl.timeline.model.TimelineItemReactions(persistentListOf(reaction)))
+            .copy(readReceiptDetailsState = TimelineItemReadReceipts(persistentListOf(receipt)))
+        setContent { ElementPreview { ReadReceiptBottomSheetContent(ReadReceiptBottomSheetState(event, {}), {}) } }
+        onNodeWithText("Alice").assertIsDisplayed()
+        onNodeWithText("❤️").assertIsDisplayed()
+        onNodeWithText("No read receipts available").assertDoesNotExist()
+        onNodeWithText("Reactions").assertDoesNotExist()
+        onNodeWithText("No reactions yet").assertDoesNotExist()
+    }
+
 }

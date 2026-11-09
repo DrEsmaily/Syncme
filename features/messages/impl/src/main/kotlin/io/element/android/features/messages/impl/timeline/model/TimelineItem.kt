@@ -105,6 +105,8 @@ sealed interface TimelineItem {
         val forwarder: UserId?,
         /** If [forwarder] is set, the profile of the forwarding user, if it was cached at the time the `EventTimelineItem` was created. */
         val forwarderProfile: ProfileDetails?,
+        /** Cumulative read positions for message details, independent of the latest-position avatar badges. */
+        val readReceiptDetailsState: TimelineItemReadReceipts = readReceiptState,
     ) : TimelineItem {
         val showSenderInformation = groupPosition.isNew() && !isMine
 
