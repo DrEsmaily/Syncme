@@ -115,8 +115,13 @@ class MessageTimestampFooterTest : RobolectricTest() {
             assertThat(media.center.x).isWithin(1f).of(bubble.center.x)
             assertThat(time.top).isAtLeast(media.bottom)
             assertThat(bubble.bottom - time.bottom).isWithin(1f).of(2f * pixelsPerDp)
-            if (outgoing) assertThat(time.center.x).isLessThan(bubble.center.x)
-            else assertThat(time.center.x).isGreaterThan(bubble.center.x)
+            if (outgoing) {
+                assertThat(time.center.x).isLessThan(bubble.center.x)
+                assertThat(time.left - bubble.left).isWithin(1f).of(8f * pixelsPerDp)
+            } else {
+                assertThat(time.center.x).isGreaterThan(bubble.center.x)
+                assertThat(bubble.right - time.right).isWithin(1f).of(8f * pixelsPerDp)
+            }
         }
     }
 
