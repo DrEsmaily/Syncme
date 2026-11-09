@@ -12,6 +12,8 @@ package io.element.android.features.messages.impl
 
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.click
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.test.AndroidComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -174,7 +176,7 @@ class MessagesViewTest : RobolectricTest() {
             onEventClick = callback,
         )
         // Cannot perform click on "Text", it's not detected. Use tag instead
-        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performClick()
+        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performTouchInput { click(Offset(center.x, height * 0.2f)) }
         callback.assertSuccess()
     }
 
@@ -188,7 +190,7 @@ class MessagesViewTest : RobolectricTest() {
                 readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = recorder),
             ),
         )
-        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performClick()
+        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performTouchInput { click(Offset(center.x, height * 0.2f)) }
         recorder.assertSingle(ReadReceiptBottomSheetEvent.EventSelected(event))
     }
 
@@ -215,7 +217,7 @@ class MessagesViewTest : RobolectricTest() {
             onEventClick = callback,
         )
         // Cannot perform click on "Text", it's not detected. Use tag instead
-        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performClick()
+        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performTouchInput { click(Offset(center.x, height * 0.2f)) }
         callback.assertSuccess()
     }
 
@@ -267,7 +269,7 @@ class MessagesViewTest : RobolectricTest() {
             state = state,
         )
         // Cannot perform click on "Text", it's not detected. Use tag instead
-        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performTouchInput { longClick() }
+        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performTouchInput { longClick(Offset(center.x, height * 0.2f)) }
         eventsRecorder.assertSingle(
             ActionListEvent.ComputeForMessage(
                 event = timelineItem,
