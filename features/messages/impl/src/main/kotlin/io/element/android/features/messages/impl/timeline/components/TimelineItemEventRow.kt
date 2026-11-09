@@ -884,7 +884,7 @@ private fun MessageEventBubbleContent(
             }
             TimestampPosition.Below ->
                 Column(
-                    modifier,
+                    modifier.widthIn(min = MIN_BUBBLE_WIDTH),
                     horizontalAlignment = if (event.content is TimelineItemImageContent || event.content is TimelineItemVideoContent) {
                         Alignment.CenterHorizontally
                     } else Alignment.Start,

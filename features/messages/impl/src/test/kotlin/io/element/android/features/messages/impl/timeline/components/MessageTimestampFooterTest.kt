@@ -82,6 +82,7 @@ class MessageTimestampFooterTest : RobolectricTest() {
         var mine by mutableStateOf(true)
         var rtl by mutableStateOf(false)
         var reactionCount by mutableStateOf(0)
+        var image by mutableStateOf(true)
         var pixelsPerDp = 1f
         val quote = io.element.android.libraries.matrix.ui.messages.reply.InReplyToDetailsPreviewParam().values.elementAt(1)
         setContent {
@@ -90,8 +91,9 @@ class MessageTimestampFooterTest : RobolectricTest() {
                 CompositionLocalProvider(LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
                     TimelineItemEventRow(
                         event = aTimelineItemEvent(isMine = mine,
-                            content = io.element.android.features.messages.impl.timeline.model.event.aTimelineItemImageContent(aspectRatio = 0.5f),
-                            inReplyTo = quote, timelineItemReactions = aTimelineItemReactions(reactionCount)),
+                            content = if (image) io.element.android.features.messages.impl.timeline.model.event.aTimelineItemImageContent(aspectRatio = 0.5f)
+                                else aTimelineItemTextContent(body = "hi"),
+                            inReplyTo = if (image) quote else null, timelineItemReactions = aTimelineItemReactions(reactionCount)),
                         timelineMode = io.element.android.libraries.matrix.api.timeline.Timeline.Mode.Live,
                         timelineRoomInfo = io.element.android.features.messages.impl.timeline.aTimelineRoomInfo(),
                         timelineProtectionState = io.element.android.features.messages.impl.timeline.protection.aTimelineProtectionState(),
@@ -100,19 +102,20 @@ class MessageTimestampFooterTest : RobolectricTest() {
                         onUserDataClick = {}, inReplyToClick = {}, onReactionClick = { _, _ -> }, onReactionLongClick = { _, _ -> },
                         onMoreReactionsClick = {}, onReadReceiptClick = {}, onSwipeToReply = {}, eventSink = {},
                         eventContentView = { modifier, _ ->
-                            androidx.compose.foundation.layout.Box(modifier.size(80.dp, 160.dp).testTag("reply_media"))
+                            if (image) androidx.compose.foundation.layout.Box(modifier.size(80.dp, 160.dp).testTag("reply_media"))
+                            else Text("hi", modifier.testTag("reply_media"))
                         },
                     )
                 }
             }
         }
-        for (direction in listOf(false, true)) for (outgoing in listOf(false, true)) for (count in listOf(0, 2)) {
-            runOnIdle { rtl = direction; mine = outgoing; reactionCount = count }
+        for (direction in listOf(false, true)) for (outgoing in listOf(false, true)) for (count in listOf(0, 2)) for (isImage in listOf(false, true)) {
+            runOnIdle { rtl = direction; mine = outgoing; reactionCount = count; image = isImage }
             val media = onNodeWithTag("reply_media", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             val bubble = onNodeWithTag(io.element.android.libraries.testtags.TestTags.messageBubble.value, useUnmergedTree = true)
                 .fetchSemanticsNode().boundsInRoot
             val time = onNodeWithText("12:34", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-            assertThat(media.center.x).isWithin(1f).of(bubble.center.x)
+            if (isImage) assertThat(media.center.x).isWithin(1f).of(bubble.center.x)
             assertThat(time.top).isAtLeast(media.bottom)
             assertThat(bubble.bottom - time.bottom).isWithin(1f).of(2f * pixelsPerDp)
             if (outgoing) {
