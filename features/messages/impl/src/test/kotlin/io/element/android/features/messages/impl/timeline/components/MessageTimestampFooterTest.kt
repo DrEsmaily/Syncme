@@ -2,7 +2,7 @@
  * Copyright (c) 2026 DrEsmaily (SyncMe Project).
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-@file:OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)
+@file:OptIn(androidx.compose.ui.test.ExperimentalTestApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 package io.element.android.features.messages.impl.timeline.components
 
 import androidx.activity.ComponentActivity
@@ -15,6 +15,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
@@ -111,10 +114,11 @@ class MessageTimestampFooterTest : RobolectricTest() {
         }
         for (direction in listOf(false, true)) for (outgoing in listOf(false, true)) for (count in listOf(0, 2)) for (isImage in listOf(false, true)) {
             runOnIdle { rtl = direction; mine = outgoing; reactionCount = count; image = isImage }
-            val media = onNodeWithTag("reply_media", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val placed = SemanticsMatcher("placed in active reply layout") { it.layoutInfo.isPlaced }
+            val media = onNode(hasTestTag("reply_media") and placed, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             val bubble = onNodeWithTag(io.element.android.libraries.testtags.TestTags.messageBubble.value, useUnmergedTree = true)
                 .fetchSemanticsNode().boundsInRoot
-            val time = onNodeWithText("12:34", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val time = onNode(hasText("12:34") and placed, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             if (isImage) assertThat(media.center.x).isWithin(1f).of(bubble.center.x)
             assertThat(time.top).isAtLeast(media.bottom)
             assertThat(bubble.bottom - time.bottom).isWithin(1f).of(2f * pixelsPerDp)
