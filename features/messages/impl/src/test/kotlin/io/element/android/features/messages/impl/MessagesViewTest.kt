@@ -202,7 +202,7 @@ class MessagesViewTest : RobolectricTest() {
             isMine = true,
             content = aTimelineItemTextContent(),
             timelineItemReactions = aTimelineItemReactions(0),
-        ).copy(eventId = null)
+        ).copy(eventId = null, transactionId = io.element.android.libraries.matrix.api.core.TransactionId("pending-message-test"))
         val state = aMessagesState(
             timelineState = aTimelineState(
                 timelineItems = persistentListOf(localEcho),
