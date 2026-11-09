@@ -64,11 +64,8 @@ fun TimelineItemImageView(
     val a11yLabel = stringResource(CommonStrings.common_image)
     val description = content.caption?.let { "$a11yLabel: $it" } ?: a11yLabel
     Column(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally)) {
-        val containerModifier = if (content.showCaption) {
-            Modifier.clip(RoundedCornerShape(10.dp))
-        } else {
-            Modifier
-        }
+        // Plain and captioned images share the same inset, rounded media surface.
+        val containerModifier = Modifier.clip(RoundedCornerShape(10.dp))
 
         val eventContentValidation by contentValidationState.collectOverallState()
         val isContentBeingValidated = !eventContentValidation.isValidated()

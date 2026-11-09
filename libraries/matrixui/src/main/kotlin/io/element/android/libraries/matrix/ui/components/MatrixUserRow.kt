@@ -8,6 +8,10 @@
 
 package io.element.android.libraries.matrix.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -31,16 +35,31 @@ fun MatrixUserRow(
     verticalSpaceWidth: Dp = 12.dp,
     trailingContent: @Composable (() -> Unit)? = null,
     presence: UserPresence = UserPresence.Unknown,
+    nameTrailingContent: @Composable (() -> Unit)? = null,
 ) = UserRow(
     avatarData = matrixUser.getAvatarData(avatarSize),
     presence = presence,
     nameContent = {
-        DisplayNameWithStatus(
-            name = matrixUser.getBestName(),
-            status = matrixUser.displayedStatus,
-            nameColor = ElementTheme.colors.textPrimary,
-            style = ElementTheme.typography.fontBodyLgRegular,
-        )
+        if (nameTrailingContent == null) {
+            DisplayNameWithStatus(
+                name = matrixUser.getBestName(),
+                status = matrixUser.displayedStatus,
+                nameColor = ElementTheme.colors.textPrimary,
+                style = ElementTheme.typography.fontBodyLgRegular,
+            )
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f, fill = false)) {
+                    DisplayNameWithStatus(
+                        name = matrixUser.getBestName(),
+                        status = matrixUser.displayedStatus,
+                        nameColor = ElementTheme.colors.textPrimary,
+                        style = ElementTheme.typography.fontBodyLgRegular,
+                    )
+                }
+                nameTrailingContent()
+            }
+        }
         PresenceStatus(presence)
     },
     subtext = if (matrixUser.displayName.isNullOrEmpty()) null else matrixUser.userId.value,

@@ -190,16 +190,6 @@ fun MessagesView(
         }
     }
 
-    fun onContentClick(event: TimelineItem.Event) {
-        if (event.isMine && event.isRemote) {
-            hidingKeyboard {
-                state.readReceiptBottomSheetState.eventSink(ReadReceiptBottomSheetEvent.EventSelected(event))
-            }
-        } else {
-            openContent(event)
-        }
-    }
-
     fun onMessageLongClick(event: TimelineItem.Event) {
         Timber.v("OnMessageLongClicked= ${event.id}")
         hidingKeyboard {
@@ -285,7 +275,7 @@ fun MessagesView(
                     ) {
                         MessagesViewContent(
                             state = state,
-                            onContentClick = ::onContentClick,
+                            onContentClick = ::openContent,
                             onGalleryItemClick = { event, index ->
                                 val hideKeyboard = onGalleryEventItemClick(
                                     state.timelineState.isLive,
@@ -314,7 +304,9 @@ fun MessagesView(
                             onReactionLongClick = ::onEmojiReactionLongClick,
                             onMoreReactionsClick = ::onMoreReactionsClick,
                             onReadReceiptClick = { event ->
-                                state.readReceiptBottomSheetState.eventSink(ReadReceiptBottomSheetEvent.EventSelected(event))
+                                hidingKeyboard {
+                                    state.readReceiptBottomSheetState.eventSink(ReadReceiptBottomSheetEvent.EventSelected(event))
+                                }
                             },
                             onSendLocationClick = onSendLocationClick,
                             onCreatePollClick = onCreatePollClick,

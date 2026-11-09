@@ -93,6 +93,11 @@ internal fun TimelineItemRow(
             )
         },
 ) {
+    // Bubble metadata and interactive media have separate destinations.
+    fun onBubbleClick(event: TimelineItem.Event) {
+        if (event.isMine && event.isRemote) onReadReceiptClick(event) else onContentClick(event)
+    }
+
     val backgroundModifier = if (timelineItem.isEvent(focusedEventId)) {
         val focusedEventOffset = if ((timelineItem as? TimelineItem.Event)?.showSenderInformation == true) {
             14.dp
@@ -170,7 +175,7 @@ internal fun TimelineItemRow(
                                     if (isTalkbackActive()) {
                                         Modifier
                                             .combinedClickable(
-                                                onClick = { onContentClick(timelineItem) },
+                                                onClick = { onBubbleClick(timelineItem) },
                                                 onLongClick = { onLongClick(timelineItem) },
                                                 onLongClickLabel = stringResource(CommonStrings.action_open_context_menu),
                                             )
@@ -186,7 +191,7 @@ internal fun TimelineItemRow(
                             isLastOutgoingMessage = isLastOutgoingMessage,
                             displayThreadSummaries = displayThreadSummaries,
                             mediaUploadProgress = mediaUploadProgress,
-                            onEventClick = { onContentClick(timelineItem) },
+                            onEventClick = { onBubbleClick(timelineItem) },
                             onLongClick = { onLongClick(timelineItem) },
                             onLinkClick = onLinkClick,
                             onLinkLongClick = onLinkLongClick,

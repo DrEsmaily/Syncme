@@ -182,6 +182,29 @@ class MessagesViewTest : RobolectricTest() {
     }
 
     @Test
+    fun `tapping sent image opens its content without selecting Seen by`() = runAndroidComposeUiTest {
+        val event = aTimelineItemEvent(isMine = true,
+            content = io.element.android.features.messages.impl.timeline.model.event.aTimelineItemImageContent(aspectRatio = 2f),
+            timelineItemReactions = aTimelineItemReactions(0))
+        val receipts = EventsRecorder<ReadReceiptBottomSheetEvent>(expectEvents = false)
+        val callback = EnsureCalledOnceWithTwoParamsAndResult(expectedParam1 = true, expectedParam2 = event, result = true)
+        setMessagesView(
+            state = aMessagesState(timelineState = aTimelineState(timelineItems = persistentListOf(event)),
+                readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = receipts)),
+            onEventClick = callback,
+        )
+        val image = onNodeWithContentDescription(activity!!.getString(CommonStrings.common_image), useUnmergedTree = true)
+        val imageBounds = image.fetchSemanticsNode().boundsInRoot
+        val bubble = onNodeWithTag(TestTags.messageBubble.value, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        val inset = 8f * activity!!.resources.displayMetrics.density
+        com.google.common.truth.Truth.assertThat(imageBounds.left - bubble.left).isAtLeast(inset - 1f)
+        com.google.common.truth.Truth.assertThat(bubble.right - imageBounds.right).isAtLeast(inset - 1f)
+        com.google.common.truth.Truth.assertThat(imageBounds.top - bubble.top).isAtLeast(inset - 1f)
+        image.performClick()
+        callback.assertSuccess()
+    }
+
+    @Test
     fun `tapping a sent message opens details instead of opening content`() = runAndroidComposeUiTest {
         val event = aTimelineItemEvent(isMine = true, timelineItemReactions = aTimelineItemReactions(0))
         val recorder = EventsRecorder<ReadReceiptBottomSheetEvent>()

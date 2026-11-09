@@ -9,7 +9,6 @@
 package io.element.android.features.messages.impl.timeline.components.receipt.bottomsheet
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +21,6 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -132,17 +130,17 @@ internal fun ReadReceiptBottomSheetContent(
                 modifier = Modifier.clickable { onUserDataClick(userId) },
                 matrixUser = MatrixUser(userId, receipt.avatarData.name, receipt.avatarData.url),
                 avatarSize = AvatarSize.ReadReceiptList,
-                trailingContent = {
-                    Column(horizontalAlignment = Alignment.End) {
-                        reactionsByReader[userId]?.takeIf { it.isNotEmpty() }?.let { reactions ->
-                            Text(
-                                text = reactions.joinToString(" "),
-                                modifier = Modifier.widthIn(max = 140.dp),
-                                style = ElementTheme.typography.fontBodyMdRegular,
-                            )
-                        }
-                        Text(receipt.formattedDate, style = ElementTheme.typography.fontBodySmRegular, color = ElementTheme.colors.textSecondary)
+                nameTrailingContent = reactionsByReader[userId]?.takeIf { it.isNotEmpty() }?.let { reactions ->
+                    @Composable {
+                        Text(
+                            text = reactions.joinToString(" "),
+                            modifier = Modifier.widthIn(max = 140.dp),
+                            style = ElementTheme.typography.fontBodyMdRegular,
+                        )
                     }
+                },
+                trailingContent = {
+                    Text(receipt.formattedDate, style = ElementTheme.typography.fontBodySmRegular, color = ElementTheme.colors.textSecondary)
                 },
             )
         }

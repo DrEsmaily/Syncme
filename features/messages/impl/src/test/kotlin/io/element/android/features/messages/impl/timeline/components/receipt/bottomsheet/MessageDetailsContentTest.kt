@@ -43,7 +43,11 @@ class MessageDetailsContentTest : RobolectricTest() {
         setContent { ElementPreview { ReadReceiptBottomSheetContent(ReadReceiptBottomSheetState(event, {}), {}) } }
         onNodeWithText("Reactions").assertDoesNotExist()
     }
-    @Test fun `older message details show cumulative readers with reactions inline`() = runAndroidComposeUiTest<ComponentActivity> {
+    @Test fun `older message details show cumulative readers with reactions beside names in light theme`() = checkInline(io.element.android.compound.theme.Theme.Light)
+    @Test fun `reactions sit beside names in dark theme`() = checkInline(io.element.android.compound.theme.Theme.Dark)
+    @Test fun `reactions sit beside names in black theme`() = checkInline(io.element.android.compound.theme.Theme.Black)
+
+    private fun checkInline(theme: io.element.android.compound.theme.Theme) = runAndroidComposeUiTest<ComponentActivity> {
         val alice = io.element.android.libraries.matrix.api.core.UserId("@alice:test")
         val receipt = io.element.android.features.messages.impl.timeline.model.ReadReceiptData(
             io.element.android.libraries.designsystem.components.avatar.AvatarData(alice.value, "Alice", size = io.element.android.libraries.designsystem.components.avatar.AvatarSize.ReadReceiptList),
@@ -54,9 +58,19 @@ class MessageDetailsContentTest : RobolectricTest() {
         val event = aTimelineItemEvent(isMine = true, readReceiptState = TimelineItemReadReceipts(persistentListOf()),
             timelineItemReactions = io.element.android.features.messages.impl.timeline.model.TimelineItemReactions(persistentListOf(reaction)))
             .copy(readReceiptDetailsState = TimelineItemReadReceipts(persistentListOf(receipt)))
-        setContent { ElementPreview { ReadReceiptBottomSheetContent(ReadReceiptBottomSheetState(event, {}), {}) } }
+        var pixelsPerDp = 1f
+        setContent {
+            pixelsPerDp = androidx.compose.ui.platform.LocalDensity.current.density
+            ElementPreview(theme = theme) { ReadReceiptBottomSheetContent(ReadReceiptBottomSheetState(event, {}), {}) }
+        }
         onNodeWithText("Alice").assertIsDisplayed()
         onNodeWithText("❤️").assertIsDisplayed()
+        val name = onNodeWithText("Alice", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        val reaction = onNodeWithText("❤️", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        val time = onNodeWithText("12:00", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        assertThat(reaction.left - name.right).isWithin(1f).of(8f * pixelsPerDp)
+        assertThat(reaction.center.y).isWithin(1f).of(name.center.y)
+        assertThat(reaction.right).isLessThan(time.left)
         onNodeWithText("No read receipts available").assertDoesNotExist()
         onNodeWithText("Reactions").assertDoesNotExist()
         onNodeWithText("No reactions yet").assertDoesNotExist()
