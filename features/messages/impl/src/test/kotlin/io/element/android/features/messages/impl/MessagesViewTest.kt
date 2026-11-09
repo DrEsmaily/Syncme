@@ -205,6 +205,22 @@ class MessagesViewTest : RobolectricTest() {
     }
 
     @Test
+    fun `tapping sent file card opens its content without selecting Seen by`() = runAndroidComposeUiTest {
+        val event = aTimelineItemEvent(isMine = true,
+            content = io.element.android.features.messages.impl.timeline.model.event.aTimelineItemFileContent(),
+            timelineItemReactions = aTimelineItemReactions(0))
+        val receipts = EventsRecorder<ReadReceiptBottomSheetEvent>(expectEvents = false)
+        val callback = EnsureCalledOnceWithTwoParamsAndResult(expectedParam1 = true, expectedParam2 = event, result = true)
+        setMessagesView(
+            state = aMessagesState(timelineState = aTimelineState(timelineItems = persistentListOf(event)),
+                readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = receipts)),
+            onEventClick = callback,
+        )
+        onNodeWithContentDescription(activity!!.getString(CommonStrings.common_file), useUnmergedTree = true).performClick()
+        callback.assertSuccess()
+    }
+
+    @Test
     fun `tapping a sent message opens details instead of opening content`() = runAndroidComposeUiTest {
         val event = aTimelineItemEvent(isMine = true, timelineItemReactions = aTimelineItemReactions(0))
         val recorder = EventsRecorder<ReadReceiptBottomSheetEvent>()

@@ -9,6 +9,7 @@
 package io.element.android.features.messages.impl.timeline.components.event
 
 import android.text.SpannedString
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
@@ -107,6 +108,10 @@ fun TimelineItemEventContentView(
         }
     }
 
+    val attachmentClickModifier = if (onContentClick != null) {
+        Modifier.combinedClickable(onClick = onContentClick, onLongClick = onLongClick)
+    } else Modifier
+
     val displayInvalidContent = overallValidationState.isInvalid() && !needsContentValidationPerItem
     val displayContentNotFound = overallValidationState.hasUnrecoverableError() && !needsContentValidationPerItem
     EqualWidthColumn(modifier = modifier) {
@@ -201,6 +206,7 @@ fun TimelineItemEventContentView(
                         content = content,
                         onContentLayoutChange = calculatedOnContentLayoutChange,
                         contentValidationValue = overallValidationState,
+                        modifier = attachmentClickModifier,
                     )
                 }
                 is TimelineItemAudioContent -> {
@@ -208,6 +214,7 @@ fun TimelineItemEventContentView(
                         content = content,
                         onContentLayoutChange = calculatedOnContentLayoutChange,
                         contentValidationValue = overallValidationState,
+                        modifier = attachmentClickModifier,
                     )
                 }
                 is TimelineItemLegacyCallInviteContent -> TimelineItemLegacyCallInviteView()
