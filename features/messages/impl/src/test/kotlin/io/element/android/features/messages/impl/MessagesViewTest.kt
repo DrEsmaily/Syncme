@@ -46,6 +46,7 @@ import io.element.android.features.messages.impl.timeline.FOCUS_ON_PINNED_EVENT_
 import io.element.android.features.messages.impl.timeline.TimelineEvent
 import io.element.android.features.messages.impl.timeline.aTimelineItemEvent
 import io.element.android.features.messages.impl.timeline.aTimelineItemList
+import io.element.android.features.messages.impl.timeline.aTimelineItemReactions
 import io.element.android.features.messages.impl.timeline.aTimelineItemReadReceipts
 import io.element.android.features.messages.impl.timeline.aTimelineRoomInfo
 import io.element.android.features.messages.impl.timeline.aTimelineState
@@ -161,7 +162,7 @@ class MessagesViewTest : RobolectricTest() {
         val eventsRecorder = EventsRecorder<MessagesEvent>(expectEvents = false)
         val state = aMessagesState(
             timelineState = aTimelineState(
-                timelineItems = aTimelineItemList(aTimelineItemTextContent()),
+                timelineItems = persistentListOf(aTimelineItemEvent(timelineItemReactions = aTimelineItemReactions(0))),
             ),
             eventSink = eventsRecorder
         )
@@ -182,7 +183,7 @@ class MessagesViewTest : RobolectricTest() {
 
     @Test
     fun `tapping a sent message opens details instead of opening content`() = runAndroidComposeUiTest {
-        val event = aTimelineItemEvent(isMine = true)
+        val event = aTimelineItemEvent(isMine = true, timelineItemReactions = aTimelineItemReactions(0))
         val recorder = EventsRecorder<ReadReceiptBottomSheetEvent>()
         setMessagesView(
             state = aMessagesState(
@@ -200,6 +201,7 @@ class MessagesViewTest : RobolectricTest() {
         val localEcho = aTimelineItemEvent(
             isMine = true,
             content = aTimelineItemTextContent(),
+            timelineItemReactions = aTimelineItemReactions(0),
         ).copy(eventId = null)
         val state = aMessagesState(
             timelineState = aTimelineState(
@@ -261,7 +263,7 @@ class MessagesViewTest : RobolectricTest() {
                 canPinUnpin = userCanPinEvent,
             ),
             timelineState = aTimelineState(
-                timelineItems = aTimelineItemList(aTimelineItemTextContent()),
+                timelineItems = persistentListOf(aTimelineItemEvent(timelineItemReactions = aTimelineItemReactions(0))),
             ),
         )
         val timelineItem = state.timelineState.timelineItems.first() as TimelineItem.Event
