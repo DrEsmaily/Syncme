@@ -17,11 +17,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -96,19 +99,20 @@ fun TimelineEventTimestampView(
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (isMessageEdited) {
-            Text(
-                stringResource(CommonStrings.common_edited_suffix),
-                style = ElementTheme.typography.fontBodyXsRegular,
-                color = tint,
-            )
-            Spacer(modifier = Modifier.width(4.dp))
+        // Physical order follows the bubble's ownership, not the interface or message language.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isMessageEdited && !event.isMine) {
+                    Text(stringResource(CommonStrings.common_edited_suffix), style = ElementTheme.typography.fontBodyXsRegular, color = tint)
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+                Text(formattedTime, style = ElementTheme.typography.fontBodyXsRegular, color = tint)
+                if (isMessageEdited && event.isMine) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(stringResource(CommonStrings.common_edited_suffix), style = ElementTheme.typography.fontBodyXsRegular, color = tint)
+                }
+            }
         }
-        Text(
-            formattedTime,
-            style = ElementTheme.typography.fontBodyXsRegular,
-            color = tint,
-        )
         if (hasError) {
             Spacer(modifier = Modifier.width(2.dp))
             Icon(

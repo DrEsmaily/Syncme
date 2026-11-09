@@ -43,7 +43,7 @@ class MessageTimestampFooterTest : RobolectricTest() {
             ElementPreview(theme = theme) {
                 CompositionLocalProvider(LocalLayoutDirection provides direction) {
                     TimelineItemEventRow(
-                        event = aTimelineItemEvent(isMine = isMine, content = aTimelineItemTextContent(body = body), timelineItemReactions = aTimelineItemReactions(0)),
+                        event = aTimelineItemEvent(isMine = isMine, content = aTimelineItemTextContent(body = body, isEdited = true), timelineItemReactions = aTimelineItemReactions(0)),
                         timelineMode = io.element.android.libraries.matrix.api.timeline.Timeline.Mode.Live,
                         timelineRoomInfo = io.element.android.features.messages.impl.timeline.aTimelineRoomInfo(),
                         timelineProtectionState = io.element.android.features.messages.impl.timeline.protection.aTimelineProtectionState(),
@@ -62,8 +62,15 @@ class MessageTimestampFooterTest : RobolectricTest() {
                 val content = onNodeWithTag("message_body", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 val time = onNodeWithText("12:34", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 assertThat(time.top).isAtLeast(content.bottom)
-                if (mine) assertThat(time.center.x).isLessThan(content.center.x)
-                else assertThat(time.center.x).isGreaterThan(content.center.x)
+                val edited = onNodeWithText(activity!!.getString(io.element.android.libraries.ui.strings.CommonStrings.common_edited_suffix),
+                    useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                if (mine) {
+                    assertThat(time.center.x).isLessThan(content.center.x)
+                    assertThat(edited.left).isAtLeast(time.right)
+                } else {
+                    assertThat(time.center.x).isGreaterThan(content.center.x)
+                    assertThat(edited.right).isAtMost(time.left)
+                }
             }
         }
     }
