@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
@@ -44,6 +45,7 @@ fun TimelineEventTimestampView(
     eventSink: (TimelineEvent.TimelineItemEvent) -> Unit,
     modifier: Modifier = Modifier,
     isLayoutDirectionMismatched: Boolean = false,
+    edgeSpacing: Dp = TimelineEventTimestampViewDefaults.spacing,
 ) {
     val formattedTime = event.sentTime
     val hasError = event.failedToSend
@@ -80,9 +82,9 @@ fun TimelineEventTimestampView(
     }
 
     val padding = if (!isLayoutDirectionMismatched) {
-        PaddingValues(start = TimelineEventTimestampViewDefaults.spacing)
+        PaddingValues(start = edgeSpacing)
     } else {
-        PaddingValues(end = TimelineEventTimestampViewDefaults.spacing)
+        PaddingValues(end = edgeSpacing)
     }
 
     Row(

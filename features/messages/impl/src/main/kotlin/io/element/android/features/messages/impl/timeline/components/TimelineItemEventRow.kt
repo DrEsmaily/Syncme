@@ -883,7 +883,12 @@ private fun MessageEventBubbleContent(
                 }
             }
             TimestampPosition.Below ->
-                Column(modifier) {
+                Column(
+                    modifier,
+                    horizontalAlignment = if (event.content is TimelineItemImageContent || event.content is TimelineItemVideoContent) {
+                        Alignment.CenterHorizontally
+                    } else Alignment.Start,
+                ) {
                     CompositionLocalProvider(LocalLayoutDirection provides contentDirection) {
                         content {}
                     }
@@ -891,9 +896,10 @@ private fun MessageEventBubbleContent(
                         TimelineEventTimestampView(
                             event = event,
                             eventSink = eventSink,
+                            edgeSpacing = 2.dp,
                             modifier = Modifier
                                 .align(if (event.isMine) AbsoluteAlignment.Left else AbsoluteAlignment.Right)
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
                         )
                     }
                 }
@@ -921,7 +927,7 @@ private fun MessageEventBubbleContent(
         val topPadding = if (inReplyToDetails != null) 0.dp else 8.dp
         val contentModifier = when (paddingBehaviour) {
             ContentPadding.Textual ->
-                Modifier.padding(start = 12.dp, end = 12.dp, top = topPadding, bottom = 8.dp)
+                Modifier.padding(start = 12.dp, end = 12.dp, top = topPadding, bottom = 4.dp)
             ContentPadding.Media -> {
                 if (inReplyToDetails == null) {
                     Modifier
@@ -930,8 +936,8 @@ private fun MessageEventBubbleContent(
                 }
             }
             ContentPadding.CaptionedMedia ->
-                Modifier.padding(start = 8.dp, end = 8.dp, top = topPadding, bottom = 8.dp)
-            ContentPadding.InvalidContent -> Modifier.padding(top = topPadding, bottom = 8.dp)
+                Modifier.padding(start = 8.dp, end = 8.dp, top = topPadding, bottom = 4.dp)
+            ContentPadding.InvalidContent -> Modifier.padding(top = topPadding, bottom = 4.dp)
         }
 
         val threadDecoration = @Composable {
@@ -962,7 +968,11 @@ private fun MessageEventBubbleContent(
                                 else -> if (event.isMine) Alignment.End else Alignment.Start
                             }
                         }
-                        Column {
+                        Column(
+                            horizontalAlignment = if (event.content is TimelineItemImageContent || event.content is TimelineItemVideoContent) {
+                                Alignment.CenterHorizontally
+                            } else Alignment.Start,
+                        ) {
                             eventContentView(contentModifier, onContentLayoutChange)
                             CompositionLocalProvider(LocalLayoutDirection provides baseLayoutDirection) {
                                 Box(
