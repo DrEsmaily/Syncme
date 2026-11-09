@@ -188,15 +188,17 @@ class MessagesViewTest : RobolectricTest() {
             timelineItemReactions = aTimelineItemReactions(0))
         val receipts = EventsRecorder<ReadReceiptBottomSheetEvent>(expectEvents = false)
         val callback = EnsureCalledOnceWithTwoParamsAndResult(expectedParam1 = true, expectedParam2 = event, result = true)
+        var pixelsPerDp = 1f
         setMessagesView(
             state = aMessagesState(timelineState = aTimelineState(timelineItems = persistentListOf(event)),
                 readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = receipts)),
             onEventClick = callback,
+            onDensity = { pixelsPerDp = it },
         )
         val image = onNodeWithContentDescription(activity!!.getString(CommonStrings.common_image), useUnmergedTree = true)
         val imageBounds = image.fetchSemanticsNode().boundsInRoot
         val bubble = onNodeWithTag(TestTags.messageBubble.value, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        val inset = 8f * activity!!.resources.displayMetrics.density
+        val inset = 8f * pixelsPerDp
         com.google.common.truth.Truth.assertThat(imageBounds.left - bubble.left).isAtLeast(inset - 1f)
         com.google.common.truth.Truth.assertThat(bubble.right - imageBounds.right).isAtLeast(inset - 1f)
         com.google.common.truth.Truth.assertThat(imageBounds.top - bubble.top).isAtLeast(inset - 1f)
@@ -855,9 +857,11 @@ private fun AndroidComposeUiTest<ComponentActivity>.setMessagesView(
     onJoinCallClick: (Boolean) -> Unit = EnsureNeverCalledWithParam(),
     onViewAllPinnedMessagesClick: () -> Unit = EnsureNeverCalled(),
     onThreadsListClicked: () -> Unit = EnsureNeverCalled(),
+    onDensity: (Float) -> Unit = {},
 ) {
     val emojiPickerRenderer = DefaultEmojiPickerRenderer()
     setSafeContent {
+        onDensity(androidx.compose.ui.platform.LocalDensity.current.density)
         // Cannot use the RichTextEditor, so simulate a LocalInspectionMode
         CompositionLocalProvider(LocalInspectionMode provides true) {
             MessagesView(

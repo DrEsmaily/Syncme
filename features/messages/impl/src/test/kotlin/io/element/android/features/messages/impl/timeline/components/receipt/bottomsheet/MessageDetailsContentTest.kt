@@ -66,11 +66,11 @@ class MessageDetailsContentTest : RobolectricTest() {
         onNodeWithText("Alice").assertIsDisplayed()
         onNodeWithText("❤️").assertIsDisplayed()
         val name = onNodeWithText("Alice", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        val reaction = onNodeWithText("❤️", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        val reactionBounds = onNodeWithText("❤️", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
         val time = onNodeWithText("12:00", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        assertThat(reaction.left - name.right).isWithin(1f).of(8f * pixelsPerDp)
-        assertThat(reaction.center.y).isWithin(1f).of(name.center.y)
-        assertThat(reaction.right).isLessThan(time.left)
+        assertThat(reactionBounds.left - name.right).isWithin(1f).of(8f * pixelsPerDp)
+        assertThat(reactionBounds.center.y).isWithin(1f).of(name.center.y)
+        assertThat(reactionBounds.right).isLessThan(time.left)
         onNodeWithText("No read receipts available").assertDoesNotExist()
         onNodeWithText("Reactions").assertDoesNotExist()
         onNodeWithText("No reactions yet").assertDoesNotExist()
