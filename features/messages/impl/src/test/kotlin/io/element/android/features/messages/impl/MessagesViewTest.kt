@@ -179,6 +179,20 @@ class MessagesViewTest : RobolectricTest() {
     }
 
     @Test
+    fun `tapping a sent message opens details instead of opening content`() = runAndroidComposeUiTest {
+        val event = aTimelineItemEvent(isMine = true)
+        val recorder = EventsRecorder<ReadReceiptBottomSheetEvent>()
+        setMessagesView(
+            state = aMessagesState(
+                timelineState = aTimelineState(timelineItems = persistentListOf(event)),
+                readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = recorder),
+            ),
+        )
+        onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performClick()
+        recorder.assertSingle(ReadReceiptBottomSheetEvent.EventSelected(event))
+    }
+
+    @Test
     fun `clicking on an Event which has not been sent yet invoke expected callback`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<MessagesEvent>(expectEvents = false)
         val localEcho = aTimelineItemEvent(

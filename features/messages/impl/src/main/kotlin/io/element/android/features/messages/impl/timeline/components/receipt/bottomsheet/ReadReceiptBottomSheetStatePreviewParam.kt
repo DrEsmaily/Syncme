@@ -32,5 +32,14 @@ class ReadReceiptBottomSheetStatePreviewParam : PreviewParameterProvider<ReadRec
                 ),
                 eventSink = {},
             )
-        }
+        } + sequenceOf(
+            ReadReceiptBottomSheetState(
+                selectedEvent = aTimelineItemEvent(
+                    isMine = true,
+                    timelineItemReactions = io.element.android.features.messages.impl.timeline.aTimelineItemReactions(count = 4),
+                    readReceiptState = TimelineItemReadReceipts(kotlinx.collections.immutable.persistentListOf()),
+                ),
+                eventSink = {},
+            ),
+        )
 }

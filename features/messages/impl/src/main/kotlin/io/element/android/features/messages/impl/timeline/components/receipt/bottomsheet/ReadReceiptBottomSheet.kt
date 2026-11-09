@@ -9,6 +9,8 @@
 package io.element.android.features.messages.impl.timeline.components.receipt.bottomsheet
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,11 +19,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import io.element.android.features.messages.impl.timeline.model.TimelineItem
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -41,6 +45,7 @@ internal fun ReadReceiptBottomSheet(
     state: ReadReceiptBottomSheetState,
     onUserDataClick: (UserId) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenAttachment: (TimelineItem.Event) -> Unit = {},
 ) {
     val isVisible = state.selectedEvent != null
 
@@ -64,6 +69,13 @@ internal fun ReadReceiptBottomSheet(
         ) {
             ReadReceiptBottomSheetContent(
                 state = state,
+                onOpenAttachment = { event ->
+                    coroutineScope.launch {
+                        sheetState.hide()
+                        state.eventSink(ReadReceiptBottomSheetEvent.Dismiss)
+                        onOpenAttachment(event)
+                    }
+                },
                 onUserDataClick = {
                     coroutineScope.launch {
                         sheetState.hide()
@@ -79,51 +91,70 @@ internal fun ReadReceiptBottomSheet(
 }
 
 @Composable
-private fun ReadReceiptBottomSheetContent(
+internal fun ReadReceiptBottomSheetContent(
     state: ReadReceiptBottomSheetState,
     onUserDataClick: (UserId) -> Unit,
+    onOpenAttachment: (TimelineItem.Event) -> Unit = {},
 ) {
+    val event = state.selectedEvent
+    val receipts = event?.readReceiptState?.receipts.orEmpty()
+    val reactions = remember(event?.reactionsState) {
+        messageReactionReports(event?.reactionsState?.reactions.orEmpty())
+    }
     LazyColumn {
-        item {
-            ListItem(
-                content = {
-                    Text(text = stringResource(id = CommonStrings.common_seen_by))
+        if (event?.content?.isMedia == true) {
+            item {
+                ListItem(onClick = { onOpenAttachment(event) }) {
+                    Text(stringResource(CommonStrings.syncme_message_open_attachment))
                 }
-            )
+            }
         }
-        items(
-            items = state.selectedEvent?.readReceiptState?.receipts.orEmpty()
-        ) {
-            val userId = UserId(it.avatarData.id)
-            val userReactions = state.selectedEvent
-                ?.reactionsState
-                ?.reactions
-                .orEmpty()
-                .filter { reaction -> reaction.senders.any { sender -> sender.senderId == userId } }
-                .map { reaction -> reaction.displayKey }
-                .take(3)
+        item {
+            ListItem { Text(stringResource(CommonStrings.common_seen_by)) }
+        }
+        if (receipts.isEmpty()) {
+            item {
+                Text(
+                    stringResource(CommonStrings.syncme_message_no_receipts),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    color = ElementTheme.colors.textSecondary,
+                )
+            }
+        }
+        items(receipts, key = { "receipt:${it.avatarData.id}" }) { receipt ->
+            val userId = UserId(receipt.avatarData.id)
             MatrixUserRow(
                 modifier = Modifier.clickable { onUserDataClick(userId) },
-                matrixUser = MatrixUser(
-                    userId = userId,
-                    displayName = it.avatarData.name,
-                    avatarUrl = it.avatarData.url,
-                ),
+                matrixUser = MatrixUser(userId, receipt.avatarData.name, receipt.avatarData.url),
                 avatarSize = AvatarSize.ReadReceiptList,
                 trailingContent = {
+                    Text(receipt.formattedDate, style = ElementTheme.typography.fontBodySmRegular, color = ElementTheme.colors.textSecondary)
+                },
+            )
+        }
+        if (event?.isMine == true) {
+            item {
+                ListItem { Text(stringResource(CommonStrings.syncme_message_reactions)) }
+            }
+            if (reactions.isEmpty()) {
+                item {
                     Text(
-                        text = buildString {
-                            if (userReactions.isNotEmpty()) {
-                                append(userReactions.joinToString(" "))
-                                append("   ")
-                            }
-                            append(it.formattedDate)
-                        },
-                        style = ElementTheme.typography.fontBodySmRegular,
+                        stringResource(CommonStrings.syncme_message_no_reactions),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         color = ElementTheme.colors.textSecondary,
                     )
                 }
-            )
+            }
+            items(reactions, key = { "reaction:${it.user.userId.value}" }) { report ->
+                Column(Modifier.clickable { onUserDataClick(report.user.userId) }) {
+                    MatrixUserRow(matrixUser = report.user, avatarSize = AvatarSize.ReadReceiptList)
+                    Text(
+                        text = report.entries.joinToString("\n"),
+                        modifier = Modifier.padding(start = 72.dp, end = 16.dp, bottom = 12.dp),
+                        style = ElementTheme.typography.fontBodyMdRegular,
+                    )
+                }
+            }
         }
     }
 }

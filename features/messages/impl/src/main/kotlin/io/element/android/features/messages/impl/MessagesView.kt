@@ -179,7 +179,7 @@ fun MessagesView(
         block()
     }
 
-    fun onContentClick(event: TimelineItem.Event) {
+    fun openContent(event: TimelineItem.Event) {
         Timber.v("onMessageClick= ${event.id}")
         val eventId = event.eventId
         if (eventId != null && eventContentValidationState[eventId].getCurrentOverallState() != ContentValidationValue.Valid) return
@@ -187,6 +187,16 @@ fun MessagesView(
         val hideKeyboard = onEventContentClick(state.timelineState.isLive, event)
         if (hideKeyboard) {
             localView.hideKeyboard()
+        }
+    }
+
+    fun onContentClick(event: TimelineItem.Event) {
+        if (event.isMine && event.isRemote) {
+            hidingKeyboard {
+                state.readReceiptBottomSheetState.eventSink(ReadReceiptBottomSheetEvent.EventSelected(event))
+            }
+        } else {
+            openContent(event)
         }
     }
 
@@ -423,9 +433,16 @@ fun MessagesView(
     customReactionBottomSheet()
 
     ReactionSummaryView(state = state.reactionSummaryState)
+    val selectedMessage = state.readReceiptBottomSheetState.selectedEvent
+    val currentSelectedMessage = selectedMessage?.let { selected ->
+        state.timelineState.timelineItems.firstOrNull {
+            it is TimelineItem.Event && it.eventOrTransactionId == selected.eventOrTransactionId
+        } as? TimelineItem.Event ?: selected
+    }
     ReadReceiptBottomSheet(
-        state = state.readReceiptBottomSheetState,
+        state = state.readReceiptBottomSheetState.copy(selectedEvent = currentSelectedMessage),
         onUserDataClick = onUserDataClick,
+        onOpenAttachment = ::openContent,
     )
     ReinviteDialog(state = state)
     LinkView(

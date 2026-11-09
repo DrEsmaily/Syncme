@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -891,7 +892,7 @@ private fun MessageEventBubbleContent(
                             event = event,
                             eventSink = eventSink,
                             modifier = Modifier
-                                .align(Alignment.End)
+                                .align(if (event.isMine) AbsoluteAlignment.Left else AbsoluteAlignment.Right)
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
@@ -1040,30 +1041,8 @@ private fun MessageEventBubbleContent(
             event.content !is TimelineItemAttachmentsContent &&
             contentValidationState.hasError()
 
-    val timestampPosition = if (reactionContent != null) {
-        // Keep reactions inside the bubble, below message/caption and above the timestamp.
-        TimestampPosition.Below
-    } else if (needsInvalidContentLayout) {
-        // The invalid content view will be displayed in all these cases, independent of the event content
-        TimestampPosition.Aligned
-    } else {
-        when (val content = event.content) {
-            is TimelineItemImageContent -> if (content.showCaption) TimestampPosition.Below else TimestampPosition.Overlay
-            is TimelineItemVideoContent -> if (content.showCaption) TimestampPosition.Below else TimestampPosition.Overlay
-            is TimelineItemGalleryContent -> TimestampPosition.Below
-            is TimelineItemAttachmentsContent -> TimestampPosition.Below
-            is TimelineItemStickerContent -> TimestampPosition.Overlay
-            is TimelineItemLocationContent -> {
-                val content = content.ensureActiveLiveLocation()
-                val shouldHide = content.mode is TimelineItemLocationContent.Mode.Live &&
-                    content.mode.isActive &&
-                    content.mode.isOwnUser
-                if (shouldHide) TimestampPosition.Hidden else TimestampPosition.Overlay
-            }
-            is TimelineItemPollContent -> TimestampPosition.Below
-            else -> TimestampPosition.Default
-        }
-    }
+    // Every bubble reserves a separate footer row, irrespective of its language or content type.
+    val timestampPosition = TimestampPosition.Below
 
     val paddingBehaviour = if (needsInvalidContentLayout) {
         ContentPadding.InvalidContent

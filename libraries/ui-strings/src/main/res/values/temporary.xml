@@ -45,4 +45,8 @@
     <string name="syncme_update_install_question">SyncMe %1$s is ready to install. Install it now?</string>
     <string name="syncme_update_install_now">Install</string>
     <string name="syncme_update_later">Later</string>
+    <string name="syncme_message_open_attachment">Open attachment</string>
+    <string name="syncme_message_no_receipts">No read receipts available</string>
+    <string name="syncme_message_reactions">Reactions</string>
+    <string name="syncme_message_no_reactions">No reactions yet</string>
 </resources>
