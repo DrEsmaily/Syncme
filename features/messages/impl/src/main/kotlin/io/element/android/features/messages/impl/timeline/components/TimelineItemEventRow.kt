@@ -855,7 +855,7 @@ private fun MessageEventBubbleContent(
                             .background(ElementTheme.colors.bgSubtleSecondary, RoundedCornerShape(10.0.dp))
                             .align(Alignment.BottomEnd)
                             // Inner padding
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
                     )
                 }
             TimestampPosition.Aligned -> @Composable {
@@ -899,7 +899,7 @@ private fun MessageEventBubbleContent(
                             edgeSpacing = 0.dp,
                             modifier = Modifier
                                 .align(if (event.isMine) AbsoluteAlignment.Left else AbsoluteAlignment.Right)
-                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
                 }
