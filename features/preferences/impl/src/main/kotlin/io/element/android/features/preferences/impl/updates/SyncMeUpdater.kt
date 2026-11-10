@@ -238,6 +238,18 @@ class SyncMeUpdater private constructor(private val context: Context) {
         var retryDelay = 1000L
         while (true) {
             try {
+                // A completed recovery APK can still be verified and installed after reopening offline.
+                if (recovery.file(release).length() == release.size) {
+                    mutableState.value = UpdateState(UpdateStage.Verifying, release)
+                    try {
+                        verify(release)
+                        mutableState.value = UpdateState(UpdateStage.Ready, release)
+                        return
+                    } catch (error: Exception) {
+                        if (error is CancellationException) throw error
+                        recovery.file(release).delete()
+                    }
+                }
                 // The hosted APK can change during an outage. Refresh its identity before every attempt.
                 val latest = fetchRelease()
                 if (latest.versionCode <= installedCode) {
