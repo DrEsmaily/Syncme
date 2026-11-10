@@ -40,7 +40,10 @@ sealed interface PickerType<Input, Output> {
     data object ImageAndVideoMulti : PickerType<PickVisualMediaRequest, List<Uri>> {
         override fun getContract() = ActivityResultContracts.PickMultipleVisualMedia(MAX_GALLERY_ITEMS)
         override fun getDefaultRequest(): PickVisualMediaRequest {
-            return PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+            return PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                .setOrderedSelection(true)
+                .build()
         }
     }
 
