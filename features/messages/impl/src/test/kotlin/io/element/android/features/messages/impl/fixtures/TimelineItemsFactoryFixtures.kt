@@ -77,7 +77,7 @@ internal fun aTimelineItemContentFactory(
     failedToParseMessageFactory = TimelineItemContentFailedToParseMessageFactory(),
     failedToParseStateFactory = TimelineItemContentFailedToParseStateFactory(),
     sessionId = matrixClient.sessionId,
-    dateFormatter = dateFormatter,
+    dateFormatter = FakeDateFormatter(),
     stringProvider = FakeStringProvider(),
 )
 
@@ -93,7 +93,7 @@ internal fun TestScope.aTimelineItemsFactory(
                 return TimelineItemEventFactory(
                     contentFactory = aTimelineItemContentFactory(matrixClient = matrixClient),
                     matrixClient = matrixClient,
-                    dateFormatter = FakeDateFormatter(),
+                    dateFormatter = dateFormatter,
                     permalinkParser = FakePermalinkParser(),
                     config = config,
                     summaryFormatter = FakeMessageSummaryFormatter(),
