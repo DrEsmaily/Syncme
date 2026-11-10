@@ -7,6 +7,8 @@ package io.element.android.features.preferences.impl.updates
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -42,6 +44,25 @@ class UpdateSettingsTest : RobolectricTest() {
     fun `active download shows progress and prevents duplicate download taps`() = runAndroidComposeUiTest<ComponentActivity> {
         setContent { ElementTheme(theme = Theme.Dark) { UpdateSettingsContent(UpdateState(UpdateStage.Downloading, percent = 42)) {} } }
         onNodeWithText("42%", useUnmergedTree = false).assertIsDisplayed().assertIsNotEnabled()
+    }
+
+    @Test
+    fun `paused download retains progress and accepts retry in every theme`() = runAndroidComposeUiTest<ComponentActivity> {
+        var clicks = 0
+        setContent {
+            Column {
+                listOf(Theme.Light, Theme.Dark, Theme.Black).forEach { theme ->
+                    ElementTheme(theme = theme) {
+                        UpdateSettingsContent(UpdateState(UpdateStage.Paused, percent = 42)) { clicks++ }
+                    }
+                }
+            }
+        }
+        onAllNodesWithText("Waiting to reconnect · Tap to retry").fetchSemanticsNodes().also { assertThat(it).hasSize(3) }
+        onAllNodesWithText("Download paused").apply {
+            for (index in 0..2) get(index).assertIsEnabled().performClick()
+        }
+        assertThat(clicks).isEqualTo(3)
     }
 
     @Test

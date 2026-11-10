@@ -39,6 +39,7 @@ internal fun UpdateSettingsItem() {
     UpdateSettingsContent(state) {
         when (state.stage) {
             UpdateStage.Available, UpdateStage.DownloadFailed -> updater.download()
+            UpdateStage.Paused -> updater.retryDownload()
             UpdateStage.Ready, UpdateStage.InstallFailed -> {
                 if (Build.VERSION.SDK_INT >= 26 && !context.packageManager.canRequestPackageInstalls()) {
                     runCatching { permission.launch(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, "package:${context.packageName}".toUri())) }
@@ -67,7 +68,10 @@ internal fun UpdateSettingsContent(state: UpdateState, onClick: () -> Unit) {
         UpdateStage.Current -> stringResource(CommonStrings.syncme_update_current)
         UpdateStage.Available -> stringResource(CommonStrings.syncme_update_version, state.release?.version.orEmpty())
         UpdateStage.Downloading -> state.percent?.let { "$it%" } ?: stringResource(CommonStrings.syncme_update_starting)
-        UpdateStage.Paused -> stringResource(CommonStrings.syncme_update_waiting)
+        UpdateStage.Paused -> stringResource(
+            if (state.pauseReason == android.app.DownloadManager.PAUSED_QUEUED_FOR_WIFI) CommonStrings.syncme_update_waiting_wifi
+            else CommonStrings.syncme_update_waiting,
+        )
         UpdateStage.Verifying -> stringResource(CommonStrings.syncme_update_verifying_detail)
         UpdateStage.Ready -> stringResource(CommonStrings.syncme_update_ready)
         UpdateStage.InstallFailed -> stringResource(CommonStrings.syncme_update_install_failed)
@@ -78,7 +82,7 @@ internal fun UpdateSettingsContent(state: UpdateState, onClick: () -> Unit) {
         content = { Text(stringResource(title)) },
         supportingContent = { Text(subtitle) },
         onClick = onClick,
-        enabled = state.stage !in setOf(UpdateStage.Checking, UpdateStage.Downloading, UpdateStage.Paused, UpdateStage.Verifying),
+        enabled = state.stage !in setOf(UpdateStage.Checking, UpdateStage.Downloading, UpdateStage.Verifying),
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.ArrowDown())),
     )
 }

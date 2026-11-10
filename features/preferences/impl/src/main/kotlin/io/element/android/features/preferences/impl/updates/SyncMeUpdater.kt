@@ -11,6 +11,10 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
+import android.os.SystemClock
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import androidx.core.content.FileProvider
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -27,6 +31,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -45,6 +51,8 @@ class SyncMeUpdater private constructor(private val context: Context) {
         mutableAcknowledgedPrompt.value = release.sha256
         scope.launch { preferences.edit().putString("acknowledged_prompt", release.sha256).apply() }
     }
+    private val recovery = ResumableUpdateDownload(File(context.filesDir, "syncme-updates"))
+    private val retry = Channel<Unit>(Channel.CONFLATED)
     private val downloads get() = context.getSystemService(DownloadManager::class.java)
     private var task: Job? = null
     private var observing = false
@@ -53,13 +61,18 @@ class SyncMeUpdater private constructor(private val context: Context) {
 
     init {
         val saved = runCatching { UpdateRelease.parse(preferences.getString("release", null) ?: "") }.getOrNull()
-        if (saved != null && saved.versionCode > installedCode && downloadId >= 0) {
+        if (saved != null && saved.versionCode > installedCode && (downloadId >= 0 || downloadId == RECOVERY_DOWNLOAD)) {
             mutableState.value = UpdateState(UpdateStage.Downloading, saved)
-            task = scope.launch { monitor(saved) }
-        } else if (downloadId >= 0) {
-            runCatching { downloads.remove(downloadId) }
-            preferences.edit().clear().apply()
+            task = scope.launch { if (downloadId == RECOVERY_DOWNLOAD) recover(saved) else monitor(saved) }
+        } else if (downloadId != -1L) {
+            val obsoleteId = downloadId
             downloadId = -1
+            task = scope.launch {
+                if (obsoleteId >= 0) runCatching { downloads.remove(obsoleteId) }
+                if (saved != null) recovery.file(saved).delete()
+                preferences.edit().remove("download_id").remove("release").apply()
+                checkRelease()
+            }
         }
     }
 
@@ -73,16 +86,18 @@ class SyncMeUpdater private constructor(private val context: Context) {
 
     internal fun check() {
         if (task?.isActive == true || state.value.stage in setOf(UpdateStage.Ready, UpdateStage.InstallFailed)) return
-        task = scope.launch {
-            mutableState.value = UpdateState(UpdateStage.Checking)
-            try {
-                val release = withContext(Dispatchers.IO) { fetchRelease() }
-                mutableState.value = if (release.versionCode > installedCode) UpdateState(UpdateStage.Available, release)
-                else UpdateState(UpdateStage.Current)
-            } catch (error: Exception) {
-                if (error is CancellationException) throw error
-                mutableState.value = UpdateState(UpdateStage.CheckFailed)
-            }
+        task = scope.launch { checkRelease() }
+    }
+
+    private suspend fun checkRelease() {
+        mutableState.value = UpdateState(UpdateStage.Checking)
+        try {
+            val release = fetchRelease()
+            mutableState.value = if (release.versionCode > installedCode) UpdateState(UpdateStage.Available, release)
+            else UpdateState(UpdateStage.Current)
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
+            mutableState.value = UpdateState(UpdateStage.CheckFailed)
         }
     }
 
@@ -108,6 +123,11 @@ class SyncMeUpdater private constructor(private val context: Context) {
             }
             return UpdateRelease.parse(bytes.toString(Charsets.UTF_8))
         } finally { connection.disconnect() }
+    }
+
+    internal fun retryDownload() {
+        // The active monitor consumes the signal. No network, disk I/O or second job on the UI thread.
+        if (task?.isActive == true) retry.trySend(Unit) else download()
     }
 
     internal fun download() {
@@ -142,15 +162,18 @@ class SyncMeUpdater private constructor(private val context: Context) {
 
     private suspend fun monitor(release: UpdateRelease) {
         try {
+            var pausedSince = 0L
             while (true) {
                 val progress = withContext(Dispatchers.IO) {
                     downloads.query(DownloadManager.Query().setFilterById(downloadId)).use { cursor ->
                         require(cursor.moveToFirst())
                         val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
                         val bytes = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                        status to ((bytes * 100 / release.size).coerceIn(0, 100).toInt())
+                        val reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON))
+                        Triple(status, bytes, reason)
                     }
                 }
+                val percent = (progress.second * 100 / release.size).coerceIn(0, 100).toInt()
                 when (progress.first) {
                     DownloadManager.STATUS_SUCCESSFUL -> {
                         mutableState.value = UpdateState(UpdateStage.Verifying, release)
@@ -158,9 +181,31 @@ class SyncMeUpdater private constructor(private val context: Context) {
                         mutableState.value = UpdateState(UpdateStage.Ready, release)
                         return
                     }
-                    DownloadManager.STATUS_FAILED -> error("Download failed")
-                    DownloadManager.STATUS_PAUSED -> mutableState.value = UpdateState(UpdateStage.Paused, release, progress.second)
-                    else -> mutableState.value = UpdateState(UpdateStage.Downloading, release, progress.second)
+                    DownloadManager.STATUS_FAILED -> {
+                        if (progress.third in setOf(DownloadManager.ERROR_HTTP_DATA_ERROR, DownloadManager.ERROR_CANNOT_RESUME,
+                                DownloadManager.ERROR_UNHANDLED_HTTP_CODE)) {
+                            beginRecovery(release, progress.second)
+                            return
+                        }
+                        error("Download failed")
+                    }
+                    DownloadManager.STATUS_PAUSED -> {
+                        mutableState.value = UpdateState(UpdateStage.Paused, release, percent, progress.third)
+                        val now = SystemClock.elapsedRealtime()
+                        if (pausedSince == 0L) pausedSince = now
+                        val manual = retry.tryReceive().isSuccess
+                        val stalled = now - pausedSince >= 30000 && hasNetwork() &&
+                            progress.third != DownloadManager.PAUSED_QUEUED_FOR_WIFI
+                        if (manual || stalled) {
+                            beginRecovery(release, progress.second)
+                            return
+                        }
+                    }
+                    else -> {
+                        pausedSince = 0L
+                        retry.tryReceive()
+                        mutableState.value = UpdateState(UpdateStage.Downloading, release, percent)
+                    }
                 }
                 delay(1000)
             }
@@ -172,6 +217,59 @@ class SyncMeUpdater private constructor(private val context: Context) {
             mutableState.value = UpdateState(UpdateStage.DownloadFailed, release)
         }
     }
+
+    private suspend fun beginRecovery(release: UpdateRelease, bytes: Long) {
+        recovery.seed(release, apkFile(), bytes)
+        val previousId = downloadId
+        // Persist recovery ownership before removing the old task, so process death is recoverable.
+        check(preferences.edit().putLong("download_id", RECOVERY_DOWNLOAD).commit())
+        downloadId = RECOVERY_DOWNLOAD
+        downloads.remove(previousId)
+        recover(release)
+    }
+
+    private fun hasNetwork(): Boolean {
+        val manager = context.getSystemService(ConnectivityManager::class.java)
+        return manager.getNetworkCapabilities(manager.activeNetwork)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+
+    private suspend fun recover(initial: UpdateRelease) {
+        var release = initial
+        var retryDelay = 1000L
+        while (true) {
+            try {
+                // The hosted APK can change during an outage. Refresh its identity before every attempt.
+                val latest = fetchRelease()
+                if (latest.versionCode <= installedCode) {
+                    mutableState.value = UpdateState(UpdateStage.Current)
+                    preferences.edit().remove("download_id").remove("release").apply()
+                    downloadId = -1
+                    return
+                }
+                if (release.sha256 != latest.sha256) recovery.file(release).delete()
+                release = latest
+                preferences.edit().putString("release", release.json).apply()
+                mutableState.value = UpdateState(UpdateStage.Downloading, release, recoveryPercent(release))
+                recovery.transfer(release) { percent -> mutableState.value = UpdateState(UpdateStage.Downloading, release, percent) }
+                mutableState.value = UpdateState(UpdateStage.Verifying, release)
+                try { verify(release) } catch (error: Exception) {
+                    if (error is CancellationException) throw error
+                    // Never retry a complete corrupt or superseded prefix as if it were verified.
+                    recovery.file(release).delete()
+                    throw error
+                }
+                mutableState.value = UpdateState(UpdateStage.Ready, release)
+                return
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                mutableState.value = UpdateState(UpdateStage.Paused, release, recoveryPercent(release))
+                withTimeoutOrNull(retryDelay) { retry.receive() }
+                retryDelay = (retryDelay * 2).coerceAtMost(30000)
+            }
+        }
+    }
+
+    private fun recoveryPercent(release: UpdateRelease) = (recovery.file(release).length() * 100 / release.size).coerceIn(0, 100).toInt()
 
     internal fun permissionUnavailable() {
         mutableState.value = state.value.copy(stage = UpdateStage.InstallFailed)
@@ -186,7 +284,9 @@ class SyncMeUpdater private constructor(private val context: Context) {
                 mutableState.value = UpdateState(UpdateStage.Verifying, release)
                 val uri = withContext(Dispatchers.IO) {
                     verify(release)
-                    requireNotNull(downloads.getUriForDownloadedFile(downloadId))
+                    if (downloadId == RECOVERY_DOWNLOAD) {
+                        FileProvider.getUriForFile(context, "${context.packageName}.updatefileprovider", recovery.file(release))
+                    } else requireNotNull(downloads.getUriForDownloadedFile(downloadId))
                 }
                 verified = true
                 withContext(Dispatchers.Main) {
@@ -209,7 +309,7 @@ class SyncMeUpdater private constructor(private val context: Context) {
     private fun apkFile(): File = File(requireNotNull(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)), "syncme-update.apk")
 
     private fun verify(release: UpdateRelease) {
-        val file = apkFile()
+        val file = if (downloadId == RECOVERY_DOWNLOAD) recovery.file(release) else apkFile()
         require(release.versionCode > installedCode && file.length() == release.size)
         val digest = MessageDigest.getInstance("SHA-256")
         file.inputStream().use { stream ->
@@ -227,6 +327,7 @@ class SyncMeUpdater private constructor(private val context: Context) {
     private fun signatureFlags() = if (Build.VERSION.SDK_INT >= 28) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES
 
     companion object {
+        private const val RECOVERY_DOWNLOAD = -2L
         @Volatile private var instance: SyncMeUpdater? = null
         fun get(context: Context): SyncMeUpdater = instance ?: synchronized(this) {
             instance ?: SyncMeUpdater(context.applicationContext).also { instance = it }

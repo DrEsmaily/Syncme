@@ -27,7 +27,7 @@ internal data class UpdateRelease(val version: String, val versionCode: Long, va
 }
 
 internal enum class UpdateStage { Idle, Checking, Current, Available, Downloading, Paused, Verifying, Ready, CheckFailed, DownloadFailed, InstallFailed }
-internal data class UpdateState(val stage: UpdateStage = UpdateStage.Idle, val release: UpdateRelease? = null, val percent: Int? = null)
+internal data class UpdateState(val stage: UpdateStage = UpdateStage.Idle, val release: UpdateRelease? = null, val percent: Int? = null, val pauseReason: Int? = null)
 
 @Suppress("DEPRECATION")
 internal fun requireCompatibleUpdate(
