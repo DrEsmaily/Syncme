@@ -43,6 +43,14 @@ fun createFormatter(
         dateFormatters = dateFormatters,
     )
     return DefaultDateFormatter(
+        calendarPreferences = object : io.element.android.libraries.dateformatter.api.CalendarPreferences {
+            override val calendar = kotlinx.coroutines.flow.MutableStateFlow(io.element.android.libraries.dateformatter.api.CalendarSystem.Gregorian)
+            override suspend fun setCalendar(calendar: io.element.android.libraries.dateformatter.api.CalendarSystem) { this.calendar.value = calendar }
+        },
+        persianDateFormatter = io.element.android.libraries.dateformatter.impl.PersianDateFormatter({ TimeZone.UTC }, clock),
+        dateTimeObserver = object : io.element.android.libraries.androidutils.system.DateTimeObserver {
+            override val changes = kotlinx.coroutines.flow.emptyFlow<io.element.android.libraries.androidutils.system.DateTimeObserver.Event>()
+        },
         dateFormatterFull = DateFormatterFull(
             stringProvider = stringProvider,
             localDateTimeProvider = localDateTimeProvider,
