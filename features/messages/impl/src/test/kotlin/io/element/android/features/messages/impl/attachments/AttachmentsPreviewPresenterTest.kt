@@ -835,7 +835,7 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
     }
 
     @Test
-    fun `present - sendAsFile video is pre-processed with best fitting preset`() = runTest {
+    fun `present - sendAsFile video preserves original quality over compression defaults`() = runTest {
         val mediaPreProcessor = FakeMediaPreProcessor()
         val presenter = createAttachmentsPreviewPresenter(
             attachments = listOf(
@@ -853,13 +853,11 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
                     maxUploadSize = AsyncData.Success(250_000_000L),
                     videoSizeEstimations = AsyncData.Success(
                         persistentListOf(
-                            VideoUploadEstimation(VideoCompressionPreset.HIGH, sizeInBytes = 513_216_000L, canUpload = false),
-                            VideoUploadEstimation(VideoCompressionPreset.STANDARD, sizeInBytes = 228_096_000L, canUpload = true),
-                            VideoUploadEstimation(VideoCompressionPreset.LOW, sizeInBytes = 57_024_000L, canUpload = true),
+                            VideoUploadEstimation(VideoCompressionPreset.HIGH, sizeInBytes = 228_096_000L, canUpload = true),
                         )
                     ),
                     isImageOptimizationEnabled = false,
-                    selectedVideoPreset = VideoCompressionPreset.STANDARD,
+                    selectedVideoPreset = VideoCompressionPreset.HIGH,
                     displayMediaSelectorViews = false,
                     displayVideoPresetSelectorDialog = false,
                     eventSink = {},
@@ -878,7 +876,7 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
             assertThat(mediaPreProcessor.lastMediaOptimizationConfig).isEqualTo(
                 MediaOptimizationConfig(
                     compressImages = false,
-                    videoCompressionPreset = VideoCompressionPreset.STANDARD,
+                    videoCompressionPreset = VideoCompressionPreset.HIGH,
                 )
             )
         }
