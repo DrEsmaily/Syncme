@@ -960,8 +960,11 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
                 val initial = awaitItem()
                 initial.eventSink(AttachmentsPreviewEvent.OpenImageEditor)
                 val editor = consumeItemsUntilPredicate { it.imageEditorState != null }.last()
-                editor.eventSink(AttachmentsPreviewEvent.ApplyImageEdits)
+                editor.eventSink(AttachmentsPreviewEvent.RotateImageToTheLeft)
+                val rotated = consumeItemsUntilPredicate { it.imageEditorState?.edits?.hasChanges == true }.last()
+                rotated.eventSink(AttachmentsPreviewEvent.ApplyImageEdits)
                 val ready = consumeItemsUntilPredicate { !it.isApplyingImageEdits && it.imageEditorState == null }.last()
+                val cleanUpsBeforeSend = preProcessor.cleanUpCallCount
                 ready.textEditorState.setMarkdown(A_CAPTION)
                 ready.eventSink(AttachmentsPreviewEvent.SendAttachment)
                 val uploading = consumeItemsUntilPredicate { it.sendActionState is SendActionState.Sending.Uploading }.last()
@@ -969,7 +972,7 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
                 val failed = consumeItemsUntilPredicate { it.sendActionState is SendActionState.Failure }.last()
                 advanceUntilIdle()
                 assertThat(editedFile.exists()).isTrue()
-                assertThat(preProcessor.cleanUpCallCount).isEqualTo(0)
+                assertThat(preProcessor.cleanUpCallCount).isEqualTo(cleanUpsBeforeSend)
                 val processedBeforeRetry = preProcessor.processCallCount
                 failed.eventSink(AttachmentsPreviewEvent.CancelAndClearSendState)
                 val cleared = awaitLastSequentialItem()
