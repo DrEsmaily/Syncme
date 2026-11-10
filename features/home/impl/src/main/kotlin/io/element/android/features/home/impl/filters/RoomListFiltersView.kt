@@ -509,7 +509,6 @@ private fun roomListFilterChipColors(selected: Boolean): SelectableChipColors {
         iconColor = foreground,
         selectedLeadingIconColor = foreground,
         disabledLeadingIconColor = foreground,
-        trailingIconColor = foreground,
         selectedTrailingIconColor = foreground,
         disabledTrailingIconColor = foreground,
     )
