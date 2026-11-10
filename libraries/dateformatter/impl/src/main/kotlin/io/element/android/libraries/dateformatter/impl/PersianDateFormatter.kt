@@ -30,6 +30,11 @@ class PersianDateFormatter(private val timezoneProvider: TimezoneProvider, priva
             calendar.get(Calendar.DAY_OF_WEEK), local.hour, local.minute)
     }
 
+    internal val cacheKey: String get() {
+        val today = date(clock.now().toEpochMilliseconds())
+        return "${timezoneProvider.provide().id}:${today.year}-${today.month}-${today.day}"
+    }
+
     fun format(timestamp: Long, mode: DateFormatterMode): String {
         val value = date(timestamp)
         val today = date(clock.now().toEpochMilliseconds())

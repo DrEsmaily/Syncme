@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.map
 interface DateFormatter {
     /** Emissions invalidate cached presentation dates when the app-wide calendar changes. */
     val calendar: kotlinx.coroutines.flow.StateFlow<CalendarSystem> get() = defaultCalendar
+    val cacheKey: Any get() = calendar.value
     val changes: kotlinx.coroutines.flow.Flow<Unit> get() = calendar.map { Unit }
 
     /**

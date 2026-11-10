@@ -146,7 +146,7 @@ class RoomListDataSource(
 
     private fun observeDateTimeChanges() {
         roomListRoomSummaryFactory.calendar.drop(1)
-            .onEach { rebuildAllRoomSummaries() }
+            .onEach { withContext(coroutineDispatchers.computation) { rebuildAllRoomSummaries() } }
             .launchIn(sessionCoroutineScope)
         dateTimeObserver.changes
             .onEach { event ->

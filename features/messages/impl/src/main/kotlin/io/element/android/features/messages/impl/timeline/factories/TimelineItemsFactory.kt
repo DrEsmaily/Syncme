@@ -49,6 +49,7 @@ class TimelineItemsFactory(
     private val eventItemFactory = eventItemFactoryCreator.create(config)
     val dateChanges get() = eventItemFactory.dateChanges
     private var renderedDateRevision: Long? = null
+    private var renderedDateCacheKey: Any? = null
     private val _timelineItems = MutableSharedFlow<ImmutableList<TimelineItem>>(replay = 1)
     private val lock = Mutex()
     private val diffCache = MutableListDiffCache<TimelineItem>()
@@ -74,9 +75,11 @@ class TimelineItemsFactory(
     ) = withContext(dispatchers.computation) {
         lock.withLock {
             diffCacheUpdater.updateWith(timelineItems)
-            if (renderedDateRevision != dateRevision) {
+            val dateCacheKey = eventItemFactory.dateCacheKey
+            if (renderedDateRevision != dateRevision || renderedDateCacheKey != dateCacheKey) {
                 diffCache.indices().forEach { diffCache[it] = null }
                 renderedDateRevision = dateRevision
+                renderedDateCacheKey = dateCacheKey
             }
             buildAndEmitTimelineItemStates(timelineItems, roomMembers, renderReadReceipts)
         }

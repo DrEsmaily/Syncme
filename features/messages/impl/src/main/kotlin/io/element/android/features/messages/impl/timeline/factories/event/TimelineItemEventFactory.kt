@@ -56,6 +56,7 @@ class TimelineItemEventFactory(
         fun create(config: TimelineItemsFactoryConfig): TimelineItemEventFactory
     }
 
+    val dateCacheKey get() = dateFormatter.cacheKey
     val dateChanges get() = dateFormatter.changes
 
     suspend fun create(

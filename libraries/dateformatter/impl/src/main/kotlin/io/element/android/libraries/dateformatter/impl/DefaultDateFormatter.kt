@@ -27,6 +27,7 @@ class DefaultDateFormatter(
     private val dateTimeObserver: io.element.android.libraries.androidutils.system.DateTimeObserver,
 ) : DateFormatter {
     override val calendar get() = calendarPreferences.calendar
+    override val cacheKey get() = "${calendar.value}:${persianDateFormatter.cacheKey}"
     override val changes get() = merge(calendar.map { Unit }, dateTimeObserver.changes.map { Unit })
     override fun format(
         timestamp: Long?,
