@@ -430,7 +430,7 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
             sendFileResult.assertions().isCalledOnce()
             failureState.eventSink(AttachmentsPreviewEvent.CancelAndClearSendState)
             val clearedState = awaitLastSequentialItem()
-            assertThat(clearedState.sendActionState).isEqualTo(SendActionState.Sending.ReadyToUpload(listOf(mediaUploadInfo)))
+            assertThat(clearedState.sendActionState).isEqualTo(SendActionState.Idle)
         }
     }
 
@@ -930,6 +930,59 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
             sendGalleryResult.assertions().isCalledOnce()
             onDoneListener.assertions().isCalledOnce()
         }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `failed album preserves edited originals and retry rebuilds the batch before sending`() = runTest {
+        val editedFile = createTempFile(prefix = "album-edit", suffix = ".jpg").toFile().apply { writeText("edited source") }
+        val first = aLocalMedia(uri = Uri.parse("file:///tmp/album-first.jpg"))
+        val second = aLocalMedia(uri = Uri.parse("file:///tmp/album-second.jpg"))
+        val preProcessor = FakeMediaPreProcessor()
+        var attempts = 0
+        val timeline = FakeTimeline().apply {
+            sendGalleryLambda = { items, caption, _, _ ->
+                assertThat(items).hasSize(2)
+                assertThat(caption).isEqualTo(A_CAPTION)
+                attempts++
+                Result.success(FakeMediaUploadHandler(if (attempts == 1) Result.failure(java.io.IOException("Offline")) else Result.success(Unit)))
+            }
+        }
+        val presenter = createAttachmentsPreviewPresenter(
+            attachments = listOf(aMediaAttachment(first), aMediaAttachment(second)),
+            room = FakeJoinedRoom(liveTimeline = timeline),
+            mediaPreProcessor = preProcessor,
+            attachmentImageEditor = FakeAttachmentImageEditor { Result.success(EditedLocalMedia(first.copy(uri = Uri.fromFile(editedFile)), editedFile)) },
+            onDoneListener = OnDoneListener {},
+        )
+        try {
+            presenter.test {
+                val initial = awaitItem()
+                initial.eventSink(AttachmentsPreviewEvent.OpenImageEditor)
+                val editor = consumeItemsUntilPredicate { it.imageEditorState != null }.last()
+                editor.eventSink(AttachmentsPreviewEvent.ApplyImageEdits)
+                val ready = consumeItemsUntilPredicate { !it.isApplyingImageEdits && it.imageEditorState == null }.last()
+                ready.textEditorState.setMarkdown(A_CAPTION)
+                ready.eventSink(AttachmentsPreviewEvent.SendAttachment)
+                val uploading = consumeItemsUntilPredicate { it.sendActionState is SendActionState.Sending.Uploading }.last()
+                assertThat((uploading.sendActionState as SendActionState.Sending.Uploading).mediaInfos).hasSize(2)
+                val failed = consumeItemsUntilPredicate { it.sendActionState is SendActionState.Failure }.last()
+                advanceUntilIdle()
+                assertThat(editedFile.exists()).isTrue()
+                assertThat(preProcessor.cleanUpCallCount).isEqualTo(0)
+                val processedBeforeRetry = preProcessor.processCallCount
+                failed.eventSink(AttachmentsPreviewEvent.CancelAndClearSendState)
+                val cleared = awaitLastSequentialItem()
+                assertThat(cleared.sendActionState).isEqualTo(SendActionState.Idle)
+                cleared.eventSink(AttachmentsPreviewEvent.SendAttachment)
+                consumeItemsUntilPredicate { it.sendActionState == SendActionState.Done }
+                advanceUntilIdle()
+                assertThat(attempts).isEqualTo(2)
+                assertThat(preProcessor.processCallCount).isGreaterThan(processedBeforeRetry)
+                assertThat(editedFile.exists()).isFalse()
+                cancelAndIgnoreRemainingEvents()
+            }
+        } finally { editedFile.delete() }
     }
 
     private fun TestScope.createAttachmentsPreviewPresenter(

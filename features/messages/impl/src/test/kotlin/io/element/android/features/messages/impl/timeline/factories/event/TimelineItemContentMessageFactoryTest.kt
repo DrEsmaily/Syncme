@@ -1014,7 +1014,7 @@ class TimelineItemContentMessageFactoryTest : RobolectricTest() {
     }
 
     @Test
-    fun `test create GalleryMessageType with image items without thumbnails returns TimelineItemAttachmentsContent`() = runTest {
+    fun `test create GalleryMessageType with image items without thumbnails returns TimelineItemGalleryContent`() = runTest {
         val sut = createTimelineItemContentMessageFactory()
         val result = sut.create(
             content = createMessageContent(
@@ -1046,20 +1046,23 @@ class TimelineItemContentMessageFactoryTest : RobolectricTest() {
             senderProfile = aProfileDetails(),
             eventId = AN_EVENT_ID,
         )
-        val expected = TimelineItemAttachmentsContent(
+        val expected = TimelineItemGalleryContent(
             body = "Gallery body",
             caption = "Gallery body",
             formattedCaption = null,
             isEdited = false,
-            attachments = persistentListOf(
-                AttachmentItem(
+            items = persistentListOf(
+                GalleryItem(
                     filename = "image.jpg",
                     mimeType = MimeTypes.Jpeg,
                     mediaSource = MediaSource("image_url"),
                     thumbnailSource = null,
-                    fileSize = 888L,
-                    formattedFileSize = "888 Bytes",
-                    fileExtension = "jpg",
+                    type = GalleryItem.Type.Image,
+                    width = 200,
+                    height = 100,
+                    thumbnailWidth = null,
+                    thumbnailHeight = null,
+                    blurhash = null,
                 )
             )
         )

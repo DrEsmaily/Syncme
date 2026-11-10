@@ -274,7 +274,6 @@ class AttachmentsPreviewPresenter(
                             .takeIf { it.isNotEmpty() }
 
                         val editedTempFilesToDelete = editedTempFiles
-                        editedTempFiles = emptyMap()
 
                         // Send the media using the session coroutine scope so it doesn't matter if this screen or the chat one are closed
                         sessionCoroutineScope.launch(dispatchers.io) {
@@ -285,9 +284,12 @@ class AttachmentsPreviewPresenter(
                                 inReplyToEventId = inReplyToEventId,
                             )
 
-                            // Clean up the pre-processed media after it's been sent
-                            mediaSender.cleanUp()
-                            editedTempFilesToDelete.values.forEach { it.safeDelete() }
+                            // Failed sends must keep edited originals so Retry can prepare fresh upload files.
+                            if (sendActionState.value == SendActionState.Done) {
+                                mediaSender.cleanUp()
+                                editedTempFilesToDelete.values.forEach { it.safeDelete() }
+                                editedTempFiles = emptyMap()
+                            }
                         }
                     }
                 }
@@ -320,8 +322,10 @@ class AttachmentsPreviewPresenter(
                         ongoingSendAttachmentJob.value = null
                     }
 
+                    // SDK upload handlers can delete prepared files on failure. Never reuse that failed batch.
+                    val failed = sendActionState.value is SendActionState.Failure
                     val mediaUploadInfoList = sendActionState.value.mediaUploadInfoList()
-                    sendActionState.value = if (mediaUploadInfoList != null) {
+                    sendActionState.value = if (!failed && mediaUploadInfoList != null) {
                         SendActionState.Sending.ReadyToUpload(mediaUploadInfoList)
                     } else {
                         SendActionState.Idle
@@ -540,8 +544,9 @@ class AttachmentsPreviewPresenter(
         sendActionState: MutableState<SendActionState>,
         inReplyToEventId: EventId?,
     ) = runCatchingExceptions {
+        require(mediaUploadInfos.isNotEmpty())
+        sendActionState.value = SendActionState.Sending.Uploading(mediaUploadInfos)
         if (mediaUploadInfos.size == 1) {
-            sendActionState.value = SendActionState.Sending.Uploading(mediaUploadInfos)
             mediaSender.sendPreProcessedMedia(
                 mediaUploadInfo = mediaUploadInfos.first(),
                 caption = caption,

@@ -356,7 +356,7 @@ class TimelineItemContentMessageFactory(
                         is GalleryItemType.Other -> null
                     }
                 }
-                val hasPreviews = galleryItems.any { it.thumbnailSource != null }
+                val hasPreviews = galleryItems.any { it.thumbnailSource != null || it.type == GalleryItem.Type.Image }
                 val isOnlyVisualMedia = galleryItems.all { item ->
                     item.type.isVisualMedia()
                 }

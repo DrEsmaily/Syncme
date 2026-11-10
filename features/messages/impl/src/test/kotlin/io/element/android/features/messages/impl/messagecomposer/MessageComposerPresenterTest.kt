@@ -698,6 +698,22 @@ class MessageComposerPresenterTest : RobolectricTest() {
     }
 
     @Test
+    fun `gallery multi selection is enabled by default and preserves selection order`() = runTest {
+        val first = Uri.parse("content://gallery/first.jpg")
+        val second = Uri.parse("content://gallery/second.jpg")
+        var selected: ImmutableList<Attachment>? = null
+        val navigator = FakeMessagesNavigator(onPreviewAttachmentLambda = { attachments, _ -> selected = attachments })
+        pickerProvider.givenMultipleResults(listOf(first, second))
+        val presenter = createPresenter(navigator = navigator)
+        presenter.test {
+            val state = awaitFirstItem()
+            state.eventSink(MessageComposerEvent.PickAttachmentSource.FromGallery)
+            assertThat(selected?.map { (it as Attachment.Media).localMedia.uri }).containsExactly(first, second).inOrder()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - Pick image from gallery`() = runTest {
         val room = FakeJoinedRoom(
             typingNoticeResult = { Result.success(Unit) }

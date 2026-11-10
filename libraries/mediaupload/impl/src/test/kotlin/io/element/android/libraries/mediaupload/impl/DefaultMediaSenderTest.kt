@@ -194,6 +194,46 @@ class DefaultMediaSenderTest : RobolectricTest() {
         assertThat(liveTimeline.closeCounter).isEqualTo(0)
     }
 
+    @Test
+    fun `album preserves order caption reply and awaits the thread upload before closing`() = runTest {
+        val first = io.element.android.libraries.mediaupload.api.MediaUploadInfo.Image(File("first"), ImageInfo(width = 10L, height = 10L, mimetype = MimeTypes.Jpeg, size = 10L, thumbnailInfo = null, thumbnailSource = null, blurhash = null), null)
+        val second = first.copy(file = File("second"))
+        var uploaded = false
+        val thread = FakeTimeline(mode = Timeline.Mode.Thread(A_THREAD_ID)).apply {
+            val activeTimeline = this
+            sendGalleryLambda = { items, caption, formatted, reply ->
+                assertThat(items.map { (it as io.element.android.libraries.matrix.api.media.GalleryItemInfo.Image).file.name }).containsExactly("first", "second").inOrder()
+                assertThat(caption).isEqualTo("Album caption")
+                assertThat(formatted).isNull()
+                assertThat(reply).isEqualTo(EventId("\$album-reply"))
+                Result.success(object : io.element.android.libraries.matrix.api.media.MediaUploadHandler {
+                    override suspend fun await(): Result<Unit> {
+                        assertThat(activeTimeline.closeCounter).isEqualTo(0)
+                        uploaded = true
+                        return Result.success(Unit)
+                    }
+                    override fun cancel() = Unit
+                })
+            }
+        }
+        val sender = createDefaultMediaSender(room = FakeJoinedRoom(createTimelineResult = { Result.success(thread) }), timelineMode = Timeline.Mode.Thread(A_THREAD_ID))
+        val result = sender.sendGallery(listOf(first, second), "Album caption", null, EventId("\$album-reply"))
+        assertThat(result.isSuccess).isTrue()
+        assertThat(uploaded).isTrue()
+        assertThat(thread.closeCounter).isEqualTo(1)
+    }
+
+    @Test
+    fun `album upload failure reaches caller without reporting success`() = runTest {
+        val error = java.io.IOException("Offline")
+        val timeline = FakeTimeline().apply { sendGalleryLambda = { _, _, _, _ -> Result.success(FakeMediaUploadHandler(Result.failure(error))) } }
+        val sender = createDefaultMediaSender(room = FakeJoinedRoom(liveTimeline = timeline))
+        val info = io.element.android.libraries.mediaupload.api.MediaUploadInfo.AnyFile(File("image"), FileInfo(mimetype = MimeTypes.Jpeg, size = 10, thumbnailInfo = null, thumbnailSource = null))
+        val result = sender.sendGallery(listOf(info, info.copy(file = File("second"))), null, null, null)
+        assertThat(result.exceptionOrNull()).isSameInstanceAs(error)
+        assertThat(timeline.closeCounter).isEqualTo(0)
+    }
+
     private fun createDefaultMediaSender(
         preProcessor: MediaPreProcessor = FakeMediaPreProcessor(),
         room: JoinedRoom = FakeJoinedRoom(),

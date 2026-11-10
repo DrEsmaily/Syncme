@@ -45,7 +45,6 @@ internal fun ReadReceiptBottomSheet(
     state: ReadReceiptBottomSheetState,
     onUserDataClick: (UserId) -> Unit,
     modifier: Modifier = Modifier,
-    onOpenAttachment: (TimelineItem.Event) -> Unit = {},
 ) {
     val isVisible = state.selectedEvent != null
 
@@ -69,13 +68,6 @@ internal fun ReadReceiptBottomSheet(
         ) {
             ReadReceiptBottomSheetContent(
                 state = state,
-                onOpenAttachment = { event ->
-                    coroutineScope.launch {
-                        sheetState.hide()
-                        state.eventSink(ReadReceiptBottomSheetEvent.Dismiss)
-                        onOpenAttachment(event)
-                    }
-                },
                 onUserDataClick = {
                     coroutineScope.launch {
                         sheetState.hide()
@@ -94,7 +86,6 @@ internal fun ReadReceiptBottomSheet(
 internal fun ReadReceiptBottomSheetContent(
     state: ReadReceiptBottomSheetState,
     onUserDataClick: (UserId) -> Unit,
-    onOpenAttachment: (TimelineItem.Event) -> Unit = {},
 ) {
     val event = state.selectedEvent
     val receipts = event?.readReceiptDetailsState?.receipts.orEmpty()
@@ -105,13 +96,6 @@ internal fun ReadReceiptBottomSheetContent(
             .mapValues { (_, keys) -> keys.distinct() }
     }
     LazyColumn {
-        if (event?.content?.isMedia == true) {
-            item {
-                ListItem(onClick = { onOpenAttachment(event) }) {
-                    Text(stringResource(CommonStrings.syncme_message_open_attachment))
-                }
-            }
-        }
         item {
             ListItem { Text(stringResource(CommonStrings.common_seen_by)) }
         }

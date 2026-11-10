@@ -434,7 +434,6 @@ fun MessagesView(
     ReadReceiptBottomSheet(
         state = state.readReceiptBottomSheetState.copy(selectedEvent = currentSelectedMessage),
         onUserDataClick = onUserDataClick,
-        onOpenAttachment = ::openContent,
     )
     ReinviteDialog(state = state)
     LinkView(

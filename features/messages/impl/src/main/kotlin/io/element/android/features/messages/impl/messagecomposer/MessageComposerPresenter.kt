@@ -190,7 +190,7 @@ class MessageComposerPresenter(
         }
 
         val isSendGalleryMessagesEnabled by featureFlagService.isFeatureEnabledFlow(FeatureFlags.SendGalleryMessages)
-            .collectAsState(initial = false)
+            .collectAsState(initial = true)
 
         val galleryMediaPicker = mediaPickerProvider.registerGalleryPicker { uri, mimeType ->
             handlePickedMedia(uri, mimeType)

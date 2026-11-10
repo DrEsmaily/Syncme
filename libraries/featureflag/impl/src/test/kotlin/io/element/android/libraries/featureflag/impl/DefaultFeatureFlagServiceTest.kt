@@ -25,6 +25,19 @@ class DefaultFeatureFlagServiceTest {
     )
 
     @Test
+    fun `gallery sending remains enabled over a previously saved disabled lab flag`() = runTest {
+        val feature = io.element.android.libraries.featureflag.api.FeatureFlags.SendGalleryMessages
+        val buildMeta = aBuildMeta()
+        val provider = FakeMutableFeatureFlagProvider(priority = 1, buildMeta = buildMeta)
+        provider.setFeatureEnabled(feature, false)
+        val service = createDefaultFeatureFlagService(buildMeta = buildMeta, providers = setOf(provider))
+        service.isFeatureEnabledFlow(feature).test {
+            assertThat(awaitItem()).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `given service without provider when feature is checked then it returns the default value`() = runTest {
         val featureWithDefaultToFalse = FakeFeature(
             key = "test_feature",

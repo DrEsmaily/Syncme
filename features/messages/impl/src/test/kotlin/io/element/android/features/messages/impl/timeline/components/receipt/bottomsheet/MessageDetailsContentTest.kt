@@ -8,7 +8,6 @@ package io.element.android.features.messages.impl.timeline.components.receipt.bo
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.messages.impl.timeline.aTimelineItemEvent
@@ -21,21 +20,19 @@ import kotlinx.collections.immutable.persistentListOf
 import org.junit.Test
 
 class MessageDetailsContentTest : RobolectricTest() {
-    @Test fun `sender can open attachments and sees truthful empty receipt and reaction states`() = runAndroidComposeUiTest<ComponentActivity> {
+    @Test fun `media details omit redundant attachment action and show truthful receipt states`() = runAndroidComposeUiTest<ComponentActivity> {
         val event = aTimelineItemEvent(isMine = true, content = aTimelineItemImageContent(),
             timelineItemReactions = aTimelineItemReactions(0), readReceiptState = TimelineItemReadReceipts(persistentListOf()))
-        var opened = 0
         setContent {
             ElementPreview {
-                ReadReceiptBottomSheetContent(ReadReceiptBottomSheetState(event, {}), {}, { opened++ })
+                ReadReceiptBottomSheetContent(ReadReceiptBottomSheetState(event, {}), {})
             }
         }
         onNodeWithText("Seen by").assertIsDisplayed()
         onNodeWithText("No read receipts available").assertIsDisplayed()
         onNodeWithText("Reactions").assertDoesNotExist()
         onNodeWithText("No reactions yet").assertDoesNotExist()
-        onNodeWithText("Open attachment").performClick()
-        assertThat(opened).isEqualTo(1)
+        onNodeWithText("Open attachment").assertDoesNotExist()
     }
 
     @Test fun `reaction report is not added to received message details`() = runAndroidComposeUiTest<ComponentActivity> {
