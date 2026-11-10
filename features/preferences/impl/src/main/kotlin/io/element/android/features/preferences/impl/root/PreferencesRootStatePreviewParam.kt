@@ -53,6 +53,7 @@ open class PreferencesRootStatePreviewParam : PreviewParameterProvider<Preferenc
             aPreferencesRootState(userStatusState = aUserStatusState(pickerState = UserStatusPickerState.ShowingPicker)),
             // Minimal state
             aPreferencesRootState(userStatusState = null),
+            aPreferencesRootState().copy(calendar = CalendarOption.Persian),
         )
 }
 
