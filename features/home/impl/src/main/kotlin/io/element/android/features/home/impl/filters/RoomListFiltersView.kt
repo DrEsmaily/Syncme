@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.SelectableChipColors
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -202,11 +203,8 @@ fun RoomListFiltersView(
                         style = ElementTheme.typography.fontBodyMdRegular,
                     )
                 },
-                border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
-                    selected = false,
-                    borderColor = ElementTheme.colors.borderInteractiveSecondary,
-                ),
+                colors = roomListFilterChipColors(selected = false),
+                border = null,
             )
         }
     }
@@ -429,49 +427,24 @@ private fun RoomListFilterView(
     onClick: (RoomListFilter) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val background = animateColorAsState(
-        targetValue = if (selected) ElementTheme.colors.bgActionPrimaryRest else ElementTheme.colors.bgCanvasDefault,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "chip background colour",
-    )
-    val textColour = animateColorAsState(
-        targetValue = if (selected) ElementTheme.colors.textOnSolidPrimary else ElementTheme.colors.textPrimary,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "chip text colour",
-    )
-    val borderColour = animateColorAsState(
-        targetValue = if (selected) Color.Transparent else ElementTheme.colors.borderInteractiveSecondary,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "chip border colour",
-    )
-
     FilterChip(
         selected = selected,
         trailingIcon = if (selected) {
-            { Icon(imageVector = CompoundIcons.Check(), contentDescription = null, tint = textColour.value, modifier = Modifier.size(16.dp)) }
+            { Icon(imageVector = CompoundIcons.Check(), contentDescription = null, modifier = Modifier.size(16.dp)) }
         } else {
             null
         },
         onClick = { onClick(roomListFilter) },
         modifier = modifier.height(32.dp),
         shape = CircleShape,
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = background.value,
-            selectedContainerColor = background.value,
-            labelColor = textColour.value,
-            selectedLabelColor = textColour.value,
-        ),
+        colors = roomListFilterChipColors(selected),
         label = {
             Text(
                 text = stringResource(id = roomListFilter.stringResource),
                 style = ElementTheme.typography.fontBodyMdRegular,
             )
         },
-        border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
-            selected = selected,
-            borderColor = borderColour.value,
-        ),
+        border = null,
     )
 }
 
@@ -482,49 +455,63 @@ private fun RoomListCustomTagView(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val background = animateColorAsState(
-        targetValue = if (selected) ElementTheme.colors.bgActionPrimaryRest else ElementTheme.colors.bgCanvasDefault,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "custom tag chip background",
-    )
-    val textColour = animateColorAsState(
-        targetValue = if (selected) ElementTheme.colors.textOnSolidPrimary else ElementTheme.colors.textPrimary,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "custom tag chip text",
-    )
-    val borderColour = animateColorAsState(
-        targetValue = if (selected) Color.Transparent else ElementTheme.colors.borderInteractiveSecondary,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "custom tag chip border",
-    )
-
     FilterChip(
         selected = selected,
         trailingIcon = if (selected) {
-            { Icon(imageVector = CompoundIcons.Check(), contentDescription = null, tint = textColour.value, modifier = Modifier.size(16.dp)) }
+            { Icon(imageVector = CompoundIcons.Check(), contentDescription = null, modifier = Modifier.size(16.dp)) }
         } else {
             null
         },
         onClick = onClick,
         modifier = modifier.height(32.dp),
         shape = CircleShape,
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = background.value,
-            selectedContainerColor = background.value,
-            labelColor = textColour.value,
-            selectedLabelColor = textColour.value,
-        ),
+        colors = roomListFilterChipColors(selected),
         label = {
             Text(
                 text = tag.name,
                 style = ElementTheme.typography.fontBodyMdRegular,
             )
         },
-        border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
-            selected = selected,
-            borderColor = borderColour.value,
-        ),
+        border = null,
+    )
+}
+
+// Keep the top bar's built-in filters, custom tags and add-tag chip on one palette.
+@Composable
+private fun roomListFilterChipColors(selected: Boolean): SelectableChipColors {
+    val light = ElementTheme.isLightTheme
+    val background by animateColorAsState(
+        targetValue = if (light) {
+            if (selected) Color(0xFF18181B) else Color(0xFFF4F4F5)
+        } else {
+            if (selected) Color(0xFFE4E4E7) else Color(0xFF1F1F22)
+        },
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "filter chip background",
+    )
+    val foreground by animateColorAsState(
+        targetValue = if (light) {
+            if (selected) Color.White else Color(0xFF52525B)
+        } else {
+            if (selected) Color(0xFF18181B) else Color(0xFFA1A1AA)
+        },
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "filter chip foreground",
+    )
+    return FilterChipDefaults.filterChipColors(
+        containerColor = background,
+        selectedContainerColor = background,
+        disabledContainerColor = background,
+        disabledSelectedContainerColor = background,
+        labelColor = foreground,
+        selectedLabelColor = foreground,
+        disabledLabelColor = foreground,
+        iconColor = foreground,
+        selectedLeadingIconColor = foreground,
+        disabledLeadingIconColor = foreground,
+        trailingIconColor = foreground,
+        selectedTrailingIconColor = foreground,
+        disabledTrailingIconColor = foreground,
     )
 }
 
