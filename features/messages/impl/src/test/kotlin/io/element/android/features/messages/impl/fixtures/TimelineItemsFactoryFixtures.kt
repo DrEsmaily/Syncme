@@ -77,12 +77,13 @@ internal fun aTimelineItemContentFactory(
     failedToParseMessageFactory = TimelineItemContentFailedToParseMessageFactory(),
     failedToParseStateFactory = TimelineItemContentFailedToParseStateFactory(),
     sessionId = matrixClient.sessionId,
-    dateFormatter = FakeDateFormatter(),
+    dateFormatter = dateFormatter,
     stringProvider = FakeStringProvider(),
 )
 
 internal fun TestScope.aTimelineItemsFactory(
     config: TimelineItemsFactoryConfig,
+    dateFormatter: io.element.android.libraries.dateformatter.api.DateFormatter = FakeDateFormatter(),
 ): TimelineItemsFactory {
     val matrixClient = FakeMatrixClient()
     return TimelineItemsFactory(
@@ -101,7 +102,7 @@ internal fun TestScope.aTimelineItemsFactory(
         },
         virtualItemFactory = TimelineItemVirtualFactory(
             daySeparatorFactory = TimelineItemDaySeparatorFactory(
-                FakeDateFormatter()
+                dateFormatter
             ),
         ),
         timelineItemGrouper = TimelineItemGrouper(),

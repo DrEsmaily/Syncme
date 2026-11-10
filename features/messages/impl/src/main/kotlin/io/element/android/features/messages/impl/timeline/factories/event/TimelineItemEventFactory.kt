@@ -56,6 +56,8 @@ class TimelineItemEventFactory(
         fun create(config: TimelineItemsFactoryConfig): TimelineItemEventFactory
     }
 
+    val dateChanges get() = dateFormatter.changes
+
     suspend fun create(
         currentTimelineItem: MatrixTimelineItem.Event,
         index: Int,

@@ -47,6 +47,8 @@ android {
 setupDependencyInjection()
 
 dependencies {
+    implementation(projects.libraries.dateformatter.api)
+    testImplementation(projects.libraries.dateformatter.test)
     implementation(libs.androidx.lifecycle.process)
     implementation(projects.libraries.androidutils)
     implementation(projects.libraries.core)

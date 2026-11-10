@@ -8,6 +8,8 @@
 
 package io.element.android.libraries.dateformatter.impl
 
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.dateformatter.api.DateFormatter
@@ -20,13 +22,21 @@ class DefaultDateFormatter(
     private val dateFormatterDay: DateFormatterDay,
     private val dateFormatterTime: DateFormatterTime,
     private val dateFormatterTimeOnly: DateFormatterTimeOnly,
+    private val calendarPreferences: io.element.android.libraries.dateformatter.api.CalendarPreferences,
+    private val persianDateFormatter: PersianDateFormatter,
+    private val dateTimeObserver: io.element.android.libraries.androidutils.system.DateTimeObserver,
 ) : DateFormatter {
+    override val calendar get() = calendarPreferences.calendar
+    override val changes get() = merge(calendar.map { Unit }, dateTimeObserver.changes.map { Unit })
     override fun format(
         timestamp: Long?,
         mode: DateFormatterMode,
         useRelative: Boolean,
     ): String {
         timestamp ?: return ""
+        if (calendar.value == io.element.android.libraries.dateformatter.api.CalendarSystem.Persian && mode != DateFormatterMode.TimeOnly) {
+            return persianDateFormatter.format(timestamp, mode)
+        }
         return when (mode) {
             DateFormatterMode.Full -> {
                 dateFormatterFull.format(timestamp, useRelative)

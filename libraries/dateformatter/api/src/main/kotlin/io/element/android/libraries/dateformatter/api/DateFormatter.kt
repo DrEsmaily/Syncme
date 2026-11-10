@@ -8,10 +8,16 @@
 
 package io.element.android.libraries.dateformatter.api
 
+import kotlinx.coroutines.flow.map
+
 /**
  * Formats timestamps for display, in the user's locale and time zone.
  */
 interface DateFormatter {
+    /** Emissions invalidate cached presentation dates when the app-wide calendar changes. */
+    val calendar: kotlinx.coroutines.flow.StateFlow<CalendarSystem> get() = defaultCalendar
+    val changes: kotlinx.coroutines.flow.Flow<Unit> get() = calendar.map { Unit }
+
     /**
      * Formats a timestamp according to [mode].
      *

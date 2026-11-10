@@ -77,6 +77,8 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -382,7 +384,8 @@ class TimelinePresenter(
                 timelineController.timelineItems(),
                 room.membersStateFlow,
                 sessionPreferencesStore.isRenderReadReceiptsEnabled(),
-            ) { items, membersState, renderReadReceipts ->
+                timelineItemsFactory.dateChanges.runningFold(0L) { revision, _ -> revision + 1 }.drop(1),
+            ) { items, membersState, renderReadReceipts, dateRevision ->
                 val parent = analyticsService.getLongRunningTransaction(DisplayFirstTimelineItems)
                 val transaction = parent?.startChild("timelineItemsFactory.replaceWith", "Processing timeline items")
                 transaction?.putExtraData(AnalyticsUserData.TIMELINE_ITEM_COUNT, items.count().toString())
@@ -390,6 +393,7 @@ class TimelinePresenter(
                     timelineItems = items,
                     roomMembers = membersState.roomMembers().orEmpty(),
                     renderReadReceipts = renderReadReceipts,
+                    dateRevision = dateRevision,
                 )
                 transaction?.finish()
                 items

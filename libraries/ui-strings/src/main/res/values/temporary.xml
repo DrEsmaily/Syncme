@@ -50,4 +50,7 @@
     <string name="syncme_message_no_receipts">No read receipts available</string>
     <string name="syncme_message_reactions">Reactions</string>
     <string name="syncme_message_no_reactions">No reactions yet</string>
+    <string name="syncme_calendar_title">Calendar</string>
+    <string name="syncme_calendar_gregorian">Gregorian</string>
+    <string name="syncme_calendar_persian">Persian (Solar Hijri)</string>
 </resources>

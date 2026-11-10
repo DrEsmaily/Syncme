@@ -51,6 +51,7 @@ class PreferencesRootPresenter(
     private val featureFlagService: FeatureFlagService,
     private val sessionStore: SessionStore,
     private val appPreferencesStore: AppPreferencesStore,
+    private val calendarPreferences: io.element.android.libraries.dateformatter.api.CalendarPreferences,
     private val userStatusPresenter: Presenter<UserStatusState>,
     private val preferencesAccountPresenter: Presenter<PreferencesAccountState>,
     @SessionCoroutineScope
@@ -59,6 +60,7 @@ class PreferencesRootPresenter(
     @Composable
     override fun present(): PreferencesRootState {
         val coroutineScope = rememberCoroutineScope()
+        val calendar by calendarPreferences.calendar.collectAsState()
         val matrixUser = matrixClient.userProfile.collectAsState()
         LaunchedEffect(Unit) {
             // Force a refresh of the profile
@@ -136,6 +138,14 @@ class PreferencesRootPresenter(
                 PreferencesRootEvent.ToggleOtherAccountsExpanded -> coroutineScope.launch {
                     appPreferencesStore.setOtherAccountsExpanded(!isOtherAccountsSectionExpanded)
                 }
+                is PreferencesRootEvent.SetCalendar -> coroutineScope.launch {
+                    try { calendarPreferences.setCalendar(event.calendar.system) } catch (error: Exception) {
+                        if (error is kotlinx.coroutines.CancellationException) throw error
+                        snackbarDispatcher.post(io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage(
+                            io.element.android.libraries.ui.strings.CommonStrings.common_something_went_wrong_message,
+                        ))
+                    }
+                }
                 is PreferencesRootEvent.SetTheme -> sessionCoroutineScope.launch {
                     when (event.theme) {
                         ThemeOption.System -> appPreferencesStore.setTheme(Theme.System.name)
@@ -152,6 +162,7 @@ class PreferencesRootPresenter(
             userStatusState = userStatusState,
             preferencesAccountState = preferencesAccountState,
             theme = themeOption,
+            calendar = CalendarOption.entries.first { it.system == calendar },
             availableThemeOptions = availableThemeOptions,
             version = remember { versionFormatter.get() },
             isMultiAccountEnabled = isMultiAccountEnabled && otherAccounts != null,

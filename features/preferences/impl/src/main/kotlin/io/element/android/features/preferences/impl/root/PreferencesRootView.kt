@@ -328,6 +328,14 @@ internal fun AppSettingsSection(
                 state.eventSink(PreferencesRootEvent.SetTheme(themeOption))
             }
         )
+        PreferenceDropdown(
+            icon = CompoundIcons.Calendar(),
+            dropDownIcon = CompoundIcons.ChevronUpDown(),
+            title = stringResource(CommonStrings.syncme_calendar_title),
+            selectedOption = state.calendar,
+            options = CalendarOption.entries.toImmutableList(),
+            onSelectOption = { state.eventSink(PreferencesRootEvent.SetCalendar(it)) },
+        )
         ListItem(
             content = { Text(stringResource(id = CommonStrings.common_screen_lock)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),

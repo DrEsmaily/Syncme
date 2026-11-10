@@ -34,6 +34,25 @@ import org.junit.Test
 
 class TimelineItemsFactoryTest {
     @Test
+    fun `date revision rebuilds cached messages without changing event identity`() = runTest {
+        var date = "Gregorian"
+        val formatter = io.element.android.libraries.dateformatter.test.FakeDateFormatter { _, _, _ -> date }
+        val factory = aTimelineItemsFactory(TimelineItemsFactoryConfig(computeReadReceipts = false, computeReactions = false), formatter)
+        val items = listOf(MatrixTimelineItem.Event(UniqueId("calendar-event"), anEventTimelineItem(sender = A_USER_ID, timestamp = 0L)))
+        factory.timelineItems.test {
+            factory.replaceWith(items, emptyList(), false, dateRevision = 0)
+            val initial = awaitItem().filterIsInstance<TimelineItem.Event>().single()
+            assertThat(initial.sentDate).isEqualTo("Gregorian")
+            date = "19 Aban 1405"
+            factory.replaceWith(items, emptyList(), false, dateRevision = 1)
+            val updated = awaitItem().filterIsInstance<TimelineItem.Event>().single()
+            assertThat(updated.sentDate).isEqualTo("19 Aban 1405")
+            assertThat(updated.eventId).isEqualTo(initial.eventId)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `messages sent close together are grouped`() = runTest {
         val positions = groupPositionsOf(
             timestamps = listOf(0L, ONE_MINUTE, 2 * ONE_MINUTE),

@@ -17,5 +17,6 @@ android {
 }
 
 dependencies {
+    api(libs.coroutines.core)
     testCommonDependencies(libs)
 }

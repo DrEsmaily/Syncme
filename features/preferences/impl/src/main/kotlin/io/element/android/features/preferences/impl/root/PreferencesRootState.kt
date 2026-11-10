@@ -34,6 +34,7 @@ data class PreferencesRootState(
     val showLabsItem: Boolean,
     val snackbarMessage: SnackbarMessage?,
     val eventSink: (PreferencesRootEvent) -> Unit,
+    val calendar: CalendarOption = CalendarOption.Gregorian,
 )
 
 enum class ThemeOption : DropdownOption {
@@ -60,4 +61,16 @@ enum class ThemeOption : DropdownOption {
         @ReadOnlyComposable
         override fun getText(): String = stringResource(R.string.theme_black)
     }
+}
+
+enum class CalendarOption(val system: io.element.android.libraries.dateformatter.api.CalendarSystem) : DropdownOption {
+    Gregorian(io.element.android.libraries.dateformatter.api.CalendarSystem.Gregorian),
+    Persian(io.element.android.libraries.dateformatter.api.CalendarSystem.Persian);
+
+    @Composable
+    @ReadOnlyComposable
+    override fun getText(): String = stringResource(
+        if (this == Gregorian) io.element.android.libraries.ui.strings.CommonStrings.syncme_calendar_gregorian
+        else io.element.android.libraries.ui.strings.CommonStrings.syncme_calendar_persian,
+    )
 }

@@ -16,7 +16,10 @@ import kotlin.time.Instant
 /**
  * Create DefaultDateFormatter and set current time to the provided date.
  */
-fun createFormatter(currentDate: String): DefaultDateFormatter {
+fun createFormatter(
+    currentDate: String,
+    calendarPreferences: io.element.android.libraries.dateformatter.api.CalendarPreferences = io.element.android.libraries.dateformatter.test.FakeCalendarPreferences(),
+): DefaultDateFormatter {
     val clock = FakeClock().apply { givenInstant(Instant.parse(currentDate)) }
     val localDateTimeProvider = LocalDateTimeProvider(clock) { TimeZone.UTC }
     val dateFormatters = DateFormatters(
@@ -31,6 +34,11 @@ fun createFormatter(currentDate: String): DefaultDateFormatter {
         dateFormatters = dateFormatters,
     )
     return DefaultDateFormatter(
+        dateTimeObserver = object : io.element.android.libraries.androidutils.system.DateTimeObserver {
+            override val changes = kotlinx.coroutines.flow.emptyFlow<io.element.android.libraries.androidutils.system.DateTimeObserver.Event>()
+        },
+        calendarPreferences = calendarPreferences,
+        persianDateFormatter = PersianDateFormatter({ TimeZone.UTC }, clock),
         dateFormatterFull = DateFormatterFull(
             stringProvider = stringProvider,
             localDateTimeProvider = localDateTimeProvider,

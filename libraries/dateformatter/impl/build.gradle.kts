@@ -34,6 +34,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.libraries.androidutils)
+    testImplementation(projects.libraries.dateformatter.test)
     implementation(projects.libraries.core)
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.di)

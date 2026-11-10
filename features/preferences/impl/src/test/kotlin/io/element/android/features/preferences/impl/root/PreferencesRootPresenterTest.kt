@@ -326,6 +326,7 @@ class PreferencesRootPresenterTest {
         sessionStore: SessionStore = InMemorySessionStore(),
         appPreferencesStore: AppPreferencesStore = InMemoryAppPreferencesStore(),
     ) = PreferencesRootPresenter(
+        calendarPreferences = io.element.android.libraries.dateformatter.test.FakeCalendarPreferences(),
         matrixClient = matrixClient,
         analyticsService = FakeAnalyticsService(),
         versionFormatter = FakeVersionFormatter(),
