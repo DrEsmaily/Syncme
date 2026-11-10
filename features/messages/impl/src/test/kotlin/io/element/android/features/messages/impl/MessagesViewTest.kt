@@ -203,12 +203,12 @@ class MessagesViewTest : RobolectricTest() {
         val path = generateSequence(imageNode.layoutInfo) { it.parentInfo }.take(12)
             .joinToString { "${it.width}x${it.height},placed=${it.isPlaced}" }
         val geometry = "Image=$imageBounds bubble=$bubble imagePlaced=${imageNode.layoutInfo.isPlaced} bubblePlaced=${bubbleNode.layoutInfo.isPlaced} parents=$path"
-        image.performClick()
-        callback.assertSuccess()
         val inset = 8f * pixelsPerDp
         com.google.common.truth.Truth.assertWithMessage(geometry).that(imageBounds.left - bubble.left).isAtLeast(inset - 1f)
         com.google.common.truth.Truth.assertWithMessage(geometry).that(bubble.right - imageBounds.right).isAtLeast(inset - 1f)
         com.google.common.truth.Truth.assertWithMessage(geometry).that(imageBounds.top - bubble.top).isAtLeast(inset - 1f)
+        image.performClick()
+        callback.assertSuccess()
 
     }
 
