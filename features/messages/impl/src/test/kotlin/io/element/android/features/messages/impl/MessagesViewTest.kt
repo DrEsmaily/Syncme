@@ -6,7 +6,7 @@
  * Please see LICENSE files in the repository root for full details.
  */
 
-@file:OptIn(ExperimentalTestApi::class)
+@file:OptIn(ExperimentalTestApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 
 package io.element.android.features.messages.impl
 
@@ -196,14 +196,20 @@ class MessagesViewTest : RobolectricTest() {
             onDensity = { pixelsPerDp = it },
         )
         val image = onNodeWithContentDescription(activity!!.getString(CommonStrings.common_image), useUnmergedTree = true)
-        val imageBounds = image.fetchSemanticsNode().boundsInRoot
-        val bubble = onNodeWithTag(TestTags.messageBubble.value, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        val inset = 8f * pixelsPerDp
-        com.google.common.truth.Truth.assertThat(imageBounds.left - bubble.left).isAtLeast(inset - 1f)
-        com.google.common.truth.Truth.assertThat(bubble.right - imageBounds.right).isAtLeast(inset - 1f)
-        com.google.common.truth.Truth.assertThat(imageBounds.top - bubble.top).isAtLeast(inset - 1f)
+        val imageNode = image.fetchSemanticsNode()
+        val imageBounds = imageNode.boundsInRoot
+        val bubbleNode = onNodeWithTag(TestTags.messageBubble.value, useUnmergedTree = true).fetchSemanticsNode()
+        val bubble = bubbleNode.boundsInRoot
+        val path = generateSequence(imageNode.layoutInfo) { it.parentInfo }.take(12)
+            .joinToString { "${it.width}x${it.height},placed=${it.isPlaced}" }
+        val geometry = "Image=$imageBounds bubble=$bubble imagePlaced=${imageNode.layoutInfo.isPlaced} bubblePlaced=${bubbleNode.layoutInfo.isPlaced} parents=$path"
         image.performClick()
         callback.assertSuccess()
+        val inset = 8f * pixelsPerDp
+        com.google.common.truth.Truth.assertWithMessage(geometry).that(imageBounds.left - bubble.left).isAtLeast(inset - 1f)
+        com.google.common.truth.Truth.assertWithMessage(geometry).that(bubble.right - imageBounds.right).isAtLeast(inset - 1f)
+        com.google.common.truth.Truth.assertWithMessage(geometry).that(imageBounds.top - bubble.top).isAtLeast(inset - 1f)
+
     }
 
     @Test
