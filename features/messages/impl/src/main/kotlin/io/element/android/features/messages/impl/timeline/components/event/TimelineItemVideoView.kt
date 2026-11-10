@@ -13,7 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -92,7 +92,7 @@ fun TimelineItemVideoView(
                 var isLoaded by remember { mutableStateOf(false) }
                 AsyncImage(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .then(if (isLoaded) Modifier.background(Color.White) else Modifier)
                         .then(
                             if (!isTalkbackActive && onContentClick != null) {

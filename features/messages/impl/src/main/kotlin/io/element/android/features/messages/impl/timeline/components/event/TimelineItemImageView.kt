@@ -11,7 +11,7 @@ package io.element.android.features.messages.impl.timeline.components.event
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -85,7 +85,7 @@ fun TimelineItemImageView(
                     var isLoaded by remember { mutableStateOf(false) }
                     AsyncImage(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .then(if (isLoaded) Modifier.background(Color.White) else Modifier)
                             .then(
                                 if (!isTalkbackActive() && onContentClick != null) {

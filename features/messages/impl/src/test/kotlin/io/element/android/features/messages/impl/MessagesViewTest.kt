@@ -182,7 +182,12 @@ class MessagesViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `tapping sent image opens its content without selecting Seen by`() = runAndroidComposeUiTest {
+    fun `tapping sent image opens its content without selecting Seen by`() = checkSentImage(previewImage = true)
+
+    @Test
+    fun `tapping sent image while thumbnail loads opens its content`() = checkSentImage(previewImage = false)
+
+    private fun checkSentImage(previewImage: Boolean) = runAndroidComposeUiTest {
         val event = aTimelineItemEvent(isMine = true,
             content = io.element.android.features.messages.impl.timeline.model.event.aTimelineItemImageContent(aspectRatio = 2f),
             timelineItemReactions = aTimelineItemReactions(0))
@@ -194,7 +199,7 @@ class MessagesViewTest : RobolectricTest() {
                 readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = receipts)),
             onEventClick = callback,
             onDensity = { pixelsPerDp = it },
-            previewImages = true,
+            previewImages = previewImage,
         )
         val image = onNodeWithContentDescription(activity!!.getString(CommonStrings.common_image), useUnmergedTree = true)
         val imageNode = image.fetchSemanticsNode()
@@ -211,6 +216,22 @@ class MessagesViewTest : RobolectricTest() {
         image.performClick()
         callback.assertSuccess()
 
+    }
+
+    @Test
+    fun `tapping sent video while thumbnail loads opens its content`() = runAndroidComposeUiTest {
+        val event = aTimelineItemEvent(isMine = true,
+            content = io.element.android.features.messages.impl.timeline.model.event.aTimelineItemVideoContent(),
+            timelineItemReactions = aTimelineItemReactions(0))
+        val receipts = EventsRecorder<ReadReceiptBottomSheetEvent>(expectEvents = false)
+        val callback = EnsureCalledOnceWithTwoParamsAndResult(expectedParam1 = true, expectedParam2 = event, result = true)
+        setMessagesView(
+            state = aMessagesState(timelineState = aTimelineState(timelineItems = persistentListOf(event)),
+                readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = receipts)),
+            onEventClick = callback,
+        )
+        onNodeWithContentDescription(activity!!.getString(CommonStrings.common_video), useUnmergedTree = true).performClick()
+        callback.assertSuccess()
     }
 
     @Test
