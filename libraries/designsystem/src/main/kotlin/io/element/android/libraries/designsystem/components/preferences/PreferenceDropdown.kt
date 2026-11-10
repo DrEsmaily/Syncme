@@ -107,6 +107,10 @@ interface DropdownOption {
      */
     @Composable
     fun getText(): String
+
+    /** Compact label for the collapsed preference row; the menu retains the full option text. */
+    @Composable
+    fun getSelectedText(): String = getText()
 }
 
 @Composable
@@ -126,7 +130,7 @@ private fun <T : DropdownOption> DropdownTrailingContent(
         horizontalArrangement = Arrangement.End,
     ) {
         Text(
-            text = selectedOption?.getText().orEmpty(),
+            text = selectedOption?.getSelectedText().orEmpty(),
             maxLines = 1,
             style = ElementTheme.typography.fontBodyMdRegular,
             color = enabled.toSecondaryEnabledColor(),

@@ -53,4 +53,5 @@
     <string name="syncme_calendar_title">Calendar</string>
     <string name="syncme_calendar_gregorian">Gregorian</string>
     <string name="syncme_calendar_persian">Persian (Solar Hijri)</string>
+    <string name="syncme_calendar_persian_short">Persian</string>
 </resources>

@@ -69,6 +69,13 @@ enum class CalendarOption(val system: io.element.android.libraries.dateformatter
 
     @Composable
     @ReadOnlyComposable
+    override fun getSelectedText(): String = stringResource(
+        if (this == Persian) io.element.android.libraries.ui.strings.CommonStrings.syncme_calendar_persian_short
+        else io.element.android.libraries.ui.strings.CommonStrings.syncme_calendar_gregorian,
+    )
+
+    @Composable
+    @ReadOnlyComposable
     override fun getText(): String = stringResource(
         if (this == Gregorian) io.element.android.libraries.ui.strings.CommonStrings.syncme_calendar_gregorian
         else io.element.android.libraries.ui.strings.CommonStrings.syncme_calendar_persian,
