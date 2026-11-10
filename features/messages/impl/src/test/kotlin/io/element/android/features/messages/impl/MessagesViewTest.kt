@@ -194,6 +194,7 @@ class MessagesViewTest : RobolectricTest() {
                 readReceiptBottomSheetState = aReadReceiptBottomSheetState(eventSink = receipts)),
             onEventClick = callback,
             onDensity = { pixelsPerDp = it },
+            previewImages = true,
         )
         val image = onNodeWithContentDescription(activity!!.getString(CommonStrings.common_image), useUnmergedTree = true)
         val imageNode = image.fetchSemanticsNode()
@@ -864,12 +865,14 @@ private fun AndroidComposeUiTest<ComponentActivity>.setMessagesView(
     onViewAllPinnedMessagesClick: () -> Unit = EnsureNeverCalled(),
     onThreadsListClicked: () -> Unit = EnsureNeverCalled(),
     onDensity: (Float) -> Unit = {},
+    previewImages: Boolean = false,
 ) {
     val emojiPickerRenderer = DefaultEmojiPickerRenderer()
     setSafeContent {
         onDensity(androidx.compose.ui.platform.LocalDensity.current.density)
         // Cannot use the RichTextEditor, so simulate a LocalInspectionMode
         CompositionLocalProvider(LocalInspectionMode provides true) {
+            val content = @androidx.compose.runtime.Composable {
             MessagesView(
                 state = state,
                 onBackClick = onBackClick,
@@ -894,6 +897,10 @@ private fun AndroidComposeUiTest<ComponentActivity>.setMessagesView(
                 },
                 onThreadsListClick = onThreadsListClicked,
             )
+            }
+            if (previewImages) {
+                io.element.android.libraries.designsystem.preview.ElementPreview { content() }
+            } else content()
         }
     }
 }
