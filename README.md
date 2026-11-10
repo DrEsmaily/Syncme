@@ -2,7 +2,7 @@
 
 # SyncMe for Android
 
-**Version 1.3.1 · Build 276**
+**Version 1.3.2 · Build 277**
 
 **SyncMe** is an independent Android Matrix messenger forked from [Element X Android](https://github.com/element-hq/element-x-android).
 It adds a customized interface, personal conversation tags, shared presence indicators and optional diagnostic tools on top of the Matrix Rust SDK, Jetpack Compose and Appyx foundation.
@@ -11,12 +11,12 @@ This is the SyncMe development repository, not an official Element distribution.
 
 ## Latest release and downloads
 
-**[Download SyncMe 1.3.1 · Build 276 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.1-build276/SyncMe-276-ARM64.apk)**
+**[Download SyncMe 1.3.2 · Build 277 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.2-build277/SyncMe-277-ARM64.apk)**
 
-- **Version 1.3.1 · Build 276 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.3.1-build276) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/42703777680) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.1-build276/SHA256.txt).
+- **Version 1.3.2 · Build 277 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.3.2-build277) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/42776171388) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.2-build277/SHA256.txt).
 - Minor bugs fixed
-- [Server upload files](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.1-build276/SyncMe-276-Server-Upload.zip) · [Update metadata](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.1-build276/latest.json) · [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-276-receipt-details/docs/syncme/update-hosting.md).
-- [Source](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-276-receipt-details) · [Previous public release: 1.3.0 · Build 275](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.0-build275/SyncMe-275-ARM64.apk).
+- [Server upload files](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.2-build277/SyncMe-277-Server-Upload.zip) · [Update metadata](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.2-build277/latest.json) · [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-277-media-taps/docs/syncme/update-hosting.md).
+- [Source](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-277-media-taps) · [Previous public release: 1.3.1 · Build 276](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.1-build276/SyncMe-276-ARM64.apk).
 
 Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
 
@@ -31,13 +31,13 @@ These are recorded differences from the upstream version used as this fork's bas
 | **Upload percentage and transferred size** | Real percentage, transferred/total bytes and a progress bar within conversations, driven by SDK send-queue state and fitted to the message bubble. |
 | **Media-send controls** | Customized quality/original-file behavior, upload cancellation through message actions, and pending-upload presentation. |
 | **Personal conversation tags** | Dedicated create, rename and management flows, conversation assignments and persistent home filters; up to three personal tags. |
-| **In-app updates** | Final row under Settings → App settings, background version checks, resumable Android downloads, an Install/Later prompt after verification, and verified installation from the configured HTTPS update server. [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-276-receipt-details/docs/syncme/update-hosting.md). |
+| **In-app updates** | Final row under Settings → App settings, background version checks, resumable Android downloads, an Install/Later prompt after verification, and verified installation from the configured HTTPS update server. [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-277-media-taps/docs/syncme/update-hosting.md). |
 | **SyncMe identity and interface** | SM artwork, dedicated welcome screen, cobalt accents, black surfaces, simpler navigation, and customized menus, reactions and settings. |
 | **Optional diagnostics** | Startup, TLS and decryption tools in Developer Options; default-off, bounded capture. |
 | **Refined read-receipt behavior** | Reader avatars under the relevant outgoing message, retries after failure, and automatic receipts restricted to the active chat and visible event. |
 | **Permission-based group closure** | A confirmed client-side management action; it does not erase every federated or device-local copy of history. |
 
-Message bubbles use a dedicated timestamp footer: left for sent messages and right for received messages. Sent-message taps open Seen by details, with reactions beside each reader and attachment opening retained. Narrow replied-to images remain centered, with compact timestamp insets and edited markers toward the center beside the time. Known later read positions cover older sent messages in the same thread; avatar badges remain at the latest position. No empty reaction section is shown.
+Message bubbles use a dedicated timestamp footer: left for sent messages and right for received messages. Media taps retain their normal viewer or playback action; sent-bubble backgrounds and footers open Seen by. Reader reactions appear beside the name with consistent spacing. Plain and captioned images share padded, rounded framing. Narrow replied-to images remain centered, with compact timestamp insets and edited markers toward the center beside the time. Known later read positions cover older sent messages in the same thread; avatar badges remain at the latest position. No empty reaction section is shown.
 
 ### Inherited from Element X and Matrix
 
@@ -79,10 +79,11 @@ Explore SyncMe's welcome screen, conversation filters, presence indicators, pers
 
 ## Latest 10 successful builds
 
-This rolling list includes the current build and the nine preceding successful builds. Version 1.3.1 (Build 276) follows Version 1.3.0 (Build 275).
+This rolling list includes the current build and the nine preceding successful builds. Version 1.3.2 (Build 277) follows Version 1.3.1 (Build 276).
 
 | Build | Verified execution | Downloads and documentation |
 |---|---|---|
+| 277 — Version 1.3.2 | [Run 42776171388](https://github.com/DrEsmaily/SyncMe/actions/runs/42776171388) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.2-build277/SyncMe-277-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.3.2-build277) |
 | 276 — Version 1.3.1 | [Run 42703777680](https://github.com/DrEsmaily/SyncMe/actions/runs/42703777680) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.1-build276/SyncMe-276-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.3.1-build276) |
 | 275 — Version 1.3.0 | [Run 42694210462](https://github.com/DrEsmaily/SyncMe/actions/runs/42694210462) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.3.0-build275/SyncMe-275-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.3.0-build275) |
 | 274 — Version 1.2.1 | [Run 40405205147](https://github.com/DrEsmaily/SyncMe/actions/runs/40405205147) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.2.1-build274/SyncMe-274-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.2.1-build274) |
@@ -92,9 +93,10 @@ This rolling list includes the current build and the nine preceding successful b
 | 270 — Version 1.1.14 | [Run 40280144052](https://github.com/DrEsmaily/SyncMe/actions/runs/40280144052) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.14-build270/SyncMe-270-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.14-build270) |
 | 269 — Version 1.1.13 | [Run 40259329512](https://github.com/DrEsmaily/SyncMe/actions/runs/40259329512) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.13-build269/SyncMe-269-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.13-build269) |
 | 268 — Version 1.1.12 | [Run 40256575761](https://github.com/DrEsmaily/SyncMe/actions/runs/40256575761) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.12-build268/SyncMe-268-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.12-build268) |
-| 267 — Version 1.1.11 | [Run 40163722101](https://github.com/DrEsmaily/SyncMe/actions/runs/40163722101) | [APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.1.11-build267/SyncMe-267-ARM64.apk) · [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.11-build267) |
 
 ### Earlier preserved archive
+
+[Version 1.1.11 · Build 267](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.11-build267) remains available as a public release with its APK and documentation.
 
 [Version 1.1.10 · Build 266](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.10-build266) remains available as a public release with its APK and documentation.
 
@@ -122,20 +124,20 @@ This rolling list includes the current build and the nine preceding successful b
 
 [Version 1.0.0 · Build 254](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.0.0-build254) remains available as a public release with its APK and documentation.
 
-The original protected snapshot covers builds **244–253**. Builds [253](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967), [252](https://github.com/DrEsmaily/SyncMe/actions/runs/38633766604), [251](https://github.com/DrEsmaily/SyncMe/actions/runs/38586470729), [250](https://github.com/DrEsmaily/SyncMe/actions/runs/38547146922), [249](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735), [248](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130), [247](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920), [246](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737), [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes builds 267 through 276; the archive records the earlier preservation operation.
+The original protected snapshot covers builds **244–253**. Builds [253](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967), [252](https://github.com/DrEsmaily/SyncMe/actions/runs/38633766604), [251](https://github.com/DrEsmaily/SyncMe/actions/runs/38586470729), [250](https://github.com/DrEsmaily/SyncMe/actions/runs/38547146922), [249](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735), [248](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130), [247](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920), [246](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737), [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes builds 268 through 277; the archive records the earlier preservation operation.
 
 [Historical cleanup report and preservation record](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cleanup-proposal.md)
 
 ## Development and preserved history
 
-The latest verified application source is on [`build/syncme-276-receipt-details`](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-276-receipt-details). Version 1.3.1 (Build 276) builds on the verified Build 275 source; [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.3.1-build276).
+The latest verified application source is on [`build/syncme-277-media-taps`](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-277-media-taps). Version 1.3.2 (Build 277) builds on the verified Build 276 source; [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.3.2-build277).
 Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
 
-Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255, 256, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268 through 276 provide persistent APK downloads; Build 257 remains available as an Actions artifact.
+Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255, 256, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268 through 277 provide persistent APK downloads; Build 257 remains available as an Actions artifact.
 
 ## Building and contributing
 
-Release identity follows [Semantic Versioning and separate build identifiers](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-276-receipt-details/docs/syncme/versioning.md), using `syncme-release.properties` as the canonical source.
+Release identity follows [Semantic Versioning and separate build identifiers](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-277-media-taps/docs/syncme/versioning.md), using `syncme-release.properties` as the canonical source.
 
 The application requires Android 7.0+ (API 24). Development uses JDK 21 and the Android toolchain. See [contributing](CONTRIBUTING.md) and [developer onboarding](docs/_developer_onboarding.md).
 
