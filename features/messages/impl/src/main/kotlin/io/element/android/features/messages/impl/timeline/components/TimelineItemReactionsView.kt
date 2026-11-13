@@ -69,14 +69,10 @@ private fun TimelineItemReactionsView(
     onToggleExpandClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // In LTR languages we want an incoming message's reactions to be LTR and outgoing to be RTL.
-    // For RTL languages it should be the opposite.
+    // Match the physical timestamp edge, independent of the message or app language.
+    // The add button follows the reactions: right for sent bubbles, left for received bubbles.
     val currentLayout = LocalLayoutDirection.current
-    val reactionsLayoutDirection = when {
-        !isOutgoing -> currentLayout
-        currentLayout == LayoutDirection.Ltr -> LayoutDirection.Rtl
-        else -> LayoutDirection.Ltr
-    }
+    val reactionsLayoutDirection = if (isOutgoing) LayoutDirection.Ltr else LayoutDirection.Rtl
 
     CompositionLocalProvider(LocalLayoutDirection provides reactionsLayoutDirection) {
         TimelineItemReactionsLayout(

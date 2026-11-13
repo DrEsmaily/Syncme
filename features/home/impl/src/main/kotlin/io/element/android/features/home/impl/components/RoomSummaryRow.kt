@@ -382,14 +382,18 @@ private fun MessagePreviewAndIndicatorRow(
 @Composable
 private fun RoomMessagePreview(preview: CharSequence?, modifier: Modifier = Modifier) {
     val text = preview?.toString().orEmpty()
-    val sender = (preview as? AnnotatedString)
-        ?.getStringAnnotations(RoomLatestEventFormatter.SENDER_PREFIX_TAG, 0, text.length)
-        ?.firstOrNull { it.start == 0 && it.end in 1..text.length }
+    val annotated = preview as? AnnotatedString
+    val prefixes = (annotated?.getStringAnnotations(RoomLatestEventFormatter.PREVIEW_PREFIX_TAG, 0, text.length).orEmpty() +
+        annotated?.getStringAnnotations(RoomLatestEventFormatter.SENDER_PREFIX_TAG, 0, text.length).orEmpty()).sortedBy { it.start }
+    var prefixEnd = 0
+    for (prefix in prefixes) {
+        if (prefix.start <= prefixEnd && prefix.end in (prefixEnd + 1)..text.length) prefixEnd = prefix.end
+    }
     val style = ElementTheme.typography.fontBodyMdRegular.copy(textDirection = TextDirection.Content)
     Row(modifier = modifier) {
-        if (sender != null) {
+        if (prefixEnd > 0) {
             Text(
-                text = text.substring(0, sender.end).trimEnd(),
+                text = text.substring(0, prefixEnd).trimEnd(),
                 modifier = Modifier.widthIn(max = 96.dp),
                 style = style,
                 color = ElementTheme.colors.roomListRoomMessage,
@@ -399,7 +403,7 @@ private fun RoomMessagePreview(preview: CharSequence?, modifier: Modifier = Modi
             Spacer(Modifier.width(4.dp))
         }
         Text(
-            text = text.substring(sender?.end ?: 0),
+            text = text.substring(prefixEnd),
             modifier = Modifier.weight(1f),
             style = style,
             textAlign = TextAlign.Start,

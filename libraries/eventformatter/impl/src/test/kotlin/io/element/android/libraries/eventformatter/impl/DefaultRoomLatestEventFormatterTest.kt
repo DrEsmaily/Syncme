@@ -992,6 +992,26 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
         }
     }
 
+    @Test
+    @Config(qualifiers = "en")
+    fun `image caption prefixes remain contiguous and separate from Persian caption`() {
+        val caption = "نسخه جدید برای ارسال چند عکس"
+        val content = MessageContent(caption, null, false, null, ImageMessageType("photo.jpg", caption, null, MediaSource("url"), null))
+        for (outgoing in listOf(false, true)) for (direct in listOf(false, true)) {
+            val event = createLatestEvent(outgoing, "Alice", content)
+            val preview = formatter.format(event, direct) as AnnotatedString
+            val labels = preview.getStringAnnotations(RoomLatestEventFormatter.PREVIEW_PREFIX_TAG, 0, preview.length).sortedBy { it.start }
+            var end = 0
+            labels.forEach { range ->
+                assertThat(range.start).isEqualTo(end)
+                end = range.end
+            }
+            val sender = if (direct) "" else if (outgoing) "You: " else "\u2068Alice\u2069: "
+            assertThat(preview.text.substring(0, end)).isEqualTo("${sender}Image: ")
+            assertThat(preview.text.substring(end)).isEqualTo(caption)
+        }
+    }
+
     // endregion
 
     private fun createLatestEvent(

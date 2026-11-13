@@ -32,6 +32,8 @@ interface RoomLatestEventFormatter {
      */
     fun format(latestEvent: LatestEventValue.Remote, isDmRoom: Boolean): CharSequence?
     companion object {
+        /** Sender/media labels must be measured separately from the message's own bidirectional text. */
+        const val PREVIEW_PREFIX_TAG = "io.element.android.eventformatter.preview_prefix"
         /** Annotated sender label, including its separator, kept separate from the message's own direction. */
         const val SENDER_PREFIX_TAG = "io.element.android.eventformatter.sender_prefix"
     }

@@ -959,15 +959,7 @@ private fun MessageEventBubbleContent(
                         // Keep the original lightweight layout for the common case.
                         eventContentView(contentModifier, onContentLayoutChange)
                     } else {
-                        val reactionAlignment = remember(event.content, event.isMine) {
-                            when (val textContent = event.content) {
-                                is TimelineItemTextContent -> when (TextDirection.detect(textContent.body)) {
-                                    TextDirection.Rtl, TextDirection.ContentOrRtl -> Alignment.End
-                                    else -> Alignment.Start
-                                }
-                                else -> if (event.isMine) Alignment.End else Alignment.Start
-                            }
-                        }
+                        val reactionAlignment = if (event.isMine) AbsoluteAlignment.Left else AbsoluteAlignment.Right
                         Column(
                             horizontalAlignment = if (event.content is TimelineItemImageContent || event.content is TimelineItemVideoContent) {
                                 Alignment.CenterHorizontally

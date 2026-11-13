@@ -56,12 +56,13 @@ fun TimelineItemReactionsLayout(
             var rowX = 0
 
             placeables.forEach { placeable ->
-                val horizontalSpacing = if (currentRow.isEmpty()) 0 else itemSpacing.toPx().toInt()
-                // If the current view does not fit on this row bump to the next
-                if (rowX + placeable.width > constraints.maxWidth) {
+                var horizontalSpacing = if (currentRow.isEmpty()) 0 else itemSpacing.toPx().toInt()
+                // Include the gap in the fit check; a new row must start with no inherited gap.
+                if (currentRow.isNotEmpty() && rowX + horizontalSpacing + placeable.width > constraints.maxWidth) {
                     rows.add(currentRow)
                     currentRow = mutableListOf()
                     rowX = 0
+                    horizontalSpacing = 0
                 }
                 rowX += horizontalSpacing + placeable.width
                 currentRow.add(placeable)

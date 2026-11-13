@@ -286,7 +286,10 @@ private fun GalleryItemCell(
 
     Box(
         modifier = modifier
-            .blurHashBackground(item.blurhash, alpha = 0.9f)
+            .then(
+                if (item.type == GalleryItem.Type.Image) Modifier.background(ElementTheme.colors.bgSubtleTertiary)
+                else Modifier.blurHashBackground(item.blurhash, alpha = 0.9f)
+            )
             .then(
                 if (itemContentValidationState.isValid()) {
                     Modifier.combinedClickable(
@@ -302,7 +305,7 @@ private fun GalleryItemCell(
         AsyncImage(
             modifier = Modifier.fillMaxSize(),
             model = item.thumbnailMediaRequestData,
-            contentScale = ContentScale.Crop,
+            contentScale = if (item.type == GalleryItem.Type.Image) ContentScale.Fit else ContentScale.Crop,
             alignment = Alignment.Center,
             contentDescription = item.filename,
         )

@@ -92,15 +92,35 @@ class RoomSummaryRowDirectionTest : RobolectricTest() {
     fun `sending You prefix preserves the first Persian word`() =
         checkPrefixedPreview("You", "\u0646\u0633\u062e\u0647 ".repeat(100), ResolvedTextDirection.Rtl, sending = true)
 
+    @Test
+    fun `image label does not clip the first Persian caption word`() =
+        checkPrefixedPreview("", "نسخه جدید برای ارسال چند عکس ".repeat(30), ResolvedTextDirection.Rtl, mediaPrefix = "Image")
+
+    @Test
+    fun `sender and image labels preserve Persian caption start`() =
+        checkPrefixedPreview("You", "نسخه جدید برای ارسال چند عکس ".repeat(30), ResolvedTextDirection.Rtl, mediaPrefix = "Image")
+
+    @Test
+    fun `Persian sender with media label preserves English caption start`() =
+        checkPrefixedPreview("علی", "Version with multiple photos ".repeat(30), ResolvedTextDirection.Ltr, mediaPrefix = "Image")
+
     private fun checkPrefixedPreview(
         prefix: String,
         body: String,
         direction: ResolvedTextDirection,
         sending: Boolean = false,
+        mediaPrefix: String? = null,
     ) = runAndroidComposeUiTest<ComponentActivity> {
         val preview = buildAnnotatedString {
-            append("$prefix: ")
-            addStringAnnotation(RoomLatestEventFormatter.SENDER_PREFIX_TAG, "sender", 0, length)
+            if (prefix.isNotEmpty()) {
+                append("$prefix: ")
+                addStringAnnotation(RoomLatestEventFormatter.SENDER_PREFIX_TAG, "sender", 0, length)
+            }
+            if (mediaPrefix != null) {
+                val start = length
+                append("$mediaPrefix: ")
+                addStringAnnotation(RoomLatestEventFormatter.PREVIEW_PREFIX_TAG, "media", start, length)
+            }
             append(body)
         }
         setContent {

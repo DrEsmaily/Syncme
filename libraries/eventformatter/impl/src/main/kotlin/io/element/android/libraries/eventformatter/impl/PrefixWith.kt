@@ -27,6 +27,7 @@ internal fun CharSequence.prefixWith(prefix: String, isSenderPrefix: Boolean = f
             append(prefix)
         }
         append(": ")
+        addStringAnnotation(RoomLatestEventFormatter.PREVIEW_PREFIX_TAG, "prefix", 0, length)
         if (isSenderPrefix) {
             addStringAnnotation(RoomLatestEventFormatter.SENDER_PREFIX_TAG, "sender", 0, length)
         }
