@@ -47,8 +47,6 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.text.toDp
 import io.element.android.libraries.designsystem.text.toPx
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.designsystem.theme.messageFromMeBackground
-import io.element.android.libraries.designsystem.theme.messageFromOtherBackground
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.testtags.testTag
 import io.element.android.libraries.ui.utils.a11y.isTalkbackActive
@@ -180,10 +178,11 @@ object MessageEventBubbleDefaults {
 
     @Composable
     fun backgroundBubbleColor(isMine: Boolean): Color {
-        return if (isMine) {
-            ElementTheme.colors.messageFromMeBackground
-        } else {
-            ElementTheme.colors.messageFromOtherBackground
+        val colors = ElementTheme.colors
+        return when {
+            colors.isLight -> if (isMine) Color(0xFFDBEAFE) else Color(0xFFF4F4F5)
+            colors.bgCanvasDefault == Color.Black -> if (isMine) Color(0xFF142B43) else Color(0xFF18181B)
+            else -> if (isMine) Color(0xFF233B57) else Color(0xFF27272A)
         }
     }
 
