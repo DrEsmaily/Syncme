@@ -9,6 +9,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
@@ -45,7 +47,9 @@ class GalleryImageFitTest : RobolectricTest() {
     @Test fun `three portrait screenshots fill their tiles`() = checkFit(1080, 2400, Theme.Black, count = 3)
     @Test fun `four portrait screenshots fill their tiles`() = checkFit(1080, 2400, Theme.Light, count = 4)
 
-    private fun checkFit(width: Int, height: Int, theme: Theme, count: Int = 2) = runAndroidComposeUiTest<ComponentActivity> {
+    @Test fun `narrow bubbles still fill portrait tiles`() = checkFit(1080, 2400, Theme.Dark, count = 3, galleryWidthDp = 220)
+
+    private fun checkFit(width: Int, height: Int, theme: Theme, count: Int = 2, galleryWidthDp: Int = 264) = runAndroidComposeUiTest<ComponentActivity> {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(android.graphics.Color.WHITE)
@@ -64,7 +68,7 @@ class GalleryImageFitTest : RobolectricTest() {
                 ) {
                     TimelineItemGalleryView(
                         eventId = null,
-                        modifier = Modifier.verticalScroll(rememberScrollState()),
+                        modifier = Modifier.width(galleryWidthDp.dp).verticalScroll(rememberScrollState()),
                         content = aTimelineItemGalleryContent(items = List(count) { index ->
                             aGalleryItem(filename = "photo-$index", width = width, height = height)
                         }),

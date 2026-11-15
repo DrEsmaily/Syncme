@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -59,14 +60,14 @@ private val GROUP_CORNER_RADIUS = 6.dp
 internal data class GalleryRow(val indices: List<Int>, val ratios: List<Float>, val heightDp: Float)
 
 /** Justified rows preserve complete images instead of fitting portraits into fixed landscape slots. */
-internal fun galleryRows(items: List<GalleryItem>): List<GalleryRow> {
+internal fun galleryRows(items: List<GalleryItem>, widthDp: Float = GALLERY_WIDTH_DP): List<GalleryRow> {
     val ratios = items.take(MAX_TILES).map { item ->
         item.aspectRatio?.takeIf { it.isFinite() && it > 0f }?.coerceIn(0.1f, 10f) ?: 1f
     }
     if (ratios.isEmpty()) return emptyList()
     fun row(start: Int, count: Int): GalleryRow {
         val rowRatios = ratios.subList(start, start + count)
-        val width = GALLERY_WIDTH_DP - GALLERY_GAP_DP * (count - 1)
+        val width = (widthDp - GALLERY_GAP_DP * (count - 1)).coerceAtLeast(1f)
         return GalleryRow((start until start + count).toList(), rowRatios, width / rowRatios.sum())
     }
     var bestRows = emptyList<GalleryRow>()
@@ -97,13 +98,12 @@ fun TimelineItemGalleryView(
     onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    val rows = remember(content.items) { galleryRows(content.items) }
     val remainingCount = (content.items.size - MAX_TILES).coerceAtLeast(0)
-    Column(
-        modifier = modifier,
-    ) {
+    BoxWithConstraints(modifier = modifier.width(GALLERY_WIDTH_DP.dp)) {
+        val widthDp = maxWidth.value
+        val rows = remember(content.items, widthDp) { galleryRows(content.items, widthDp) }
         Column(
-            modifier = Modifier.width(GALLERY_WIDTH_DP.dp).clip(RoundedCornerShape(GROUP_CORNER_RADIUS)),
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(GROUP_CORNER_RADIUS)),
             verticalArrangement = Arrangement.spacedBy(GALLERY_GAP_DP.dp),
         ) {
             rows.forEach { row ->

@@ -41,6 +41,11 @@ class GalleryRowsTest {
         assertFillsRows(rows)
     }
 
+    @Test fun `narrow available width preserves complete tile proportions`() {
+        val rows = galleryRows(List(3) { aGalleryItem(width = 1080, height = 2400) }, widthDp = 220f)
+        assertFillsRows(rows, widthDp = 220f)
+    }
+
     @Test fun `overflow leaves first five in source order and empty albums are safe`() {
         assertThat(galleryRows(List(60) { aGalleryItem() }).flatMap { it.indices }).containsExactly(0, 1, 2, 3, 4).inOrder()
         assertThat(galleryRows(emptyList())).isEmpty()
@@ -59,9 +64,9 @@ class GalleryRowsTest {
         }
     }
 
-    private fun assertFillsRows(rows: List<GalleryRow>) {
+    private fun assertFillsRows(rows: List<GalleryRow>, widthDp: Float = GALLERY_WIDTH_DP) {
         rows.forEach { row ->
-            val contentWidth = GALLERY_WIDTH_DP - GALLERY_GAP_DP * (row.indices.size - 1)
+            val contentWidth = widthDp - GALLERY_GAP_DP * (row.indices.size - 1)
             row.ratios.forEach { ratio ->
                 val tileWidth = contentWidth * ratio / row.ratios.sum()
                 assertThat(tileWidth / row.heightDp).isWithin(.001f).of(ratio)
