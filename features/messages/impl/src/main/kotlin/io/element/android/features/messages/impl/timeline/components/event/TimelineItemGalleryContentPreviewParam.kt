@@ -90,6 +90,14 @@ class TimelineItemGalleryContentPreviewParam : PreviewParameterProvider<Timeline
                     )
                 },
             ),
+            aTimelineItemGalleryContent(
+                caption = "Three portrait screenshots",
+                items = List(3) { aGalleryItem(width = 1080, height = 2400) },
+            ),
+            aTimelineItemGalleryContent(
+                caption = "Four portrait screenshots",
+                items = List(4) { aGalleryItem(width = 1080, height = 2400) },
+            ),
         )
 }
 

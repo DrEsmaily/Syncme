@@ -36,7 +36,10 @@ class GalleryImageFitTest : RobolectricTest() {
     @Test fun `landscape photos retain every corner in black theme`() = checkFit(400, 100, Theme.Black)
     @Test fun `portrait photos retain every corner in black theme`() = checkFit(100, 400, Theme.Black)
 
-    private fun checkFit(width: Int, height: Int, theme: Theme) = runAndroidComposeUiTest<ComponentActivity> {
+    @Test fun `three portrait screenshots fill their tiles`() = checkFit(1080, 2400, Theme.Black, count = 3)
+    @Test fun `four portrait screenshots fill their tiles`() = checkFit(1080, 2400, Theme.Light, count = 4)
+
+    private fun checkFit(width: Int, height: Int, theme: Theme, count: Int = 2) = runAndroidComposeUiTest<ComponentActivity> {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(android.graphics.Color.WHITE)
@@ -55,27 +58,31 @@ class GalleryImageFitTest : RobolectricTest() {
                 ) {
                     TimelineItemGalleryView(
                         eventId = null,
-                        content = aTimelineItemGalleryContent(items = listOf(
-                            aGalleryItem(filename = "first-photo", width = width, height = height),
-                            aGalleryItem(filename = "second-photo", width = width, height = height),
-                        )),
+                        content = aTimelineItemGalleryContent(items = List(count) { index ->
+                            aGalleryItem(filename = "photo-$index", width = width, height = height)
+                        }),
                         onGalleryItemClick = { clicked = it }, onLongClick = null,
                     )
                 }
             }
         }
-        for ((index, filename) in listOf("first-photo", "second-photo").withIndex()) {
-            val node = onNodeWithContentDescription(filename, useUnmergedTree = true)
+        for (index in 0 until count) {
+            val node = onNodeWithContentDescription("photo-$index", useUnmergedTree = true)
             val pixels = node.captureToImage().toPixelMap()
             val counts = IntArray(4)
+            var photoPixels = 0
             for (y in 0 until pixels.height) for (x in 0 until pixels.width) {
                 val c = pixels[x, y]
+                if (c.red > .9f || c.green > .9f || c.blue > .9f) photoPixels++
                 if (c.red > .9f && c.green < .1f && c.blue < .1f) counts[0]++
                 if (c.red < .1f && c.green > .9f && c.blue < .1f) counts[1]++
                 if (c.red < .1f && c.green < .1f && c.blue > .9f) counts[2]++
                 if (c.red > .9f && c.green > .9f && c.blue < .1f) counts[3]++
             }
             counts.forEach { assertThat(it).isAtLeast(4) }
+            assertThat(photoPixels.toFloat() / (pixels.width * pixels.height)).isGreaterThan(.97f)
+            val bounds = node.fetchSemanticsNode().boundsInRoot
+            assertThat(bounds.width / bounds.height).isWithin(.025f).of(width.toFloat() / height)
             node.performTouchInput { click() }
             runOnIdle { assertThat(clicked).isEqualTo(index) }
         }

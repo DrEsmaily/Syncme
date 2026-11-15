@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -49,16 +50,44 @@ import io.element.android.libraries.matrix.ui.media.contentvalidation.ContentVal
 import io.element.android.libraries.matrix.ui.media.contentvalidation.collectMediaState
 import io.element.android.libraries.matrix.ui.media.contentvalidation.rememberEventContentValidationState
 import io.element.android.libraries.ui.utils.time.formatShort
-import kotlinx.collections.immutable.ImmutableList
 
 private const val MAX_TILES = 5
-private val GALLERY_WIDTH = 264.dp
-private val GRID_SPACING = 4.dp
+internal const val GALLERY_WIDTH_DP = 264f
+internal const val GALLERY_GAP_DP = 2f
 private val GROUP_CORNER_RADIUS = 6.dp
 
-private val SINGLE_IMAGE_HEIGHT = 130.dp
-private val TWO_IMAGE_ROW_HEIGHT = 130.dp
-private val THREE_IMAGE_ROW_HEIGHT = 85.dp
+internal data class GalleryRow(val indices: List<Int>, val ratios: List<Float>, val heightDp: Float)
+
+/** Justified rows preserve complete images instead of fitting portraits into fixed landscape slots. */
+internal fun galleryRows(items: List<GalleryItem>): List<GalleryRow> {
+    val ratios = items.take(MAX_TILES).map { item ->
+        item.aspectRatio?.takeIf { it.isFinite() && it > 0f }?.coerceIn(0.1f, 10f) ?: 1f
+    }
+    if (ratios.isEmpty()) return emptyList()
+    fun row(start: Int, count: Int): GalleryRow {
+        val rowRatios = ratios.subList(start, start + count)
+        val width = GALLERY_WIDTH_DP - GALLERY_GAP_DP * (count - 1)
+        return GalleryRow((start until start + count).toList(), rowRatios, width / rowRatios.sum())
+    }
+    var bestRows = emptyList<GalleryRow>()
+    var bestScore = Double.POSITIVE_INFINITY
+    // At most 13 partitions for the five visible tiles. No image decoding or pixel work is involved.
+    fun choose(start: Int, rows: List<GalleryRow>, score: Double) {
+        if (start == ratios.size) {
+            if (score < bestScore) { bestScore = score; bestRows = rows }
+            return
+        }
+        for (count in 1..minOf(3, ratios.size - start)) {
+            val candidate = row(start, count)
+            val distance = (candidate.heightDp - 160.0) / 160.0
+            val tooShort = ((72.0 - candidate.heightDp) / 72.0).coerceAtLeast(0.0)
+            choose(start + count, rows + candidate, score + distance * distance + 8 * tooShort * tooShort + 0.12)
+        }
+    }
+    choose(0, emptyList(), 0.0)
+    // Bound malformed/extreme media dimensions; ContentScale.Fit still keeps every pixel visible.
+    return bestRows.map { it.copy(heightDp = it.heightDp.coerceIn(32f, 600f)) }
+}
 
 @Composable
 fun TimelineItemGalleryView(
@@ -68,190 +97,31 @@ fun TimelineItemGalleryView(
     onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    val totalItems = content.items.size
-    val showOverflow = totalItems > MAX_TILES
-    val overflowCount = totalItems - MAX_TILES
-    Column(modifier = modifier) {
-        val containerModifier = Modifier.clip(RoundedCornerShape(GROUP_CORNER_RADIUS))
+    val rows = remember(content.items) { galleryRows(content.items) }
+    val remainingCount = (content.items.size - MAX_TILES).coerceAtLeast(0)
+    Column(
+        modifier = modifier,
+    ) {
         Column(
-            modifier = containerModifier.width(GALLERY_WIDTH),
-            verticalArrangement = Arrangement.spacedBy(GRID_SPACING),
+            modifier = Modifier.width(GALLERY_WIDTH_DP.dp).clip(RoundedCornerShape(GROUP_CORNER_RADIUS)),
+            verticalArrangement = Arrangement.spacedBy(GALLERY_GAP_DP.dp),
         ) {
-            when (totalItems) {
-                0 -> Unit
-                1 -> SingleItemLayout(
-                    eventId = eventId,
-                    item = content.items[0],
-                    onClick = { onGalleryItemClick(0) },
-                    onLongClick = onLongClick,
-                )
-                2 -> TwoItemLayout(
-                    eventId = eventId,
-                    items = content.items,
-                    onItemClick = onGalleryItemClick,
-                    onLongClick = onLongClick,
-                )
-                3 -> ThreeItemLayout(
-                    eventId = eventId,
-                    items = content.items,
-                    onItemClick = onGalleryItemClick,
-                    onLongClick = onLongClick,
-                )
-                else -> FourPlusItemLayout(
-                    eventId = eventId,
-                    items = content.items,
-                    showOverflow = showOverflow,
-                    overflowCount = overflowCount,
-                    onItemClick = onGalleryItemClick,
-                    onLongClick = onLongClick,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SingleItemLayout(
-    eventId: EventId?,
-    item: GalleryItem,
-    onClick: () -> Unit,
-    onLongClick: (() -> Unit)?,
-) {
-    GalleryItemCell(
-        eventId = eventId,
-        item = item,
-        isLast = false,
-        remainingCount = 0,
-        onClick = onClick,
-        onLongClick = onLongClick,
-        modifier = Modifier
-            .width(GALLERY_WIDTH)
-            .height(SINGLE_IMAGE_HEIGHT),
-    )
-}
-
-@Composable
-private fun TwoItemLayout(
-    eventId: EventId?,
-    items: ImmutableList<GalleryItem>,
-    onItemClick: (Int) -> Unit,
-    onLongClick: (() -> Unit)?,
-) {
-    Column(
-        modifier = Modifier.width(GALLERY_WIDTH),
-        verticalArrangement = Arrangement.spacedBy(GRID_SPACING),
-    ) {
-        items.forEachIndexed { index, item ->
-            GalleryItemCell(
-                eventId = eventId,
-                item = item,
-                isLast = false,
-                remainingCount = 0,
-                onClick = { onItemClick(index) },
-                onLongClick = onLongClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(TWO_IMAGE_ROW_HEIGHT),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ThreeItemLayout(
-    eventId: EventId?,
-    items: ImmutableList<GalleryItem>,
-    onItemClick: (Int) -> Unit,
-    onLongClick: (() -> Unit)?,
-) {
-    Column(
-        modifier = Modifier.width(GALLERY_WIDTH),
-        verticalArrangement = Arrangement.spacedBy(GRID_SPACING),
-    ) {
-        GalleryItemCell(
-            eventId = eventId,
-            item = items[0],
-            isLast = false,
-            remainingCount = 0,
-            onClick = { onItemClick(0) },
-            onLongClick = onLongClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(SINGLE_IMAGE_HEIGHT),
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(GRID_SPACING),
-        ) {
-            for (it in 1..2) {
-                GalleryItemCell(
-                    eventId = eventId,
-                    item = items[it],
-                    isLast = false,
-                    remainingCount = 0,
-                    onClick = { onItemClick(it) },
-                    onLongClick = onLongClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(TWO_IMAGE_ROW_HEIGHT),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FourPlusItemLayout(
-    eventId: EventId?,
-    items: ImmutableList<GalleryItem>,
-    showOverflow: Boolean,
-    overflowCount: Int,
-    onItemClick: (Int) -> Unit,
-    onLongClick: (() -> Unit)?,
-) {
-    Column(
-        modifier = Modifier.width(GALLERY_WIDTH),
-        verticalArrangement = Arrangement.spacedBy(GRID_SPACING),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(GRID_SPACING),
-        ) {
-            for (it in 0..1) {
-                GalleryItemCell(
-                    eventId = eventId,
-                    item = items[it],
-                    isLast = false,
-                    remainingCount = 0,
-                    onClick = { onItemClick(it) },
-                    onLongClick = onLongClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(TWO_IMAGE_ROW_HEIGHT),
-                )
-            }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(GRID_SPACING),
-        ) {
-            val bottomRowItems = if (showOverflow) 3 else minOf(items.size - 2, 3)
-            val bottomRowHeight = if (bottomRowItems == 3) THREE_IMAGE_ROW_HEIGHT else TWO_IMAGE_ROW_HEIGHT
-            for (i in 0 until bottomRowItems) {
-                val itemIndex = 2 + i
-                if (itemIndex < items.size) {
-                    val isOverflowItem = showOverflow && i == bottomRowItems - 1
-                    GalleryItemCell(
-                        eventId = eventId,
-                        item = items[itemIndex],
-                        isLast = isOverflowItem,
-                        remainingCount = if (isOverflowItem) overflowCount else 0,
-                        onClick = { onItemClick(itemIndex) },
-                        onLongClick = onLongClick,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(bottomRowHeight),
-                    )
+            rows.forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(row.heightDp.dp),
+                    horizontalArrangement = Arrangement.spacedBy(GALLERY_GAP_DP.dp),
+                ) {
+                    row.indices.forEachIndexed { position, index ->
+                        GalleryItemCell(
+                            eventId = eventId,
+                            item = content.items[index],
+                            isLast = remainingCount > 0 && index == MAX_TILES - 1,
+                            remainingCount = remainingCount,
+                            onClick = { onGalleryItemClick(index) },
+                            onLongClick = onLongClick,
+                            modifier = Modifier.weight(row.ratios[position]).fillMaxHeight(),
+                        )
+                    }
                 }
             }
         }
