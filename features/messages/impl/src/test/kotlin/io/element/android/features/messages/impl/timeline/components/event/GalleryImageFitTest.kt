@@ -9,6 +9,10 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -58,6 +62,7 @@ class GalleryImageFitTest : RobolectricTest() {
                 ) {
                     TimelineItemGalleryView(
                         eventId = null,
+                        modifier = Modifier.verticalScroll(rememberScrollState()),
                         content = aTimelineItemGalleryContent(items = List(count) { index ->
                             aGalleryItem(filename = "photo-$index", width = width, height = height)
                         }),
@@ -68,6 +73,7 @@ class GalleryImageFitTest : RobolectricTest() {
         }
         for (index in 0 until count) {
             val node = onNodeWithContentDescription("photo-$index", useUnmergedTree = true)
+            node.performScrollTo()
             val pixels = node.captureToImage().toPixelMap()
             val counts = IntArray(4)
             var photoPixels = 0
