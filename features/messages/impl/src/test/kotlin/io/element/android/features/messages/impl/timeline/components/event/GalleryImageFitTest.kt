@@ -29,9 +29,11 @@ import io.element.android.compound.theme.Theme
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = "w480dp-h1000dp")
 class GalleryImageFitTest : RobolectricTest() {
     @Test fun `landscape photos retain every corner in light theme`() = checkFit(400, 100, Theme.Light)
     @Test fun `portrait photos retain every corner in light theme`() = checkFit(100, 400, Theme.Light)
