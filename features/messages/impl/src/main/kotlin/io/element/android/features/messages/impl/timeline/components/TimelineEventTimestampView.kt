@@ -55,7 +55,7 @@ fun TimelineEventTimestampView(
     val hasEncryptionCritical = event.messageShield?.isCritical.orFalse()
     val isMessageEdited = event.content.isEdited()
     val isMessageRedacted = event.content.isRedacted()
-    val tint = if (hasError || hasEncryptionCritical && !isMessageRedacted) ElementTheme.colors.textCriticalPrimary else ElementTheme.colors.textSecondary
+    val tint = if (hasError || hasEncryptionCritical && !isMessageRedacted) ElementTheme.colors.textCriticalPrimary else MessageEventBubbleDefaults.timestampColor()
 
     val shield = event.messageShield
     val isVerifiedUserSendFailure = event.localSendState is LocalEventSendState.Failed.VerifiedUser

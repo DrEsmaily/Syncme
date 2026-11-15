@@ -186,6 +186,9 @@ object MessageEventBubbleDefaults {
         }
     }
 
+    @Composable
+    fun timestampColor(): Color = if (ElementTheme.colors.isLight) Color(0xFF52525B) else Color(0xFFB4B4BD)
+
     // Design says: The maximum width of a bubble is still 3/4 of the screen width. But try with 78% now.
     const val BUBBLE_WIDTH_RATIO = 0.78f
 }
