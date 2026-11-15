@@ -1,0 +1,46 @@
+name: Publish approved SyncMe Build 285
+on:
+  push:
+    branches: [publish/syncme-285-approved]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  promote-approved-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Verify the approved APK and successful build
+        run: |
+          mkdir -p approved
+          gh api repos/DrEsmaily/SyncMe/actions/runs/43751178979 > approved/run.json
+          gh api repos/DrEsmaily/SyncMe/releases/tags/v1.5.3-build285 > approved/release.json
+          gh release download v1.5.3-build285 --pattern SyncMe-285-ARM64.apk --pattern latest.json --pattern SyncMe-285-Notes.md --dir approved
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('approved')
+          run=json.loads((p/'run.json').read_text())
+          assert run['conclusion']=='success' and run['head_sha']=='09cfdd3bdbbf8aaa91729984b973307087e77d9f'
+          release=json.loads((p/'release.json').read_text())
+          assert release['target_commitish']=='09cfdd3bdbbf8aaa91729984b973307087e77d9f' and release['draft'] is False
+          assert release['body']=='Minor bugs fixed\n'
+          apk=p/'SyncMe-285-ARM64.apk'
+          with apk.open('rb') as f: digest=hashlib.file_digest(f,'sha256').hexdigest()
+          assert digest=='f9119ba542f885a642d3fc7f735c639e2fcdc19e90b1872143ef9200f4863d47'
+          assert json.loads((p/'latest.json').read_text())=={'version':'1.5.3','versionCode':202611212,'build':285,'url':'https://updates.syncme.ir/android/SyncMe.apk','size':apk.stat().st_size,'sha256':digest}
+          assert (p/'SyncMe-285-Notes.md').read_text()=='Minor bugs fixed\n'
+          PY
+      - name: Promote the approved binary for automatic updates
+        run: |
+          gh release edit v1.5.3-build285 --prerelease=false --latest
+          gh api repos/DrEsmaily/SyncMe/releases/latest > approved/latest-release.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open('approved/latest-release.json'))
+          assert r['tag_name']=='v1.5.3-build285' and r['prerelease'] is False
+          print('Approved Build 285 is the latest stable release. The APK is unchanged.')
+          PY
