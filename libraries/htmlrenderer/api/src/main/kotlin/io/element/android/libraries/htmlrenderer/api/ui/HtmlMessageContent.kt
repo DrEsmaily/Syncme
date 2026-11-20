@@ -67,6 +67,7 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -267,7 +268,7 @@ private fun TextBlock(
     val codeBackgroundColor = ElementTheme.colors.bgSubtleSecondary
     val codeBorderColor = ElementTheme.colors.borderInteractiveSecondary
     val styledText = remember(text, linkColor) {
-        text.linkify(SpanStyle(color = linkColor))
+        text.linkify(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline))
             .applyLinkStyles(linkColor = linkColor)
     }
     val resolvedInlineContent = rememberMentionInlineContent(inlineContent, context)
@@ -480,11 +481,7 @@ private fun AnnotatedString.applyLinkStyles(linkColor: Color): AnnotatedString {
     return buildAnnotatedString {
         append(this@applyLinkStyles)
         linkRanges.forEach { linkRange ->
-            val containsColorSpan =
-                spanStyles.any { colorRange -> colorRange.start == linkRange.start && colorRange.end == linkRange.end && colorRange.item.color == linkColor }
-            if (!containsColorSpan) {
-                addStyle(SpanStyle(color = linkColor), linkRange.start, linkRange.end)
-            }
+            addStyle(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline), linkRange.start, linkRange.end)
         }
     }
 }
@@ -598,8 +595,17 @@ private fun Modifier.linkTapHandler(
 }
 
 private fun TextLayoutResult.urlAt(offset: Offset, text: AnnotatedString): Pair<String, String>? {
+    if (offset.y < 0 || offset.y >= size.height) return null
+    val line = getLineForVerticalPosition(offset.y)
+    if (offset.x < getLineLeft(line) || offset.x >= getLineRight(line)) return null
     val position = getOffsetForPosition(offset)
-    val urlAnnotation = text.getStringAnnotations(LINK_ANNOTATION_TAG, position, position).firstOrNull() ?: return null
+    val urlAnnotation = text.getStringAnnotations(LINK_ANNOTATION_TAG, (position - 1).coerceAtLeast(0), (position + 1).coerceAtMost(text.length))
+        .firstOrNull { range ->
+            (position - 1..position).any { index ->
+                index in range.start until range.end && getBoundingBox(index).contains(offset)
+            }
+        }
+        ?: return null
     return urlAnnotation.item to text.substring(urlAnnotation.start, urlAnnotation.end)
 }
 

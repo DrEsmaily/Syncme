@@ -58,11 +58,8 @@ import io.element.android.libraries.matrix.ui.media.contentvalidation.InvalidCon
 import io.element.android.libraries.matrix.ui.media.contentvalidation.NotFoundContentView
 import io.element.android.libraries.matrix.ui.media.contentvalidation.collectOverallState
 import io.element.android.libraries.matrix.ui.media.contentvalidation.rememberEventContentValidationState
-import io.element.android.libraries.textcomposer.ElementRichTextEditorStyle
-import io.element.android.libraries.ui.common.layout.ContentAvoidingLayout
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData
 import io.element.android.libraries.voiceplayer.api.VoiceMessageState
-import io.element.android.wysiwyg.compose.EditorStyledText
 import io.element.android.wysiwyg.link.Link
 
 @Composable
@@ -280,14 +277,12 @@ private fun CaptionView(
         LocalContentColor provides ElementTheme.colors.textPrimary,
         LocalTextStyle provides ElementTheme.typography.fontBodyLgRegular
     ) {
-        EditorStyledText(
+        InteractiveBubbleText(
             modifier = modifier,
             text = caption,
-            style = ElementRichTextEditorStyle.textStyle(),
-            onLinkClickedListener = onLinkClick,
-            onLinkLongClickedListener = onLinkLongClick,
-            releaseOnDetach = false,
-            onTextLayout = ContentAvoidingLayout.measureLegacyLastTextLine(onContentLayoutChange = onContentLayoutChange),
+            onLinkClick = onLinkClick,
+            onLinkLongClick = onLinkLongClick,
+            onContentLayoutChange = onContentLayoutChange,
         )
     }
 }

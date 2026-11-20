@@ -8,6 +8,8 @@
 
 package io.element.android.features.messages.impl.timeline.factories.event
 
+import android.text.SpannableStringBuilder
+import android.text.Spanned
 import android.text.style.URLSpan
 import androidx.core.text.getSpans
 import androidx.core.text.toSpannable
@@ -57,6 +59,7 @@ import io.element.android.libraries.matrix.api.timeline.item.event.VoiceMessageT
 import io.element.android.libraries.matrix.api.timeline.item.event.getDisambiguatedDisplayName
 import io.element.android.libraries.matrix.ui.messages.toHtmlDocument
 import io.element.android.libraries.mediaviewer.api.util.FileExtensionExtractor
+import io.element.android.wysiwyg.view.spans.InlineCodeSpan
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import org.jsoup.nodes.Document
@@ -462,6 +465,24 @@ class TimelineItemContentMessageFactory(
 @Suppress("USELESS_ELVIS")
 private fun String.withLinks(): CharSequence? {
     // Note: toSpannable() can return null when running unit tests
-    val spannable = safeLinkify().toSpannable() ?: return null
-    return spannable.takeIf { spannable.getSpans<URLSpan>(0, length).isNotEmpty() }
+    val spannable = formatBubbleCaption().toSpannable() ?: return null
+    return spannable.takeIf { it.getSpans<URLSpan>().isNotEmpty() || it.getSpans<InlineCodeSpan>().isNotEmpty() }
+}
+
+// Media captions can arrive as plain text even when typed with Markdown.
+private val inlineCaptionCode = Regex("""(?<![`\\])`([^`\r\n]+)`(?!`)""")
+
+internal fun String.formatBubbleCaption(): CharSequence {
+    if ('`' !in this || contains("```")) return safeLinkify()
+    val output = SpannableStringBuilder()
+    var cursor = 0
+    for (match in inlineCaptionCode.findAll(this)) {
+        output.append(substring(cursor, match.range.first))
+        val start = output.length
+        output.append(match.groupValues[1])
+        output.setSpan(InlineCodeSpan(), start, output.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        cursor = match.range.last + 1
+    }
+    output.append(substring(cursor))
+    return output.safeLinkify()
 }

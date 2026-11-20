@@ -1,0 +1,50 @@
+name: Verify SyncMe message links and inline copy
+
+on:
+  push:
+    branches: [fix/syncme-links-inline-copy]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: syncme-links-inline-copy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI_GRADLE_ARGS: --no-configuration-cache --stacktrace --max-workers=2 --no-parallel
+
+jobs:
+  message-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+        with:
+          cache-read-only: false
+      - name: Test link and inline copy behavior
+        run: >-
+          ./gradlew :features:messages:impl:testDebugUnitTest
+          --tests '*InteractiveBubbleTextTest' --tests '*TimelineItemContentMessageFactoryTest'
+          --tests '*TimelineMediaTapTest' --tests '*MessageTimestampFooterTest'
+          '-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8'
+          -Pkotlin.daemon.jvmargs=-Xmx2g $CI_GRADLE_ARGS

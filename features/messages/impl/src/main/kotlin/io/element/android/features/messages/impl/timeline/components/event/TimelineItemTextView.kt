@@ -34,11 +34,8 @@ import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.utils.LocalUiTestMode
 import io.element.android.libraries.htmlrenderer.api.ui.HtmlMessageContent
-import io.element.android.libraries.textcomposer.ElementRichTextEditorStyle
 import io.element.android.libraries.textcomposer.mentions.LocalMentionSpanUpdater
-import io.element.android.libraries.ui.common.layout.ContentAvoidingLayout
 import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData
-import io.element.android.wysiwyg.compose.EditorStyledText
 import io.element.android.wysiwyg.link.Link
 
 @Composable
@@ -55,7 +52,7 @@ fun TimelineItemTextView(
     // When the new timeline event renderer is enabled and the message has a parsed tree, render it
     // natively with Compose. Otherwise fall back to the legacy rich text editor view below.
     val messageTree = content.messageTree
-    if (LocalTimelineEventRendererConfig.current.isComposeRendererEnabled && messageTree != null) {
+    if (LocalTimelineEventRendererConfig.current.isComposeRendererEnabled && messageTree != null && !content.formattedBody.hasCopyableInlineCode()) {
         Box(modifier.semantics { contentDescription = content.plainText }) {
             HtmlMessageContent(
                 node = messageTree,
@@ -94,13 +91,11 @@ fun TimelineItemTextView(
     ) {
         val text = getTextWithResolvedMentions(content)
         Box(modifier.semantics { contentDescription = content.plainText }) {
-            EditorStyledText(
+            InteractiveBubbleText(
                 text = text,
-                onLinkClickedListener = onLinkClick,
-                onLinkLongClickedListener = onLinkLongClick,
-                style = ElementRichTextEditorStyle.textStyle(),
-                onTextLayout = ContentAvoidingLayout.measureLegacyLastTextLine(onContentLayoutChange = onContentLayoutChange),
-                releaseOnDetach = false,
+                onLinkClick = onLinkClick,
+                onLinkLongClick = onLinkLongClick,
+                onContentLayoutChange = onContentLayoutChange,
             )
         }
     }
