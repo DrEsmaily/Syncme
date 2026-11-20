@@ -24,13 +24,15 @@ class InteractiveBubbleTextTest : RobolectricTest() {
     @Test
     fun `links respond in left and right aligned lines`() {
         val url = "https://example.org"
-        for ((prefix, alignment) in listOf("See " to Layout.Alignment.ALIGN_NORMAL, "ببین " to Layout.Alignment.ALIGN_NORMAL)) {
-            val text = SpannableString(prefix + url).apply {
+        for ((prefix, label) in listOf("See " to "this link", "ببین " to "این لینک", "URL: " to url)) {
+            val text = SpannableString(prefix + label).apply {
                 setSpan(URLSpan(url), prefix.length, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
-            val layout = makeLayout(text, alignment)
+            val layout = makeLayout(text)
             val target = layout.bubbleTextActionAt(layout.pointInside(prefix.length + 2))
-            assertThat((target as? BubbleTextAction.Open)?.link?.url).isEqualTo(url)
+            val link = (target as? BubbleTextAction.Open)?.link
+            assertThat(link?.url).isEqualTo(url)
+            assertThat(link?.text).isEqualTo(label)
             assertThat(layout.bubbleTextActionAt(layout.pointInside(1))).isNull()
         }
     }
@@ -38,7 +40,7 @@ class InteractiveBubbleTextTest : RobolectricTest() {
     @Test
     fun `a tagged URL copies only the tagged range while a regular URL opens`() {
         val caption = "Copy `https://example.org/a` or open https://example.net"
-        val text = format(caption)
+        val text = caption.formatBubbleCaption()
         val layout = makeLayout(text)
         val copy = layout.bubbleTextActionAt(layout.pointInside("Copy ".length + 3))
         assertThat((copy as? BubbleTextAction.Copy)?.value).isEqualTo("https://example.org/a")
@@ -59,11 +61,8 @@ class InteractiveBubbleTextTest : RobolectricTest() {
             .isEqualTo(BubbleTextAction.Copy(snippet, start))
     }
 
-    private fun format(caption: String) = caption.formatBubbleCaption()
-
-    private fun makeLayout(text: CharSequence, alignment: Layout.Alignment = Layout.Alignment.ALIGN_NORMAL): StaticLayout =
+    private fun makeLayout(text: CharSequence): StaticLayout =
         StaticLayout.Builder.obtain(text, 0, text.length, TextPaint().apply { textSize = 24f }, 900)
-            .setAlignment(alignment)
             .build()
 
     private fun Layout.pointInside(index: Int): Offset {
