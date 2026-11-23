@@ -1,4 +1,10 @@
-# Contributing to Element X Android
+# Contributing to SyncMe for Android
+
+Start a branch from `main` and open a pull request against `main` in this repository. For a bug fix, include the steps that reproduce the issue and how you verified the fix. For a visible change, include a screenshot or recording so reviewers can compare the behavior. [Branch guide](docs/syncme/branches.md)
+
+To reproduce a published APK, check out its release tag. The README lists the Android toolchain and a focused test you can run locally. [Build and release](README.md#build-and-release)
+
+The sections below preserve the Element X Android contributor guide. Its Element support rooms, issue tracker and feature proposal process apply to work submitted upstream.
 
 <!--- TOC -->
 
