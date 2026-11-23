@@ -4,10 +4,14 @@
 
 SyncMe is an open-source Android messenger for private, decentralized communication. Based on [Element X Android](https://github.com/element-hq/element-x-android), it uses [Matrix](https://matrix.org/), an open protocol that lets people choose a messaging server they trust or run their own. Independently operated servers can exchange messages, so friends and communities can stay connected without relying on any single company or government to operate the network.
 
-The goal is to make secure messaging easy for anyone, with the responsiveness, simplicity and visual appeal people expect from a modern chat app. Maintained by [DrEsmaily](https://github.com/DrEsmaily), SyncMe builds on the upstream client’s account management, synchronization and end-to-end encryption in encrypted rooms. Its Android work includes conversation filters, media albums, upload progress, read receipts and signed app updates.
+The goal is to make secure messaging easy for anyone, with the responsiveness, simplicity and visual appeal people expect from a modern chat app. [DrEsmaily](https://github.com/DrEsmaily) maintains the Android fork. The upstream client provides accounts, sync and end-to-end encryption in encrypted rooms. SyncMe’s work ranges from the layout of a photo album to how the app recovers when an update download loses its connection.
 
 **[Download the ARM64 APK](https://github.com/DrEsmaily/Syncme/releases/download/v1.5.3-build285/SyncMe-285-ARM64.apk)** · [Browse the released source](https://github.com/DrEsmaily/Syncme/tree/v1.5.3-build285) · [Build and test run](https://github.com/DrEsmaily/Syncme/actions/runs/43751178979)
 Version 1.5.3 · Build 285 · Android 7.0 or later
+
+**Explore the project** · [Screenshots](#screenshots) · [Engineering decisions and tests](#engineering-decisions-in-the-released-code) · [Build from source](#build-and-release)
+
+Two investigations illustrate the work behind the interface. A successful identity reset could leave the user waiting indefinitely because the screen was watching the state of key backup, a separate operation. In the chat timeline, a read receipt could advance beyond the last message the user had actually seen. The write-ups trace each symptom to its cause and link to the changes that followed. [Identity recovery](#encryption-recovery-and-diagnostics) · [Read receipts](#presence-unread-state-and-read-receipts)
 
 ## Why this project matters
 
