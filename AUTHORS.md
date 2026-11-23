@@ -1,17 +1,7 @@
-A full developer contributors list can be found [here](https://github.com/element-hq/element-x-android/graphs/contributors).
+# Authors
 
-# Core team:
+DrEsmaily develops and maintains SyncMe for Android. The commit history records the work on the fork, including changes to presence, media uploads and update delivery. [DrEsmaily’s commits](https://github.com/DrEsmaily/Syncme/commits/main/?author=DrEsmaily) · [All contributors](https://github.com/DrEsmaily/Syncme/graphs/contributors)
 
-The element.io Android developer team.
+## Upstream credits
 
-# Other contributors
-
-First of all, we thank all contributors who use Element and report problems on this GitHub project or via the integrated rageshake function.
-
-We do not forget all translators, for their work of translating Element into many languages. They are also the authors of Element.
-
-Feel free to add your name below, when you contribute to the project!
-
-Name      | Matrix ID                   | GitHub
-----------|-----------------------------|--------------------------------------
-name      | @name:matrix.org            | [githubID](https://github.com/githubID)
+SyncMe builds on Element X Android, developed by the Element Android team and its contributors. We thank the developers, translators and people who tested the client and reported problems. [Element X Android contributors](https://github.com/element-hq/element-x-android/graphs/contributors)

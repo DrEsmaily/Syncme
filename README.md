@@ -109,13 +109,15 @@ One early workflow labelled its run Build 244 while the APK and manifest identif
 
 ## Build and release
 
-The project uses Kotlin, Jetpack Compose, Appyx and the Matrix Rust SDK. To inspect or build the version distributed above, start from the release tag. Set up JDK 21 and the Android SDK using the [developer guide](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/_developer_onboarding.md).
+The project uses Kotlin, Jetpack Compose, Appyx and the Matrix Rust SDK. To inspect or build the version distributed above, start from the release tag. Use JDK 21 and install Android SDK Platform 37 and Build Tools 37.0.0 with Android Studio’s SDK Manager. See the [developer guide](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/_developer_onboarding.md).
 
 ```sh
 git clone --branch v1.5.3-build285 --depth 1 https://github.com/DrEsmaily/Syncme.git
 cd Syncme
 ./gradlew :features:messages:impl:testDebugUnitTest --tests '*GalleryRowsTest'
 ```
+
+To build a local debug APK, run `./gradlew :app:assembleGplayDebug`. Gradle writes the APKs to `app/build/outputs/apk/gplay/debug/`.
 
 For changes to SyncMe itself, the [contribution guide](CONTRIBUTING.md) explains where to open a pull request and what to include for review.
 
