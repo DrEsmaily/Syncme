@@ -3,9 +3,15 @@ name: APK Build
 on:
   workflow_dispatch:
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/syncme/images/**'
   merge_group:
   push:
     branches: [ develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/syncme/images/**'
 
 permissions: {}
 

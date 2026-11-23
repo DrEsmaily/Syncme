@@ -1,0 +1,36 @@
+name: Documentation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**.md'
+      - 'docs/syncme/images/**'
+      - 'tools/docs/**'
+      - '.github/workflows/docs.yml'
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**.md'
+      - 'docs/syncme/images/**'
+      - 'tools/docs/**'
+      - '.github/workflows/docs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    name: Check documentation and README images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify documentation tables of contents
+        shell: bash
+        run: |
+          shopt -s globstar nullglob
+          python3 tools/docs/generate_toc.py --verify ./*.md docs/**/*.md
+      - name: Verify README gallery
+        run: python3 tools/docs/check_readme_images.py
