@@ -4,6 +4,10 @@ Start a branch from `main` and open a pull request against `main` in this reposi
 
 To reproduce a published APK, check out its release tag. The README lists the Android toolchain and a focused test you can run locally. [Build and release](README.md#build-and-release)
 
+Root Markdown files, Markdown under `docs/`, and gallery images have a documentation check on `main`. It verifies tables of contents and the local images referenced by the README gallery. When updating a screenshot, run `python3 tools/docs/check_readme_images.py` from the repository root. [Documentation checks](https://github.com/DrEsmaily/Syncme/actions/workflows/docs.yml)
+
+Android changes run the unit and quality suites on the public source. Each job has its own log and result. For example, the build 285 release run records the gallery and message tests used for that APK. The broader suite also checks repository-wide style and architecture, including conventions inherited from Element X. [Unit test results](https://github.com/DrEsmaily/Syncme/actions/workflows/tests.yml) · [Quality results](https://github.com/DrEsmaily/Syncme/actions/workflows/quality.yml) · [Build 285 verification](https://github.com/DrEsmaily/Syncme/actions/runs/43751178979)
+
 The sections below preserve the Element X Android contributor guide. Its Element support rooms, issue tracker and feature proposal process apply to work submitted upstream.
 
 <!--- TOC -->
