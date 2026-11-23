@@ -2,18 +2,16 @@
 
 # SyncMe for Android
 
-SyncMe is an open-source Android messenger built to make secure communication easy for anyone. The goal is to make it an app people choose for everyday conversations: as intuitive, responsive and enjoyable to use as the messaging apps they already love. Finding a chat, sharing a photo album or picking up a conversation after a connection drops should feel natural, whether or not someone knows how Matrix works.
+SyncMe is an open-source Android messenger for private, decentralized communication. Based on [Element X Android](https://github.com/element-hq/element-x-android), it uses [Matrix](https://matrix.org/), an open protocol that lets people choose a messaging server they trust or run their own. Independently operated servers can exchange messages, so friends and communities can stay connected without relying on any single company or government to operate the network.
 
-Maintained by [DrEsmaily](https://github.com/DrEsmaily), SyncMe builds on [Element X Android](https://github.com/element-hq/element-x-android) and the Matrix Rust SDK for accounts, synchronization, end-to-end encryption in encrypted rooms, and media transport. SyncMe’s own engineering spans the Android interface, media uploads and download recovery, presence and read receipts, and the release pipeline that delivers signed updates from a community’s own server.
+The goal is to make secure messaging easy for anyone, with the responsiveness, simplicity and visual appeal people expect from a modern chat app. Maintained by [DrEsmaily](https://github.com/DrEsmaily), SyncMe builds on the upstream client’s account management, synchronization and end-to-end encryption in encrypted rooms. Its Android work includes conversation filters, media albums, upload progress, read receipts and signed app updates.
 
 **[Download the ARM64 APK](https://github.com/DrEsmaily/Syncme/releases/download/v1.5.3-build285/SyncMe-285-ARM64.apk)** · [Browse the released source](https://github.com/DrEsmaily/Syncme/tree/v1.5.3-build285) · [Build and test run](https://github.com/DrEsmaily/Syncme/actions/runs/43751178979)
 Version 1.5.3 · Build 285 · Android 7.0 or later
 
 ## Why this project matters
 
-Freedom of expression depends in part on who controls the places where people talk. SyncMe builds on [Matrix](https://matrix.org/), an open protocol that lets independently operated servers exchange messages. A community can choose who hosts its conversations, set moderation rules for the spaces it runs, and stay in touch with people on other participating servers. End-to-end encryption in encrypted rooms also helps people hold private conversations.
-
-Open source gives that choice a practical foundation. Developers can inspect how the Android client handles messages and updates, adapt it for their community, and distribute their changes under the project’s [AGPL license](LICENSE). SyncMe exercises those freedoms by publishing its Android changes and giving communities the option to host their own updates.
+Freedom of expression has a practical dimension for a community: its members can help decide who moderates their conversations and which rules apply. Access to the client’s source code gives them another way to participate. They can inspect how messages and updates are handled, adapt the app to local needs and share their changes under the [AGPL license](LICENSE).
 
 ## Engineering history: from the first Android builds to independent releases
 
