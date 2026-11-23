@@ -67,7 +67,7 @@ One early workflow labelled its run Build 244 while the APK and manifest identif
 <tr>
     <td align="center" width="33%"><img src="docs/syncme/images/upload-progress.jpg" alt="File upload showing percentage, transferred bytes and a progress bar in a direct conversation" width="180" height="400" /><br /><sub>Upload percentage and size</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/group-chat.jpg" alt="Public group conversation with an online member count and reader avatars below an outgoing message" width="180" height="400" /><br /><sub>Group presence and reader avatars</sub></td>
-    <td align="center" width="33%"><img src="docs/syncme/images/group-unread.jpg" alt="Public group conversation showing the online count and NEW unread divider" width="180" height="400" /><br /><sub>Unread message marker</sub></td>
+    <td align="center" width="33%"><img src="docs/syncme/images/Screenshot_2026-11-23-22-24-51-867_ir.syncme.app.syncmerelease.jpg" alt="Direct conversation with an Away presence indicator and a mixed-media album containing image previews and video attachments" width="180" /><br /><sub>Away presence and media album</sub></td>
   </tr>
 <tr>
     <td align="center" width="33%"><img src="docs/syncme/images/manage-tags.jpg" alt="Manage tags screen with Favorite, Close Friends and a Create new tag button" width="180" height="400" /><br /><sub>Manage personal tags</sub></td>
