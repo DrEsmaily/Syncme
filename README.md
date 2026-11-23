@@ -15,7 +15,21 @@ Two investigations illustrate the work behind the interface. A successful identi
 
 ## Why this project matters
 
-Freedom of expression has a practical dimension for a community: its members can help decide who moderates their conversations and which rules apply. Access to the client’s source code gives them another way to participate. They can inspect how messages and updates are handled, adapt the app to local needs and share their changes under the [AGPL license](LICENSE).
+Why this project matters
+
+Matrix offers something that most mainstream messaging platforms do not: the freedom to choose where your conversations are hosted, who controls the infrastructure, and how your communication tools work.
+
+However, having a powerful open protocol is not enough to achieve widespread adoption. Many existing Matrix clients still feel complicated, less intuitive, or less polished compared to modern messengers such as WhatsApp and Telegram. For everyday users, these differences can be the deciding factor in whether they adopt decentralized messaging or return to centralized alternatives.
+
+I started SyncMe because I believe people should not have to choose between privacy, freedom of communication, and a good user experience. Private and decentralized messaging should be accessible to everyone, not just developers, privacy enthusiasts, or technically experienced users.
+
+SyncMe focuses on making everyday communication simpler, faster, more intuitive, and visually appealing, while preserving the foundations of the Matrix ecosystem. This includes familiar messaging features, thoughtful interface design, reliable media delivery, better support for right-to-left languages, and improved reliability in environments with restricted or unstable internet connectivity.
+
+Freedom of expression and communication also has a practical dimension. Communities should be able to operate their own infrastructure, decide how their conversations are governed, and remain connected without depending entirely on a single centralized provider.
+
+Beyond improving the user experience, SyncMe investigates underlying technical problems, documents engineering decisions, and develops regression tests to prevent previously identified issues from returning. These findings are made publicly available so that other developers and the wider Matrix community can benefit from them.
+
+The long-term goal is not simply to build another Matrix client. It is to help make decentralized, open-source communication a practical and attractive choice for ordinary people around the world.
 
 ## Engineering history: from the first Android builds to independent releases
 
