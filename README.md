@@ -15,8 +15,6 @@ Two investigations illustrate the work behind the interface. A successful identi
 
 ## Why this project matters
 
-Why this project matters
-
 Matrix offers something that most mainstream messaging platforms do not: the freedom to choose where your conversations are hosted, who controls the infrastructure, and how your communication tools work.
 
 However, having a powerful open protocol is not enough to achieve widespread adoption. Many existing Matrix clients still feel complicated, less intuitive, or less polished compared to modern messengers such as WhatsApp and Telegram. For everyday users, these differences can be the deciding factor in whether they adopt decentralized messaging or return to centralized alternatives.
