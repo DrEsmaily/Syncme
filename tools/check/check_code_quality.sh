@@ -6,51 +6,26 @@
 # SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial.
 # Please see LICENSE files in the repository root for full details.
 
-#######################################################################################################################
-# Search forbidden pattern
-#######################################################################################################################
+set -eu
 
-searchForbiddenStringsScript=./tmp/search_forbidden_strings.pl
+checker=$(mktemp)
+trap 'rm -f "$checker"' EXIT
+curl --fail --silent --show-error --location --retry 2 \
+    https://raw.githubusercontent.com/matrix-org/matrix-dev-tools/3a80c2057a5f2672cacc6545e6e26fe43366b20b/bin/search_forbidden_strings.pl \
+    --output "$checker"
 
-if [[ -f ${searchForbiddenStringsScript} ]]; then
-  echo "${searchForbiddenStringsScript} already there"
-else
-  mkdir tmp
-  echo "Get the script"
-  wget https://raw.githubusercontent.com/matrix-org/matrix-dev-tools/develop/bin/search_forbidden_strings.pl -O ${searchForbiddenStringsScript}
-fi
+check_directories() {
+    local name=$1 rules=$2
+    local -a dirs
+    mapfile -d '' -t dirs < <(find . -type d \( -name build -o -name .gradle -o -name .git \) -prune -o -type d -name "$name" -print0)
+    if (( ${#dirs[@]} == 0 )); then
+        echo "No $name directories found" >&2
+        return 1
+    fi
+    perl "$checker" "$rules" "${dirs[@]}"
+}
 
-if [[ -x ${searchForbiddenStringsScript} ]]; then
-  echo "${searchForbiddenStringsScript} is already executable"
-else
-  echo "Make the script executable"
-  chmod u+x ${searchForbiddenStringsScript}
-fi
-
-echo
-echo "Search for forbidden patterns in Kotlin source files..."
-
-# list all Kotlin folders of the project.
-allKotlinDirs=$(find . -type d |grep -v build |grep -v \.git |grep -v \.gradle |grep kotlin$)
-
-${searchForbiddenStringsScript} ./tools/check/forbidden_strings_in_code.txt "$allKotlinDirs"
-
-resultForbiddenStringInCode=$?
-
-echo
-echo "Search for forbidden patterns in XML resource files..."
-
-# list all res folders of the project.
-allResDirs=$(find . -type d |grep -v build |grep -v \.git |grep -v \.gradle |grep /res$)
-
-${searchForbiddenStringsScript} ./tools/check/forbidden_strings_in_xml.txt "$allResDirs"
-
-resultForbiddenStringInXml=$?
-
-if [[ ${resultForbiddenStringInCode} -eq 0 ]] \
-   && [[ ${resultForbiddenStringInXml} -eq 0 ]]; then
-   echo "OK"
-else
-   echo "❌ ERROR, please check the logs above."
-   exit 1
-fi
+status=0
+check_directories kotlin tools/check/forbidden_strings_in_code.txt || status=1
+check_directories res tools/check/forbidden_strings_in_xml.txt || status=1
+exit "$status"
