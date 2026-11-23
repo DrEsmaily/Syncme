@@ -2,9 +2,9 @@
 
 # SyncMe for Android
 
-SyncMe is an independent Android messenger maintained by [DrEsmaily](https://github.com/DrEsmaily). Its Android work spans the conversation list, message timeline, media uploads and delivery of signed app updates. A user can filter chats by a personal tag, send an album with a shared caption, follow its upload byte by byte, and see who read or reacted to the message.
+SyncMe is an open-source Android messenger built to make secure communication easy for anyone. The goal is to make it an app people choose for everyday conversations: as intuitive, responsive and enjoyable to use as the messaging apps they already love. Finding a chat, sharing a photo album or picking up a conversation after a connection drops should feel natural, whether or not someone knows how Matrix works.
 
-SyncMe builds on [Element X Android](https://github.com/element-hq/element-x-android). Element X and the Matrix Rust SDK provide accounts, synchronization, encrypted messaging and media transport. The examples below trace SyncMe’s changes from what users see on screen to the implementation and regression tests in the released source.
+Maintained by [DrEsmaily](https://github.com/DrEsmaily), SyncMe builds on [Element X Android](https://github.com/element-hq/element-x-android) and the Matrix Rust SDK for accounts, synchronization, end-to-end encryption in encrypted rooms, and media transport. SyncMe’s own engineering spans the Android interface, media uploads and download recovery, presence and read receipts, and the release pipeline that delivers signed updates from a community’s own server.
 
 **[Download the ARM64 APK](https://github.com/DrEsmaily/Syncme/releases/download/v1.5.3-build285/SyncMe-285-ARM64.apk)** · [Browse the released source](https://github.com/DrEsmaily/Syncme/tree/v1.5.3-build285) · [Build and test run](https://github.com/DrEsmaily/Syncme/actions/runs/43751178979)
 Version 1.5.3 · Build 285 · Android 7.0 or later
@@ -13,7 +13,7 @@ Version 1.5.3 · Build 285 · Android 7.0 or later
 
 Freedom of expression depends in part on who controls the places where people talk. SyncMe builds on [Matrix](https://matrix.org/), an open protocol that lets independently operated servers exchange messages. A community can choose who hosts its conversations, set moderation rules for the spaces it runs, and stay in touch with people on other participating servers. End-to-end encryption in encrypted rooms also helps people hold private conversations.
 
-Open source gives that choice a practical foundation. Developers can inspect how the Android client handles messages and updates, adapt it for their community, and distribute their changes under the project’s [AGPL license](LICENSE). SyncMe itself is one example: it builds on Element X, publishes the source behind its releases, and supports APK updates from a community’s own HTTPS server.
+Open source gives that choice a practical foundation. Developers can inspect how the Android client handles messages and updates, adapt it for their community, and distribute their changes under the project’s [AGPL license](LICENSE). SyncMe exercises those freedoms by publishing its Android changes and giving communities the option to host their own updates.
 
 ## Engineering history: from the first Android builds to independent releases
 
@@ -43,9 +43,9 @@ The pinned SDK did not expose incoming presence. An early implementation opened 
 
 The receipt work followed a message from its local echo through server event-ID resolution, viewport layout and acknowledgement. Automatic receipts now require a resumed conversation and target the event the user actually saw. A failed request stays eligible for retry, and a delayed acknowledgement cannot move the read position backwards. Incoming replies, deleted messages, pagination and thread boundaries are accounted for when placing reader avatars. The timeline also remembers whether the user was following new messages before a burst arrived, so someone reading history can stay in place. [Timeline and receipt investigations, builds 247–251][presence-review]
 
-### Reproducible releases and self-hosted distribution
+### Release verification and self-hosted distribution
 
-One early workflow labelled its run Build 244 while the APK and manifest identified Build 243. That discrepancy is preserved in the archive. The release process now verifies the packaged APK’s identity, version, ABI and native verifier class, and records its source commit, CI run and SHA-256 digest. The release includes a matching update manifest for self-hosting. This connects the binary installed on a phone to the source and checks a reviewer can inspect. [Original build record][root-cause] · [Build 285 workflow][build-workflow] · [Update hosting guide][hosting]
+One early workflow labelled its run Build 244 while the APK and manifest identified Build 243. That discrepancy is preserved in the archive. The release process now verifies the packaged APK’s identity, version, ABI and native verifier class, and records its source commit, CI run and SHA-256 digest. The release includes a matching update manifest for self-hosting. Each published APK can be traced to a source commit and a build run with its verification results. [Original build record][root-cause] · [Build 285 workflow][build-workflow] · [Update hosting guide][hosting]
 
 [early-notes]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/.github/SYNCME_CONTINUATION_MASTER.txt
 [lineage]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/history/current-lineage.md
@@ -173,7 +173,7 @@ This rolling list includes the current build and the nine preceding successful b
 
 [Version 1.1.2 · Build 258](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.2-build258) remains available as a public release with its APK and documentation.
 
-[Build 257](https://github.com/DrEsmaily/SyncMe/actions/runs/39171234618/artifacts/12153525423) remains preserved as an Actions artifact with its APK and provenance.
+[Build 257](https://github.com/DrEsmaily/SyncMe/actions/runs/39171234618/artifacts/12153525423) was distributed as a time-limited Actions artifact containing the APK and its build record.
 
 [Version 1.1.1 · Build 256](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256) remains available as a public release with its APK and documentation.
 
@@ -183,7 +183,7 @@ This rolling list includes the current build and the nine preceding successful b
 
 The original protected snapshot covers builds **244–253**. Builds [253](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967), [252](https://github.com/DrEsmaily/SyncMe/actions/runs/38633766604), [251](https://github.com/DrEsmaily/SyncMe/actions/runs/38586470729), [250](https://github.com/DrEsmaily/SyncMe/actions/runs/38547146922), [249](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735), [248](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130), [247](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920), [246](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737), [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes builds 276 through 285; the archive records the earlier preservation operation.
 
-[Historical cleanup report and preservation record](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cleanup-proposal.md)
+[Historical build inventory](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/history/runs.md)
 
 </details>
 
