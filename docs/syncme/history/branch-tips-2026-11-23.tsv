@@ -1,118 +1,118 @@
-branch	commit
-baseline-elementx-arm64-no-opt-20261010	36d63b9f9445b96f5e1b1c444def4602dd092861
-baseline-play-260904-arm64-no-opt-20261010	44223c9e7aa89d81672e105e1e23909720e61db3
-benchmark-elementx-v26-09-4	9c160cf1db049043c1748c82168426273c5d3421
-build/syncme-257-combined-fixes	178d12e5bdac4652aa6079ba4309aa54729ee41a
-build/syncme-258-presence-tags	a413ebe2f7f17758778555c0a9e475f7b4828141
-build/syncme-259-scroll	345864b15f2b8b6ca41728a50a280bd5efa81f39
-build/syncme-260-ui	5cfa879a9cec8c9be126a72da26fb7ccad1176ee
-build/syncme-261-preview	14b499265aa803c10684341335ad17a9df7a5836
-build/syncme-262-layout	dcd37af0252d20db00c5f98af86c04be2c0bfef5
-build/syncme-263-ui-fixes	e5f2aae6ea4a2378a5c48402aece67410fb6a969
-build/syncme-264-reply-direction	db559d66dd4e63e23c4a1612eebca74e16a3c545
-build/syncme-265-preview-prefix	8ed2a16560ec837aaf36a4c705433e0f3396c111
-build/syncme-266-timestamp	62348bbf43e48b53b9f5523890957e10c8f924f2
-build/syncme-267-floating-button	7d309ceb22659b264dc4fae8f302d83d4de1bf18
-build/syncme-268-updater	8f1b9d5d417bfb56c6c08ff5dcdad873709ad09f
-build/syncme-269-settings-updater	29c1e08dae6dcf2185ddaf125efe63b4cd2ee5e2
-build/syncme-270-settings-bounds	8bb7309db42199c2e2ec97a5f3a302c5891edb3b
-build/syncme-271-menu-height	8cf7a1a607a49bdc36e0d7cb90b2e114c411d740
-build/syncme-272-section-spacing	037d45e6c8f93fb41c944cc0f99ae6a4c09c4745
-build/syncme-273-install-prompt	4653c65349fb2cba972ee1ff0813bd530de24221
-build/syncme-274-header-fade	26508f9855cb05dc6ab4d96c95888f497e10822f
-build/syncme-275-message-details	2b6962ef8dbe7a53442e6161d1b072da2864f689
-build/syncme-276-receipt-details	3d23343943869e263d4afa3e17d44507be5debbb
-build/syncme-277-media-taps	cddf1f4b179e98beb9c74ec000945830def12465
-build/syncme-278-filter-styles	c7a5335f7302ceebcb6fbb776f14ebc581d9ee2d
-build/syncme-279-download-recovery	ef084c9f316230da36c3b4b9a3c97d0524c7c266
-build/syncme-280-persian-calendar	22c8ad51d4d8e4f07975b4c60e9ad2f85576d1b7
-build/syncme-281-calendar-label	1bd03b430038f41a1a1c6ce6f3d8aab723477618
-build/syncme-282-gallery	2eef3af9c93824a5d8009b8ab65f7b06a78371f9
-build/syncme-283-bubble-layout	5d9c7cdf8d156d4b2d4738beb5426ec85ae59d13
-build/syncme-284-adaptive-albums	0365327c95baafbbc4d605121a21e8f35bda916a
-build/syncme-285-bubble-colors	9e301bf63352d5fdd074edd9138ea3d9550be047
-develop	9d475868bfe1365f8d15185e786ccdbf69518b72
-fix/chat-scroll-account-avatar	ad9aee78dec1d7f31afddd69f63c642a7bd6231c
-fix/media-cache-5gib	33f0d7cb684075ee9591ba062decdc62f165d0f4
-fix/presence-publication-retry	2ec6e522478f1f36fd8901ca009ed9db1c684a0a
-fix/settings-display-cleanup	d101f1244a03c82f545dd9da0de1c477ae887ba7
-fix/syncme-links-inline-copy	2bb26f61f02221ae025454c8cafaf3bf7de27013
-fix/syncme-presence-scroll	576b72d5e5ba5377c374acbdbf38ffe30c34f819
-main	8a7cc3f983a4c77310a0d09f80f1d42679c7bfa8
-ops/syncme-update-pull	f4764193a0a6deb3fe4cb3c0f12f09365cd0bfe2
-publish/syncme-285-approved	8916746ad48cb7c8a64cb5487af53c878cb630b2
-syncme-160-option3	fa3e8bbe1e9b4b4fc8a1197ac27e8ee9a559646c
-syncme-163-clean-ui	54cf9c6464b9e940627dc0de45cd0eea7dcb2110
-syncme-164-tags-pages	aca329ba452b4637ed62b1d32d45c07f4d127877
-syncme-178-from-176	0fb41eb1b2bab88211f37cbe990cdcf660412b20
-syncme-180-clean-online-only	7e1e16147b4181e17de46008fd606d7da80e8050
-syncme-180-event-presence-20261010	affe3a7c6f1ab02a27b91f171ac430d670d6ccb4
-syncme-180-minimal-presence-only	aaff8ca513e21415445ea3392d870a5f3f254a9c
-syncme-181-presence-from-180	99a612f8a93e41608c691086a27c92deedf98c44
-syncme-187-presence-clean-from-180	015f01b19ac52bf638de640912c930883d8908dd
-syncme-197-presence-logic-fix	d47e953e5c419569b2a84249c904daeefbd312e7
-syncme-199-presence-clean-180	d8843b10658304fc1ceb0db3c519c4186ad81692
-syncme-204-presence-central	8fad71f1d284fea30338122f058db4ab63bdbba4
-syncme-204-presence-centralized	3583c1633ba50a767ff862cf452ed4dcb9ad8b6c
-syncme-208-presence-events-only-sync	69ec2f49601e5fd36b38ce7d317c23b10970e7f7
-syncme-210-event-presence-verified	6bc1f03e2500f700ab053bcd281b9f8589a5f7db
-syncme-210-presence-stability	4a53ec073ec2b141d021f5b7c11b371416f68c65
-syncme-217-startup-diagnostics-from-209	e4de437a151add6c05d211c00ff35c86ee3781b3
-syncme-220-diagnostics-export-fix	c883acb445e8a2714ffc7b78c49c769d794cc236
-syncme-221-diagnostics-text-view	6124e02f15fba17ed9d26dfacb10ffd45ec8335b
-syncme-222-deep-startup-diagnostics	019c0d5af0af30e65a9d1b8700560a3084584757
-syncme-222-deep-startup-network-trace	72b9732cd2ec7b42929697fb9e04ded3b115261c
-syncme-225-last-ten-startup-logs	6b03faf307befac9a13760faf5fc0a96142b1ca6
-syncme-226-presence-offline-fast	896375548f42b8f245e38da07ff24df07963741d
-syncme-227-background-away	2278d5996a171428736b4b1f1eaf50fb0ff25685
-syncme-228-mainthread-presence-429	9b079495e70e6c3631056b01c750db22ca5e5cb1
-syncme-229-capabilities-off-main	e119e89ed45fea57c2c0a08a47968ff324f04891
-syncme-229-clear-startup-logs	f258f0d432910d63119e113389f0a44356ad97b7
-syncme-229-startup-tls-off-main	f5d19950d108c5181ce717030b1431148d7fed2f
-syncme-232-presence-event-clearlogs	4950c00c3c1ff5766acc28021e225635364d25e2
-syncme-233-presence-lifecycle	e3651c78fa4186cf80950e2eb5f52a2aa21a8127
-syncme-234-arm64-pristine-parity-20261010	d7a176f2f662183b86f6504420bdd2c41cf20786
-syncme-234-diagnostics-complete-20261012	9d5d6ae9bbdde2eb80ff896bd1265e0f7daf8108
-syncme-234-keystore-startup-io	836883110d1dbeb1f4463004bcd825658c4f9f86
-syncme-234-local-tls-no-crl-experiment-20261010	940fd99d62026a60d44b4ff90dbd99eaf05aa77a
-syncme-234-no-ssl-verification-20261012	748ed07edc7e9abec1dd23282a272edd4f80d05d
-syncme-234-reference-away-orange-20261010	6e4576bee9b8d07d2e9f9bb7ed748f7a152d6c79
-syncme-234-threadlist-off-main	4978e4a6ad62babd2d8df86e3db98d6aa2bf475b
-syncme-234-tls-audit-20261012	e485653b6caa55a42e5ef9beefd5b5c71c278bfb
-syncme-235-diagnostics-refined-20261012	eccd0f3b53950180b29a30cabc243ac57e22078c
-syncme-235-threadlist-keystore-combined	d19f55f55790ee7e641e9f2510315e519cfdaacc
-syncme-236-tags-login-optional-diagnostics-20261012	bd1c0d92439bff08bca4f578c7d9d10a0790cee6
-syncme-237-blank-server-entry-20261012	f17bff028e65cf1ae6378896960b2d04e3ab0925
-syncme-238-reset-session-isolation-20261012	4b3934fd8d9c573081f5202fa3f79fc2cf6f04af
-syncme-239-reset-full-diagnostics-20261012	5f4f05e76324a42a6b54fae13cc02d6bb9488c21
-syncme-240-safe-reset-diagnostics-20261012	34ee2c04cbde9fb835e13697676c7853d14a1201
-syncme-241-reset-backup-recovery-20261012	10c45f99bd6dec004121bfabb77bd5cce00cfbda
-syncme-242-reset-rootcause-20261012	914b974c873d3e3d761cec3def3d5827fbb35823
-syncme-243-reset-rust-trace-20261012	eaa89a8893c46f1219f917155a712bc35afe5c76
-syncme-244-fcm-registration-race-20261012	eb8042a1e353fc88913108db0f902d4353ca9167
-syncme-255-last-seen	9e9c5582e3f1d324346d6d7816034eeb53e8a93e
-syncme-256-minor-fixes	3f1863512015fafead393f3f0c1546ac0061f2b2
-syncme-ab-smooth	afeccfe642ff981eb983a0ee70700b16a66f6374
-syncme-ab-standard	cead17a2bb5f52046b1ef8491c2ccdb9ae3909ed
-syncme-cumulative-build-20261015	d37c1f68c12ee4bfc7375c292d14885d27121fe4
-syncme-lagtest-a-original-row	27d56c458d8ef1c6a84cb7cdb15129a35dc680ed
-syncme-lagtest-b-no-reactions	cb88b7dfc451072229b63842952fd380279f2309
-syncme-lagtest-c-no-rtl	74e9e6bcccd9f41a8c52554618603309664526c9
-syncme-lagtest-d-no-jump	f0b9851633838f0027a261a1f16f7f471cd1ef07
-syncme-lagtest-e-no-search	9e3797ca2db218d0a4a5eede505d502de259aabe
-syncme-lagtest-f-no-multiaccount	5ee92684e6169b509d35aaf822ff3f34a29298c8
-syncme-lagtest-g-original-flags	e8e6519f197e8ac18aaba14a2cf4e2666ffece96
-syncme-main	62209c4d4bcc0bb32465036b6e99a312dd54d9b6
-syncme-presence-ffi-audit	73e5dcab9f8be3486f3723ddd2007b95c644dc84
-syncme-presence-sdk-ffi-audit	16b0d95d0dcd805e0c4a796149abc0b2a3cbad42
-syncme-presence-system	5a09db9dd6dced5fa6a02bf92023f44c1f65e666
-syncme-release-254-20261016	0276e2750707325ac4c89036e4e275b646871b60
-syncme-root-cause-fix	b0db4b16b5403a113035279b447cf4bdf921cf77
-syncme-sdk-260611-compat-test	f20a3fc75b4eb8ca3b101fc0a4468b62a5b45a9d
-syncme-sdk-260926-official-test	617509cbfacd20450fe4fa030b43bdb84c0e4ce7
-syncme-test-180-uncompressed-20261010	6d161448570148fa69d6c709d6bb1ac2eb89db8b
-syncme-test-224-uncompressed-20261010	78ea533e2f20360eb26a49d50e3717214cd431f8
-syncme-webpki	53e9c105a0e49c586993c3d160d757d283d4ec05
-upload-benchmark-nightly-sdk	c67f1043b468e06b9e9481c5f6d5dd29dff93672
-upload-benchmark-play-sdk	e5b46fb30d739747557d5f8bdae222c28d5add00
-upstream-baseline-build	f8b8fa8a82947fcb9822f175158487fd37ac42dc
+original_branch	original_commit	branch_after_reorganization
+baseline-elementx-arm64-no-opt-20261010	36d63b9f9445b96f5e1b1c444def4602dd092861	archive/performance/baseline-elementx-arm64-no-opt-20261010
+baseline-play-260904-arm64-no-opt-20261010	44223c9e7aa89d81672e105e1e23909720e61db3	archive/performance/baseline-play-260904-arm64-no-opt-20261010
+benchmark-elementx-v26-09-4	9c160cf1db049043c1748c82168426273c5d3421	archive/performance/benchmark-elementx-v26-09-4
+build/syncme-257-combined-fixes	178d12e5bdac4652aa6079ba4309aa54729ee41a	build/syncme-257-combined-fixes
+build/syncme-258-presence-tags	a413ebe2f7f17758778555c0a9e475f7b4828141	build/syncme-258-presence-tags
+build/syncme-259-scroll	345864b15f2b8b6ca41728a50a280bd5efa81f39	build/syncme-259-scroll
+build/syncme-260-ui	5cfa879a9cec8c9be126a72da26fb7ccad1176ee	build/syncme-260-ui
+build/syncme-261-preview	14b499265aa803c10684341335ad17a9df7a5836	build/syncme-261-preview
+build/syncme-262-layout	dcd37af0252d20db00c5f98af86c04be2c0bfef5	build/syncme-262-layout
+build/syncme-263-ui-fixes	e5f2aae6ea4a2378a5c48402aece67410fb6a969	build/syncme-263-ui-fixes
+build/syncme-264-reply-direction	db559d66dd4e63e23c4a1612eebca74e16a3c545	build/syncme-264-reply-direction
+build/syncme-265-preview-prefix	8ed2a16560ec837aaf36a4c705433e0f3396c111	build/syncme-265-preview-prefix
+build/syncme-266-timestamp	62348bbf43e48b53b9f5523890957e10c8f924f2	build/syncme-266-timestamp
+build/syncme-267-floating-button	7d309ceb22659b264dc4fae8f302d83d4de1bf18	build/syncme-267-floating-button
+build/syncme-268-updater	8f1b9d5d417bfb56c6c08ff5dcdad873709ad09f	build/syncme-268-updater
+build/syncme-269-settings-updater	29c1e08dae6dcf2185ddaf125efe63b4cd2ee5e2	build/syncme-269-settings-updater
+build/syncme-270-settings-bounds	8bb7309db42199c2e2ec97a5f3a302c5891edb3b	build/syncme-270-settings-bounds
+build/syncme-271-menu-height	8cf7a1a607a49bdc36e0d7cb90b2e114c411d740	build/syncme-271-menu-height
+build/syncme-272-section-spacing	037d45e6c8f93fb41c944cc0f99ae6a4c09c4745	build/syncme-272-section-spacing
+build/syncme-273-install-prompt	4653c65349fb2cba972ee1ff0813bd530de24221	build/syncme-273-install-prompt
+build/syncme-274-header-fade	26508f9855cb05dc6ab4d96c95888f497e10822f	build/syncme-274-header-fade
+build/syncme-275-message-details	2b6962ef8dbe7a53442e6161d1b072da2864f689	build/syncme-275-message-details
+build/syncme-276-receipt-details	3d23343943869e263d4afa3e17d44507be5debbb	build/syncme-276-receipt-details
+build/syncme-277-media-taps	cddf1f4b179e98beb9c74ec000945830def12465	build/syncme-277-media-taps
+build/syncme-278-filter-styles	c7a5335f7302ceebcb6fbb776f14ebc581d9ee2d	build/syncme-278-filter-styles
+build/syncme-279-download-recovery	ef084c9f316230da36c3b4b9a3c97d0524c7c266	build/syncme-279-download-recovery
+build/syncme-280-persian-calendar	22c8ad51d4d8e4f07975b4c60e9ad2f85576d1b7	build/syncme-280-persian-calendar
+build/syncme-281-calendar-label	1bd03b430038f41a1a1c6ce6f3d8aab723477618	build/syncme-281-calendar-label
+build/syncme-282-gallery	2eef3af9c93824a5d8009b8ab65f7b06a78371f9	build/syncme-282-gallery
+build/syncme-283-bubble-layout	5d9c7cdf8d156d4b2d4738beb5426ec85ae59d13	build/syncme-283-bubble-layout
+build/syncme-284-adaptive-albums	0365327c95baafbbc4d605121a21e8f35bda916a	build/syncme-284-adaptive-albums
+build/syncme-285-bubble-colors	9e301bf63352d5fdd074edd9138ea3d9550be047	build/syncme-285-bubble-colors
+develop	9d475868bfe1365f8d15185e786ccdbf69518b72	develop
+fix/chat-scroll-account-avatar	ad9aee78dec1d7f31afddd69f63c642a7bd6231c	fix/chat-scroll-account-avatar
+fix/media-cache-5gib	33f0d7cb684075ee9591ba062decdc62f165d0f4	fix/media-cache-5gib
+fix/presence-publication-retry	2ec6e522478f1f36fd8901ca009ed9db1c684a0a	fix/presence-publication-retry
+fix/settings-display-cleanup	d101f1244a03c82f545dd9da0de1c477ae887ba7	fix/settings-display-cleanup
+fix/syncme-links-inline-copy	2bb26f61f02221ae025454c8cafaf3bf7de27013	fix/syncme-links-inline-copy
+fix/syncme-presence-scroll	576b72d5e5ba5377c374acbdbf38ffe30c34f819	fix/syncme-presence-scroll
+main	8a7cc3f983a4c77310a0d09f80f1d42679c7bfa8	main
+ops/syncme-update-pull	f4764193a0a6deb3fe4cb3c0f12f09365cd0bfe2	ops/syncme-update-pull
+publish/syncme-285-approved	8916746ad48cb7c8a64cb5487af53c878cb630b2	publish/syncme-285-approved
+syncme-160-option3	fa3e8bbe1e9b4b4fc8a1197ac27e8ee9a559646c	archive/development/160-option3
+syncme-163-clean-ui	54cf9c6464b9e940627dc0de45cd0eea7dcb2110	archive/development/163-clean-ui
+syncme-164-tags-pages	aca329ba452b4637ed62b1d32d45c07f4d127877	syncme-164-tags-pages
+syncme-178-from-176	0fb41eb1b2bab88211f37cbe990cdcf660412b20	syncme-178-from-176
+syncme-180-clean-online-only	7e1e16147b4181e17de46008fd606d7da80e8050	archive/presence/180-clean-online-only
+syncme-180-event-presence-20261010	affe3a7c6f1ab02a27b91f171ac430d670d6ccb4	syncme-180-event-presence-20261010
+syncme-180-minimal-presence-only	aaff8ca513e21415445ea3392d870a5f3f254a9c	archive/presence/180-minimal-presence-only
+syncme-181-presence-from-180	99a612f8a93e41608c691086a27c92deedf98c44	archive/presence/181-presence-from-180
+syncme-187-presence-clean-from-180	015f01b19ac52bf638de640912c930883d8908dd	archive/presence/187-presence-clean-from-180
+syncme-197-presence-logic-fix	d47e953e5c419569b2a84249c904daeefbd312e7	archive/presence/197-presence-logic-fix
+syncme-199-presence-clean-180	d8843b10658304fc1ceb0db3c519c4186ad81692	archive/presence/199-presence-clean-180
+syncme-204-presence-central	8fad71f1d284fea30338122f058db4ab63bdbba4	archive/presence/204-presence-central
+syncme-204-presence-centralized	3583c1633ba50a767ff862cf452ed4dcb9ad8b6c	archive/presence/204-presence-centralized
+syncme-208-presence-events-only-sync	69ec2f49601e5fd36b38ce7d317c23b10970e7f7	archive/presence/208-presence-events-only-sync
+syncme-210-event-presence-verified	6bc1f03e2500f700ab053bcd281b9f8589a5f7db	archive/presence/210-event-presence-verified
+syncme-210-presence-stability	4a53ec073ec2b141d021f5b7c11b371416f68c65	archive/presence/210-presence-stability
+syncme-217-startup-diagnostics-from-209	e4de437a151add6c05d211c00ff35c86ee3781b3	syncme-217-startup-diagnostics-from-209
+syncme-220-diagnostics-export-fix	c883acb445e8a2714ffc7b78c49c769d794cc236	syncme-220-diagnostics-export-fix
+syncme-221-diagnostics-text-view	6124e02f15fba17ed9d26dfacb10ffd45ec8335b	syncme-221-diagnostics-text-view
+syncme-222-deep-startup-diagnostics	019c0d5af0af30e65a9d1b8700560a3084584757	archive/startup/222-deep-startup-diagnostics
+syncme-222-deep-startup-network-trace	72b9732cd2ec7b42929697fb9e04ded3b115261c	syncme-222-deep-startup-network-trace
+syncme-225-last-ten-startup-logs	6b03faf307befac9a13760faf5fc0a96142b1ca6	syncme-225-last-ten-startup-logs
+syncme-226-presence-offline-fast	896375548f42b8f245e38da07ff24df07963741d	syncme-226-presence-offline-fast
+syncme-227-background-away	2278d5996a171428736b4b1f1eaf50fb0ff25685	syncme-227-background-away
+syncme-228-mainthread-presence-429	9b079495e70e6c3631056b01c750db22ca5e5cb1	syncme-228-mainthread-presence-429
+syncme-229-capabilities-off-main	e119e89ed45fea57c2c0a08a47968ff324f04891	syncme-229-capabilities-off-main
+syncme-229-clear-startup-logs	f258f0d432910d63119e113389f0a44356ad97b7	archive/startup/229-clear-startup-logs
+syncme-229-startup-tls-off-main	f5d19950d108c5181ce717030b1431148d7fed2f	archive/transport/229-startup-tls-off-main
+syncme-232-presence-event-clearlogs	4950c00c3c1ff5766acc28021e225635364d25e2	syncme-232-presence-event-clearlogs
+syncme-233-presence-lifecycle	e3651c78fa4186cf80950e2eb5f52a2aa21a8127	syncme-233-presence-lifecycle
+syncme-234-arm64-pristine-parity-20261010	d7a176f2f662183b86f6504420bdd2c41cf20786	archive/performance/234-arm64-pristine-parity-20261010
+syncme-234-diagnostics-complete-20261012	9d5d6ae9bbdde2eb80ff896bd1265e0f7daf8108	syncme-234-diagnostics-complete-20261012
+syncme-234-keystore-startup-io	836883110d1dbeb1f4463004bcd825658c4f9f86	syncme-234-keystore-startup-io
+syncme-234-local-tls-no-crl-experiment-20261010	940fd99d62026a60d44b4ff90dbd99eaf05aa77a	archive/transport/234-local-tls-no-crl-experiment-20261010
+syncme-234-no-ssl-verification-20261012	748ed07edc7e9abec1dd23282a272edd4f80d05d	syncme-234-no-ssl-verification-20261012
+syncme-234-reference-away-orange-20261010	6e4576bee9b8d07d2e9f9bb7ed748f7a152d6c79	archive/presence/234-reference-away-orange-20261010
+syncme-234-threadlist-off-main	4978e4a6ad62babd2d8df86e3db98d6aa2bf475b	archive/startup/234-threadlist-off-main
+syncme-234-tls-audit-20261012	e485653b6caa55a42e5ef9beefd5b5c71c278bfb	syncme-234-tls-audit-20261012
+syncme-235-diagnostics-refined-20261012	eccd0f3b53950180b29a30cabc243ac57e22078c	syncme-235-diagnostics-refined-20261012
+syncme-235-threadlist-keystore-combined	d19f55f55790ee7e641e9f2510315e519cfdaacc	archive/transport/235-threadlist-keystore-combined
+syncme-236-tags-login-optional-diagnostics-20261012	bd1c0d92439bff08bca4f578c7d9d10a0790cee6	syncme-236-tags-login-optional-diagnostics-20261012
+syncme-237-blank-server-entry-20261012	f17bff028e65cf1ae6378896960b2d04e3ab0925	archive/development/237-blank-server-entry-20261012
+syncme-238-reset-session-isolation-20261012	4b3934fd8d9c573081f5202fa3f79fc2cf6f04af	archive/account-recovery/238-reset-session-isolation-20261012
+syncme-239-reset-full-diagnostics-20261012	5f4f05e76324a42a6b54fae13cc02d6bb9488c21	syncme-239-reset-full-diagnostics-20261012
+syncme-240-safe-reset-diagnostics-20261012	34ee2c04cbde9fb835e13697676c7853d14a1201	archive/account-recovery/240-safe-reset-diagnostics-20261012
+syncme-241-reset-backup-recovery-20261012	10c45f99bd6dec004121bfabb77bd5cce00cfbda	archive/account-recovery/241-reset-backup-recovery-20261012
+syncme-242-reset-rootcause-20261012	914b974c873d3e3d761cec3def3d5827fbb35823	archive/account-recovery/242-reset-rootcause-20261012
+syncme-243-reset-rust-trace-20261012	eaa89a8893c46f1219f917155a712bc35afe5c76	archive/account-recovery/243-reset-rust-trace-20261012
+syncme-244-fcm-registration-race-20261012	eb8042a1e353fc88913108db0f902d4353ca9167	syncme-244-fcm-registration-race-20261012
+syncme-255-last-seen	9e9c5582e3f1d324346d6d7816034eeb53e8a93e	syncme-255-last-seen
+syncme-256-minor-fixes	3f1863512015fafead393f3f0c1546ac0061f2b2	syncme-256-minor-fixes
+syncme-ab-smooth	afeccfe642ff981eb983a0ee70700b16a66f6374	archive/performance/ab-smooth
+syncme-ab-standard	cead17a2bb5f52046b1ef8491c2ccdb9ae3909ed	archive/performance/ab-standard
+syncme-cumulative-build-20261015	d37c1f68c12ee4bfc7375c292d14885d27121fe4	syncme-cumulative-build-20261015
+syncme-lagtest-a-original-row	27d56c458d8ef1c6a84cb7cdb15129a35dc680ed	archive/performance/lagtest-a-original-row
+syncme-lagtest-b-no-reactions	cb88b7dfc451072229b63842952fd380279f2309	archive/performance/lagtest-b-no-reactions
+syncme-lagtest-c-no-rtl	74e9e6bcccd9f41a8c52554618603309664526c9	archive/performance/lagtest-c-no-rtl
+syncme-lagtest-d-no-jump	f0b9851633838f0027a261a1f16f7f471cd1ef07	archive/performance/lagtest-d-no-jump
+syncme-lagtest-e-no-search	9e3797ca2db218d0a4a5eede505d502de259aabe	archive/performance/lagtest-e-no-search
+syncme-lagtest-f-no-multiaccount	5ee92684e6169b509d35aaf822ff3f34a29298c8	archive/performance/lagtest-f-no-multiaccount
+syncme-lagtest-g-original-flags	e8e6519f197e8ac18aaba14a2cf4e2666ffece96	archive/performance/lagtest-g-original-flags
+syncme-main	62209c4d4bcc0bb32465036b6e99a312dd54d9b6	syncme-main
+syncme-presence-ffi-audit	73e5dcab9f8be3486f3723ddd2007b95c644dc84	archive/presence/presence-ffi-audit
+syncme-presence-sdk-ffi-audit	16b0d95d0dcd805e0c4a796149abc0b2a3cbad42	archive/presence/presence-sdk-ffi-audit
+syncme-presence-system	5a09db9dd6dced5fa6a02bf92023f44c1f65e666	syncme-presence-system
+syncme-release-254-20261016	0276e2750707325ac4c89036e4e275b646871b60	archive/development/release-254-20261016
+syncme-root-cause-fix	b0db4b16b5403a113035279b447cf4bdf921cf77	syncme-root-cause-fix
+syncme-sdk-260611-compat-test	f20a3fc75b4eb8ca3b101fc0a4468b62a5b45a9d	archive/development/sdk-260611-compat-test
+syncme-sdk-260926-official-test	617509cbfacd20450fe4fa030b43bdb84c0e4ce7	archive/development/sdk-260926-official-test
+syncme-test-180-uncompressed-20261010	6d161448570148fa69d6c709d6bb1ac2eb89db8b	archive/performance/test-180-uncompressed-20261010
+syncme-test-224-uncompressed-20261010	78ea533e2f20360eb26a49d50e3717214cd431f8	archive/performance/test-224-uncompressed-20261010
+syncme-webpki	53e9c105a0e49c586993c3d160d757d283d4ec05	archive/transport/webpki
+upload-benchmark-nightly-sdk	c67f1043b468e06b9e9481c5f6d5dd29dff93672	archive/performance/upload-benchmark-nightly-sdk
+upload-benchmark-play-sdk	e5b46fb30d739747557d5f8bdae222c28d5add00	archive/performance/upload-benchmark-play-sdk
+upstream-baseline-build	f8b8fa8a82947fcb9822f175158487fd37ac42dc	archive/performance/upstream-baseline-build

@@ -1,21 +1,23 @@
 # Working on SyncMe
 
-Start from [main](https://github.com/DrEsmaily/Syncme/tree/main) for Android changes. To audit an APK, open its tag in [Releases](https://github.com/DrEsmaily/Syncme/releases). For example, [v1.5.3-build285](https://github.com/DrEsmaily/Syncme/tree/v1.5.3-build285) identifies the source used to build version 1.5.3. Documentation on main can advance between releases.
+[Main](https://github.com/DrEsmaily/Syncme/tree/main) is the starting point for Android development. To inspect the code that shipped in an APK, use its release tag. For example, the comparison from build 284 to 285 shows which changes reached version 1.5.3. [Compare the two releases](https://github.com/DrEsmaily/Syncme/compare/v1.5.2-build284...v1.5.3-build285)
 
-| Work | Where it belongs |
+## Where changes go
+
+| Work | Branch or tag |
 | --- | --- |
-| A feature, fix or documentation change | Branch from main with a short name describing the change, such as `feat/chat-search`, `fix/receipt-ordering` or `docs/update-hosting`. Open a pull request against main. |
-| Update server tooling | [ops/syncme-update-pull](https://github.com/DrEsmaily/Syncme/tree/ops/syncme-update-pull) contains the pull-based update mirror. Deployment instructions can pin a specific commit. |
-| A published version | Use the existing `v<version>-build<number>` tag. The associated release provides the APK, metadata and checksums. |
-| Previous Android work | Earlier build and integration branches, including `build/syncme-*` and `develop`, record the project's earlier workflow. Existing release tags, historical workflow inputs and source links retain their original meaning. |
+| Android features and fixes | Branch from `main`, use a short name such as `feat/chat-search` or `fix/receipt-ordering`, and open a pull request against `main`. Include the test or reproduction that demonstrates the change. |
+| Documentation | Use `docs/` and a descriptive topic, such as `docs/update-hosting`. |
+| Update server | The pull-based update mirror lives on [ops/syncme-update-pull](https://github.com/DrEsmaily/Syncme/tree/ops/syncme-update-pull). Its installation instructions can pin an exact commit. |
+| Android releases | Use the version tag to find the source, APK, update metadata and checksums. The [versioning guide](versioning.md) explains how the public version and Android build number advance. |
 
-## Finding earlier work
+## Explore the engineering history
 
-The [branch inventory](history/branch-tips-2026-11-23.tsv) records every branch name and its full commit ID immediately before the November 2026 reorganization. A commit ID identifies the same revision even when a branch name changes. Use the [build lineage](history/current-lineage.md) to follow the earlier Android investigations, or [browse branches](https://github.com/DrEsmaily/Syncme/branches/all) for open work and historical comparisons.
+| Investigation | What to look for |
+| --- | --- |
+| Chat performance | The [original timeline row](https://github.com/DrEsmaily/Syncme/tree/archive/performance/lagtest-a-original-row) and the [variant with reactions disabled](https://github.com/DrEsmaily/Syncme/tree/archive/performance/lagtest-b-no-reactions) are two of the experiments under `archive/performance/`. |
+| Presence and startup | `archive/presence/` groups work on online and away states. `archive/startup/` groups startup tracing and diagnostics. |
+| Connections and account recovery | `archive/transport/` covers TLS and certificate handling. `archive/account-recovery/` follows investigations into session resets and backup recovery. |
+| Earlier client development | `archive/development/` contains early interface and SDK experiments. For a chronological account of changes that reached build 253, see the [implementation history](history/current-lineage.md). |
 
-To inspect a snapshot locally, use the commit from the inventory:
-
-```sh
-git fetch origin --tags
-git show <commit>
-```
+Some build workflows and source URLs reference branches by name. These branches, including the numbered `build/syncme-*` series, retain those names so historical builds remain traceable. The [branch inventory](history/branch-tips-2026-11-23.tsv) maps every name from before the reorganization to its full commit ID and its name immediately afterward. Use the commit ID to inspect that exact snapshot as branches move forward.
