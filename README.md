@@ -2,90 +2,125 @@
 
 # SyncMe for Android
 
-**Version 1.5.3 · Build 285**
+SyncMe is an open-source Android messenger for private, decentralized communication. Based on [Element X Android](https://github.com/element-hq/element-x-android), it uses [Matrix](https://matrix.org/), an open protocol that lets people choose a messaging server they trust or run their own. Independently operated servers can exchange messages, so friends and communities can stay connected without relying on any single company or government to operate the network.
 
-**SyncMe** is an independent Android Matrix messenger forked from [Element X Android](https://github.com/element-hq/element-x-android).
-It adds a customized interface, personal conversation tags, shared presence indicators and optional diagnostic tools on top of the Matrix Rust SDK, Jetpack Compose and Appyx foundation.
+The goal is to make secure messaging easy for anyone, with the responsiveness, simplicity and visual appeal people expect from a modern chat app. [DrEsmaily](https://github.com/DrEsmaily) maintains the Android fork. The upstream client provides accounts, sync and end-to-end encryption in encrypted rooms. SyncMe’s work ranges from the layout of a photo album to how the app recovers when an update download loses its connection.
 
-This is the SyncMe development repository, not an official Element distribution.
+**[Download the ARM64 APK](https://github.com/DrEsmaily/Syncme/releases/download/v1.5.3-build285/SyncMe-285-ARM64.apk)** · [Browse the released source](https://github.com/DrEsmaily/Syncme/tree/v1.5.3-build285) · [Build and test run](https://github.com/DrEsmaily/Syncme/actions/runs/43751178979)
+Version 1.5.3 · Build 285 · Android 7.0 or later
 
-## Latest release and downloads
+**Explore the project** · [Screenshots](#screenshots) · [Engineering decisions and tests](#engineering-decisions-in-the-released-code) · [Build from source](#build-and-release) · [Branch guide](docs/syncme/branches.md)
 
-**[Download SyncMe 1.5.3 · Build 285 — ARM64 APK](https://github.com/DrEsmaily/SyncMe/releases/download/v1.5.3-build285/SyncMe-285-ARM64.apk)**
+Two investigations illustrate the work behind the interface. A successful identity reset could leave the user waiting indefinitely because the screen was watching the state of key backup, a separate operation. In the chat timeline, a read receipt could advance beyond the last message the user had actually seen. The write-ups trace each symptom to its cause and link to the changes that followed. [Identity recovery](#encryption-recovery-and-diagnostics) · [Read receipts](#presence-unread-state-and-read-receipts)
 
-- **Version 1.5.3 · Build 285 · Android 7.0+ · ARM64.** [Release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.5.3-build285) · [Verified build](https://github.com/DrEsmaily/SyncMe/actions/runs/43751178979) · [SHA-256](https://github.com/DrEsmaily/SyncMe/releases/download/v1.5.3-build285/SHA256.txt).
-- Minor bugs fixed
-- [Server upload files](https://github.com/DrEsmaily/SyncMe/releases/download/v1.5.3-build285/SyncMe-285-Server-Upload.zip) · [Update metadata](https://github.com/DrEsmaily/SyncMe/releases/download/v1.5.3-build285/latest.json) · [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-285-bubble-colors/docs/syncme/update-hosting.md).
-- [Source](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-285-bubble-colors) · [Previous public release: 1.5.2 · Build 284](https://github.com/DrEsmaily/SyncMe/releases/download/v1.5.2-build284/SyncMe-284-ARM64.apk).
+## Why this project matters
 
-Download the APK directly without a GitHub account, then install it as an update over your existing SyncMe release. Actions artifacts are additional build records; the release APK does not expire with them.
+Freedom of expression has a practical dimension for a community: its members can help decide who moderates their conversations and which rules apply. Access to the client’s source code gives them another way to participate. They can inspect how messages and updates are handled, adapt the app to local needs and share their changes under the [AGPL license](LICENSE).
 
-## Features added or customized in SyncMe
+## Engineering history: from the first Android builds to independent releases
 
-These are recorded differences from the upstream version used as this fork's base. They are not claims of inventing these features across all messengers, or comparisons with every future Element release.
+The early Android builds exposed problems at the boundaries between the app, the Matrix Rust SDK and the network. An upload could appear to restart, an identity reset could succeed while the screen kept spinning, and a background chat could acknowledge a message the user had never seen. The changes below explain how those symptoms were investigated and what shipped.
 
-| Feature | Where it appears and what it does |
-|---|---|
-| **Online and Away presence** | Shared indicators on home DM avatars, chat headers, profiles and People; green Online and orange Away, based on actual Matrix responses. |
-| **Last seen and group online counts** | English approximate last-seen labels and group counts qualified as “at least” when data is incomplete; unknown status is not guessed. |
-| **Upload percentage and transferred size** | Real percentage, transferred/total bytes and a progress bar within conversations, driven by SDK send-queue state and fitted to the message bubble. |
-| **Media-send controls** | Customized quality/original-file behavior, upload cancellation through message actions, and pending-upload presentation. |
-| **Personal conversation tags** | Dedicated create, rename and management flows, conversation assignments and persistent home filters; up to three personal tags. |
-| **In-app updates** | Final row under Settings → App settings, background version checks, resumable Android downloads, an Install/Later prompt after verification, and verified installation from the configured HTTPS update server. [Hosting instructions](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-285-bubble-colors/docs/syncme/update-hosting.md). |
-| **SyncMe identity and interface** | SM artwork, dedicated welcome screen, cobalt accents, black surfaces, simpler navigation, and customized menus, reactions and settings. |
-| **Optional diagnostics** | Startup, TLS and decryption tools in Developer Options; default-off, bounded capture. |
-| **Refined read-receipt behavior** | Reader avatars under the relevant outgoing message, retries after failure, and automatic receipts restricted to the active chat and visible event. |
-| **Permission-based group closure** | A confirmed client-side management action; it does not erase every federated or device-local copy of history. |
+### Media uploads and opening a conversation
 
-Multiple photos and videos can be selected from Gallery and sent together using the SDK gallery-message path, with a shared caption and the existing quality controls. Album uploads show their uploading state; failed sends retain edited originals so retry can prepare fresh files. Image albums keep their gallery layout without separate thumbnail attachments and fit complete photos inside justified rows with proportional widths, adaptive heights and narrow 2 dp gaps instead of fixed landscape slots. Typical portrait screenshots fill their tiles without cropping or large empty bands; extreme or malformed dimensions remain bounded. Sender and media labels are separated from bidirectional captions so Persian preview text retains its first word. Media opens directly on tap; Seen by omits the redundant Open attachment row. Gallery display in other Matrix clients depends on their gallery-message support.
+A comparison with the Google Play client initially suggested a roughly tenfold upload slowdown. The two apps were taking different VPN routes. Testing the upstream build with the VPN disabled isolated the routing difference. A separate symptom remained: some large transfers stalled or repeated progress. SyncMe restored the SDK send queue as the transfer path, removed duplicate progress collectors and guarded against starting a second job for the same upload action. Cancellation targets the queued send. The large-file stall remained an item for controlled device testing. [Original investigation and device observations][early-notes]
 
-App settings includes Calendar with Gregorian and Persian (Solar Hijri). Persian dates use the approved Finglish month and weekday names and Latin digits. Android ICU converts device-local civil dates, including Nowruz and leap-day boundaries. The collapsed Calendar row shows Persian; its menu retains Persian (Solar Hijri). The selection persists across launches; chat lists and retained timelines refresh on calendar, day and time-zone changes. Stored timestamps, event ordering and time-only labels are preserved.
+The progress UI then had to represent what that queue actually knew. It displays transferred bytes and percentage from the SDK. A video bubble that expanded to nearly the width of the screen during upload was traced to a full-width layout flag. The revised layout measures the media first and widens the bubble only as far as its status line requires. On the navigation side, a room lookup with a wait of up to 50 ms was taken out of the tap-to-open path. The conversation screen can open while its room data loads. [Implementation history][lineage]
 
-Interrupted update downloads use resumable HTTPS recovery when the system download remains paused, retaining confirmed partial bytes and exposing a retry action. Release identity is refreshed before recovery attempts; size, SHA-256, package and signing-certificate checks still gate installation. Recovery transfers resume after reopening the app.
+### Startup, certificate verification and push registration
 
-Home filter chips use borderless selected and unselected surfaces with explicit Light and Dark/Black palettes. Built-in filters, custom tags and the add-tag chip share the same colors, without selected checkmarks in any theme.
+The startup investigation traced a possible network wait into the Android certificate verifier called by Rust through JNI. A certificate revocation lookup could contact an external service synchronously during a TLS handshake. SyncMe brought the verifier into the source tree, preserved its JNI contract and restored standard OkHttp authentication. Android still checks system trust, certificate validity and permitted key usage, and Rust verifies the hostname. The tradeoff is explicit: the verifier skips online OCSP/CRL checks, so it cannot detect revocation through those services. Regression cases cover malformed, expired and untrusted chains as well as trust-provider errors. [Root-cause analysis and verification policy][root-cause]
 
-Sent bubbles use soft blue in Light, muted blue in Dark and deep blue in Black, with neutral received bubbles. Timestamp tints maintain at least 4.5:1 contrast against all six surfaces; custom warning backgrounds keep precedence. Message bubbles use a dedicated timestamp footer: left for sent messages and right for received messages. Media taps retain their normal viewer or playback action; sent-bubble backgrounds and footers open Seen by. Reader reactions appear beside the name with consistent spacing. Bubble reaction groups align left for sent messages and right for received messages, with the add-reaction button toward the opposite side, independently of app and text direction. Plain and captioned images share padded, rounded framing. Narrow replied-to images remain centered, with compact timestamp insets and edited markers toward the center beside the time. Known later read positions cover older sent messages in the same thread; avatar badges remain at the latest position. No empty reaction section is shown.
+Firebase registration had a different failure mode. A blank cached token could bypass the wait for a usable one, and a token stream that ended early could throw. The registration path now rejects blank values, bounds the wait, returns an explicit failure when the stream ends and preserves cancellation. The investigation distinguishes these client fixes from end-to-end notification delivery, which also depends on the device and push service. [Push investigation and test cases][root-cause]
 
-### Inherited from Element X and Matrix
+### Encryption recovery and diagnostics
 
-Matrix accounts/login, direct and group conversations, the end-to-end encryption foundation, message/media transport, synchronization and the receipt protocol come from the upstream platform. SyncMe adds or customizes the layers above rather than claiming the underlying messenger stack was built from scratch.
+A successful identity reset could leave the password screen spinning indefinitely because the UI was waiting for key backup to become enabled. Those are independent operations. SyncMe now completes the reset on SDK success across password, OAuth and no-auth flows, handles duplicate submissions and cancels superseded observers. A user who has disabled backup can finish a reset while keeping that choice. [Reset lifecycle and regression cases][root-cause]
 
-### Technical fixes and current limits
+For intermittent “unable to decrypt” reports, SyncMe added opt-in diagnostics that let a developer correlate sender and receiver events. Reports record timing, lifecycle transitions and fingerprinted identifiers. A bounded queue and two 256 KB files limit storage, and exports exclude message content, credentials and encryption keys. This gives investigators a way to distinguish local send admission from evidence that a receiving device actually obtained a key. [Diagnostics design and limits][presence-review]
 
-SyncMe includes identity-reset completion fixes, bounded FCM token handling, presence/receipt lifecycle corrections and regression coverage.
-Current TLS verifies system trust, expiry/EKU and hostname, but omits online OCSP/CRL revocation checking; see the [technical review and limits](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md).
+### Presence, unread state and read receipts
 
-Successful CI is separate from device verification. Large-file uploads under VPN, multi-device presence, background notifications and two-phone receipt behavior require runtime testing. Historical experiments on other branches are not automatically features of the current application.
+The pinned SDK did not expose incoming presence. An early implementation opened a second Matrix sync stream, which could acknowledge encryption events before the primary SDK consumed them. The replacement reads authenticated presence snapshots for visible users and leaves sync ownership with the SDK. Workers share rate-limit cooldowns, release subscriptions as screens close and refresh on reconnection. A later investigation also caught a gap between the test fake and the production client: the real SDK presence publisher was missing. Wiring it explicitly and adding recovery after failed publication addressed that separate problem. [Presence investigation, builds 246–252][presence-review]
 
-## SyncMe screenshots
+The receipt work followed a message from its local echo through server event-ID resolution, viewport layout and acknowledgement. Automatic receipts now require a resumed conversation and target the event the user actually saw. A failed request stays eligible for retry, and a delayed acknowledgement cannot move the read position backwards. Incoming replies, deleted messages, pagination and thread boundaries are accounted for when placing reader avatars. The timeline also remembers whether the user was following new messages before a burst arrived, so someone reading history can stay in place. [Timeline and receipt investigations, builds 247–251][presence-review]
 
-Explore SyncMe's welcome screen, conversation filters, presence indicators, personal tags and messaging interface.
+### Release verification and self-hosted distribution
+
+One early workflow labelled its run Build 244 while the APK and manifest identified Build 243. That discrepancy is preserved in the archive. The release process now verifies the packaged APK’s identity, version, ABI and native verifier class, and records its source commit, CI run and SHA-256 digest. The release includes a matching update manifest for self-hosting. Each published APK can be traced to a source commit and a build run with its verification results. [Original build record][root-cause] · [Build 285 workflow][build-workflow] · [Update hosting guide][hosting]
+
+[early-notes]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/.github/SYNCME_CONTINUATION_MASTER.txt
+[lineage]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/history/current-lineage.md
+[root-cause]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/root-cause-review.md
+[presence-review]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/presence-review.md
+[build-workflow]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/.github/workflows/syncme-bubble-colors-review.yml
+[hosting]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/update-hosting.md
+
+## Screenshots
 
 <table>
-  <tr>
+<tr>
     <td align="center" width="33%"><img src="docs/syncme/images/welcome.jpg" alt="SyncMe welcome screen" width="180" height="400" /><br /><sub>Welcome</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/home-presence.jpg" alt="SyncMe home with green Online indicators, orange Away indicators and unread counts" width="180" height="400" /><br /><sub>Online and Away presence</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/home-tags.jpg" alt="Conversations filtered by the Close Friends tag" width="180" height="400" /><br /><sub>Personal tag filter</sub></td>
   </tr>
-  <tr>
+<tr>
     <td align="center" width="33%"><img src="docs/syncme/images/upload-progress.jpg" alt="File upload showing percentage, transferred bytes and a progress bar in a direct conversation" width="180" height="400" /><br /><sub>Upload percentage and size</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/group-chat.jpg" alt="Public group conversation with an online member count and reader avatars below an outgoing message" width="180" height="400" /><br /><sub>Group presence and reader avatars</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/group-unread.jpg" alt="Public group conversation showing the online count and NEW unread divider" width="180" height="400" /><br /><sub>Unread message marker</sub></td>
   </tr>
-  <tr>
+<tr>
     <td align="center" width="33%"><img src="docs/syncme/images/manage-tags.jpg" alt="Manage tags screen with Favorite, Close Friends and a Create new tag button" width="180" height="400" /><br /><sub>Manage personal tags</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/conversation-actions.jpg" alt="Conversation action sheet with Favorite and Close Friends tag toggles" width="180" height="400" /><br /><sub>Conversation actions</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/start-chat.jpg" alt="Start chat screen with search, New room and Room directory" width="180" height="400" /><br /><sub>Start a chat</sub></td>
   </tr>
-  <tr>
+<tr>
     <td align="center" width="33%"><img src="docs/syncme/images/people-search.jpg" alt="People search showing a matching contact" width="180" height="400" /><br /><sub>Search for people</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/new-contact-confirmation.jpg" alt="Confirmation sheet before starting a chat with a new contact" width="180" height="400" /><br /><sub>Confirm a new contact</sub></td>
     <td align="center" width="33%"><img src="docs/syncme/images/settings.jpg" alt="SyncMe settings showing account switching, account settings, appearance, screen lock and location sharing" width="180" height="400" /><br /><sub>Settings and account switching</sub></td>
   </tr>
 </table>
 
-## Latest 10 successful builds
+## What changed in SyncMe
+
+**Conversation management.** Users can create, rename and assign up to three personal tags from the conversation list. Tag assignments and selected filters persist across launches. Removing a tag keeps its chats and history. The home list scrolls behind a floating new-chat button, with a narrow header fade and borderless filters in Light, Dark and Black themes. [Feature history](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/cumulative-release-notes.md)
+
+**Presence across screens.** Online, Away and last-seen indicators share the same observations across direct chats, profiles and the People screen. When only part of a group’s presence is known, its header displays an “at least” count. The service limits concurrent requests and reuses recent results as contacts scroll off screen and return. [Presence implementation](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/user/RustPresenceService.kt)
+
+**Read receipts and reactions.** Tapping an outgoing bubble opens *Seen by*, with each reader’s reactions next to their name. A later read position covers earlier messages in the same thread, while the avatar stays anchored to the latest read position. Automatic read acknowledgements follow the active chat and visible event. Tapping an attachment opens the media directly. [Message detail tests](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/receipt/bottomsheet/MessageDetailsContentTest.kt) · [Media interaction tests](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/TimelineMediaTapTest.kt)
+
+**Media composition and delivery.** Users can select multiple photos and videos in order, add a shared caption and choose media quality or original files. Each upload reports the percentage and transferred bytes from the SDK send queue. Users can cancel a pending upload, and failed sends retain edited originals for retry. The album renderer sizes rows from image proportions so portrait screenshots stay readable alongside landscape photos. [Album rendering tests](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/event/GalleryImageFitTest.kt)
+
+**Conversation layout and bidirectional text.** Sender labels and media prefixes are laid out separately from captions so a Persian preview keeps its first word. Quoted text and its author follow the quote direction. Timestamps occupy a separate line below the message, including when the last line is a link. Sent and received messages use distinct surfaces in all three themes, with timestamps tested for at least 4.5:1 contrast across the six standard bubble colors. Reaction placement follows the sender’s side independently of text direction. [Bubble colors and contrast](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/BubblePaletteTest.kt) · [Timestamp layout](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/MessageTimestampFooterTest.kt) · [Reaction placement](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/ReactionPlacementTest.kt)
+
+**Settings, onboarding and group controls.** SyncMe has its own launcher artwork, welcome screen and login flow. The settings redesign gives menu rows consistent touch areas and keeps update status at the end of App settings. Group administrators have a confirmation step for closing a group, with member removal subject to Matrix permissions. [Design and group-management notes](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/cumulative-release-notes.md)
+
+**Updates from a self-hosted server.** The Android client checks for releases in the background. After an interrupted download it resumes from confirmed partial bytes, including after the app reopens. Before offering *Install* or *Later*, it validates the APK size, SHA-256 digest, package identity and signing certificate. The release workflow produces the matching APK and JSON manifest for hosting. [Hosting guide](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/update-hosting.md)
+
+**Reliability and diagnostics.** Work on identity-reset completion, FCM token handling and receipt retries is documented alongside the behaviors that still need device testing. Opt-in startup, TLS and decryption diagnostics use bounded capture so developers can investigate failures without leaving tracing enabled during ordinary use. [Technical review](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/root-cause-review.md)
+
+## Engineering decisions in the released code
+
+| Problem | How SyncMe handles it | Code or tests |
+| --- | --- | --- |
+| An interrupted APK download can leave a partially written file. | The updater resumes from the last confirmed byte. If the server ignores the range request, it replaces the partial file. Before installation it checks the size, hash, package and signing certificate. | [Download recovery tests](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/preferences/impl/src/test/kotlin/io/element/android/features/preferences/impl/updates/ResumableUpdateDownloadTest.kt) |
+| Fixed-size album tiles waste space around portrait photos or cut off their edges. | A Compose layout groups images into rows using their aspect ratios and the available chat width. Tests check that the image corners remain visible and that tapping a tile selects the right photo. | [Row layout tests](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/event/GalleryRowsTest.kt) · [Rendering and tap tests](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/features/messages/impl/src/test/kotlin/io/element/android/features/messages/impl/timeline/components/event/GalleryImageFitTest.kt) |
+| Opening a long conversation list can trigger repeated requests for the same person's presence. | SyncMe shares presence observations across screens, reuses fresh responses and bounds both concurrent requests and cached inactive users. | [Presence service](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/libraries/matrix/impl/src/main/kotlin/io/element/android/libraries/matrix/impl/user/RustPresenceService.kt) |
+
+## Build and release
+
+The project uses Kotlin, Jetpack Compose, Appyx and the Matrix Rust SDK. To inspect or build the version distributed above, start from the release tag. Set up JDK 21 and the Android SDK using the [developer guide](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/_developer_onboarding.md).
+
+```sh
+git clone --branch v1.5.3-build285 --depth 1 https://github.com/DrEsmaily/Syncme.git
+cd Syncme
+./gradlew :features:messages:impl:testDebugUnitTest --tests '*GalleryRowsTest'
+```
+
+The [release workflow](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/.github/workflows/syncme-bubble-colors-review.yml) runs the message regressions, assembles the optimized ARM64 APK and checks update compatibility. The [release page](https://github.com/DrEsmaily/Syncme/releases/tag/v1.5.3-build285) includes the APK, SHA-256 checksum and update manifest. Earlier versions are in [Releases](https://github.com/DrEsmaily/Syncme/releases). See the [self-hosted update guide](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/update-hosting.md) for deployment and the [technical review](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/root-cause-review.md) for known limits.
+
+<details>
+<summary>Build records and historical archives</summary>
 
 This rolling list includes the current build and the nine preceding successful builds. Version 1.5.3 (Build 285) follows Version 1.5.2 (Build 284).
 
@@ -140,7 +175,7 @@ This rolling list includes the current build and the nine preceding successful b
 
 [Version 1.1.2 · Build 258](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.2-build258) remains available as a public release with its APK and documentation.
 
-[Build 257](https://github.com/DrEsmaily/SyncMe/actions/runs/39171234618/artifacts/12153525423) remains preserved as an Actions artifact with its APK and provenance.
+[Build 257](https://github.com/DrEsmaily/SyncMe/actions/runs/39171234618/artifacts/12153525423) was distributed as a time-limited Actions artifact containing the APK and its build record.
 
 [Version 1.1.1 · Build 256](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.1.1-build256) remains available as a public release with its APK and documentation.
 
@@ -150,27 +185,9 @@ This rolling list includes the current build and the nine preceding successful b
 
 The original protected snapshot covers builds **244–253**. Builds [253](https://github.com/DrEsmaily/SyncMe/actions/runs/38658866967), [252](https://github.com/DrEsmaily/SyncMe/actions/runs/38633766604), [251](https://github.com/DrEsmaily/SyncMe/actions/runs/38586470729), [250](https://github.com/DrEsmaily/SyncMe/actions/runs/38547146922), [249](https://github.com/DrEsmaily/SyncMe/actions/runs/38513962735), [248](https://github.com/DrEsmaily/SyncMe/actions/runs/38400798130), [247](https://github.com/DrEsmaily/SyncMe/actions/runs/38362221920), [246](https://github.com/DrEsmaily/SyncMe/actions/runs/38345740737), [245](https://github.com/DrEsmaily/SyncMe/actions/runs/38314674913) and [244 (APK labelled 243)](https://github.com/DrEsmaily/SyncMe/actions/runs/38287593658) remain in the [protected-build archive](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/history/protected-builds.json), alongside their historical notes. The rolling table above now includes builds 276 through 285; the archive records the earlier preservation operation.
 
-[Historical cleanup report and preservation record](https://github.com/DrEsmaily/SyncMe/blob/syncme-cumulative-build-20261015/docs/syncme/cleanup-proposal.md)
+[Historical build inventory](https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/history/runs.md)
 
-## Development and preserved history
-
-The latest verified application source is on [`build/syncme-285-bubble-colors`](https://github.com/DrEsmaily/SyncMe/tree/build/syncme-285-bubble-colors). Version 1.5.3 (Build 285) builds on the verified Build 284 source; [release notes](https://github.com/DrEsmaily/SyncMe/releases/tag/v1.5.3-build285).
-Start with the cumulative notes, presence review and root-cause review. The rebuild branch's `docs/syncme/history` records the initial 422 Actions executions, 797 commits across build lineages, distinct historical note revisions and a separate cumulative history for each protected build.
-
-Older descriptions can record superseded behavior or unfinished work. Always check their date, exact commit and newer evidence. Actions cleanup does not remove Git history. The original ten-build preservation snapshot remains documented separately from the rolling latest-build list above. The public releases for Builds 254, 255, 256, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268 through 282 provide persistent APK downloads; Build 257 remains available as an Actions artifact.
-
-## Building and contributing
-
-Release identity follows [Semantic Versioning and separate build identifiers](https://github.com/DrEsmaily/SyncMe/blob/build/syncme-285-bubble-colors/docs/syncme/versioning.md), using `syncme-release.properties` as the canonical source.
-
-The application requires Android 7.0+ (API 24). Development uses JDK 21 and the Android toolchain. See [contributing](CONTRIBUTING.md) and [developer onboarding](docs/_developer_onboarding.md).
-
-The dedicated SyncMe workflow runs regressions, builds `:app:assembleGplayRelease`, retains the existing `.syncmerelease` application identity, checks ARM64/version/manifest/JNI metadata and bundles cumulative documentation and checksums.
-Report SyncMe-specific issues in [this repository](https://github.com/DrEsmaily/SyncMe/issues).
-
-## Upstream attribution
-
-SyncMe is derived from [element-hq/element-x-android](https://github.com/element-hq/element-x-android). Original history, attribution and the [LICENSE](LICENSE) and [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL) files are preserved. SyncMe branding does not change those license terms.
+</details>
 
 ## Copyright and License
 
@@ -185,7 +202,7 @@ Copyright (c) 2022 - 2025 New Vector Ltd.
 
 **SyncMe** is free and open-source software distributed under the terms of the **GNU Affero General Public License v3.0 (AGPL-3.0)** (or, at your option, any later version), as published by the Free Software Foundation.
 
-While the upstream `element-x-android` repository is dual-licensed by Element Creations Ltd under both the AGPL-3.0 and an Element Commercial License, this independent fork incorporates upstream code specifically under the terms of the **AGPL-3.0**. The combined fork is distributed under AGPL-3.0-or-later. 
+While the upstream `element-x-android` repository is dual-licensed by Element Creations Ltd under both the AGPL-3.0 and an Element Commercial License, this independent fork incorporates upstream code specifically under the terms of the **AGPL-3.0**. The combined fork is distributed under AGPL-3.0-or-later.
 
 Original upstream attribution, commit history, and the `LICENSE` and `LICENSE-COMMERCIAL` files are preserved in the repository root for historical and legal compliance.
 
