@@ -15,6 +15,45 @@ Freedom of expression depends in part on who controls the places where people ta
 
 Open source gives that choice a practical foundation. Developers can inspect how the Android client handles messages and updates, adapt it for their community, and distribute their changes under the project’s [AGPL license](LICENSE). SyncMe itself is one example: it builds on Element X, publishes the source behind its releases, and supports APK updates from a community’s own HTTPS server.
 
+## Engineering history: from the first Android builds to independent releases
+
+The early Android builds exposed problems at the boundaries between the app, the Matrix Rust SDK and the network. An upload could appear to restart, an identity reset could succeed while the screen kept spinning, and a background chat could acknowledge a message the user had never seen. The changes below explain how those symptoms were investigated and what shipped.
+
+### Media uploads and opening a conversation
+
+A comparison with the Google Play client initially suggested a roughly tenfold upload slowdown. The two apps were taking different VPN routes. Testing the upstream build with the VPN disabled isolated the routing difference. A separate symptom remained: some large transfers stalled or repeated progress. SyncMe restored the SDK send queue as the transfer path, removed duplicate progress collectors and guarded against starting a second job for the same upload action. Cancellation targets the queued send. The large-file stall remained an item for controlled device testing. [Original investigation and device observations][early-notes]
+
+The progress UI then had to represent what that queue actually knew. It displays transferred bytes and percentage from the SDK. A video bubble that expanded to nearly the width of the screen during upload was traced to a full-width layout flag. The revised layout measures the media first and widens the bubble only as far as its status line requires. On the navigation side, a room lookup with a wait of up to 50 ms was taken out of the tap-to-open path. The conversation screen can open while its room data loads. [Implementation history][lineage]
+
+### Startup, certificate verification and push registration
+
+The startup investigation traced a possible network wait into the Android certificate verifier called by Rust through JNI. A certificate revocation lookup could contact an external service synchronously during a TLS handshake. SyncMe brought the verifier into the source tree, preserved its JNI contract and restored standard OkHttp authentication. Android still checks system trust, certificate validity and permitted key usage, and Rust verifies the hostname. The tradeoff is explicit: the verifier skips online OCSP/CRL checks, so it cannot detect revocation through those services. Regression cases cover malformed, expired and untrusted chains as well as trust-provider errors. [Root-cause analysis and verification policy][root-cause]
+
+Firebase registration had a different failure mode. A blank cached token could bypass the wait for a usable one, and a token stream that ended early could throw. The registration path now rejects blank values, bounds the wait, returns an explicit failure when the stream ends and preserves cancellation. The investigation distinguishes these client fixes from end-to-end notification delivery, which also depends on the device and push service. [Push investigation and test cases][root-cause]
+
+### Encryption recovery and diagnostics
+
+A successful identity reset could leave the password screen spinning indefinitely because the UI was waiting for key backup to become enabled. Those are independent operations. SyncMe now completes the reset on SDK success across password, OAuth and no-auth flows, handles duplicate submissions and cancels superseded observers. A user who has disabled backup can finish a reset while keeping that choice. [Reset lifecycle and regression cases][root-cause]
+
+For intermittent “unable to decrypt” reports, SyncMe added opt-in diagnostics that let a developer correlate sender and receiver events. Reports record timing, lifecycle transitions and fingerprinted identifiers. A bounded queue and two 256 KB files limit storage, and exports exclude message content, credentials and encryption keys. This gives investigators a way to distinguish local send admission from evidence that a receiving device actually obtained a key. [Diagnostics design and limits][presence-review]
+
+### Presence, unread state and read receipts
+
+The pinned SDK did not expose incoming presence. An early implementation opened a second Matrix sync stream, which could acknowledge encryption events before the primary SDK consumed them. The replacement reads authenticated presence snapshots for visible users and leaves sync ownership with the SDK. Workers share rate-limit cooldowns, release subscriptions as screens close and refresh on reconnection. A later investigation also caught a gap between the test fake and the production client: the real SDK presence publisher was missing. Wiring it explicitly and adding recovery after failed publication addressed that separate problem. [Presence investigation, builds 246–252][presence-review]
+
+The receipt work followed a message from its local echo through server event-ID resolution, viewport layout and acknowledgement. Automatic receipts now require a resumed conversation and target the event the user actually saw. A failed request stays eligible for retry, and a delayed acknowledgement cannot move the read position backwards. Incoming replies, deleted messages, pagination and thread boundaries are accounted for when placing reader avatars. The timeline also remembers whether the user was following new messages before a burst arrived, so someone reading history can stay in place. [Timeline and receipt investigations, builds 247–251][presence-review]
+
+### Reproducible releases and self-hosted distribution
+
+One early workflow labelled its run Build 244 while the APK and manifest identified Build 243. That discrepancy is preserved in the archive. The release process now verifies the packaged APK’s identity, version, ABI and native verifier class, and records its source commit, CI run and SHA-256 digest. The release includes a matching update manifest for self-hosting. This connects the binary installed on a phone to the source and checks a reviewer can inspect. [Original build record][root-cause] · [Build 285 workflow][build-workflow] · [Update hosting guide][hosting]
+
+[early-notes]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/.github/SYNCME_CONTINUATION_MASTER.txt
+[lineage]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/history/current-lineage.md
+[root-cause]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/root-cause-review.md
+[presence-review]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/presence-review.md
+[build-workflow]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/.github/workflows/syncme-bubble-colors-review.yml
+[hosting]: https://github.com/DrEsmaily/Syncme/blob/v1.5.3-build285/docs/syncme/update-hosting.md
+
 ## Screenshots
 
 <table>
